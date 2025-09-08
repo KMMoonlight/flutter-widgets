@@ -22,12 +22,12 @@ export const Documents: Paths[] = [
             href: '/column'
           }
         ]
-      },
-      {
-        title: "组件一览",
-        href: "/widget-list",
-        items: []
       }
     ],
+  },
+  {
+    title: "组件一览",
+    href: "/widget-list",
+    items: []
   }
 ]
