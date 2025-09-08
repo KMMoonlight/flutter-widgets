@@ -3,8 +3,11 @@ import path from "path";
 import { Documents } from "../settings/documents.mjs";
 import grayMatter from "gray-matter";
 import remarkMdx from "remark-mdx";
+//@ts-ignore
 import remarkParse from "remark-parse";
+//@ts-ignore
 import remarkStringify from "remark-stringify";
+//@ts-ignore
 import { unified } from "unified";
 import { visit } from "unist-util-visit";
 const docsDir = path.join(process.cwd(), "contents/docs");

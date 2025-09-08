@@ -18,7 +18,41 @@ description: 一个Material Design设计的App标题栏
 
 ## 构造函数
 ```dart
-AppBar.new({Key? key, Widget? leading, bool automaticallyImplyLeading = true, Widget? title, List<Widget>? actions, Widget? flexibleSpace, PreferredSizeWidget? bottom, double? elevation, double? scrolledUnderElevation, ScrollNotificationPredicate notificationPredicate = defaultScrollNotificationPredicate, Color? shadowColor, Color? surfaceTintColor, ShapeBorder? shape, Color? backgroundColor, Color? foregroundColor, IconThemeData? iconTheme, IconThemeData? actionsIconTheme, bool primary = true, bool? centerTitle, bool excludeHeaderSemantics = false, double? titleSpacing, double toolbarOpacity = 1.0, double bottomOpacity = 1.0, double? toolbarHeight, double? leadingWidth, TextStyle? toolbarTextStyle, TextStyle? titleTextStyle, SystemUiOverlayStyle? systemOverlayStyle, bool forceMaterialTransparency = false, bool useDefaultSemanticsOrder = true, Clip? clipBehavior, EdgeInsetsGeometry? actionsPadding, bool animateColor = false})
+AppBar.new({
+    Key? key, 
+    Widget? leading, 
+    bool automaticallyImplyLeading = true, 
+    Widget? title, 
+    List<Widget>? actions, 
+    Widget? flexibleSpace, 
+    PreferredSizeWidget? bottom, 
+    double? elevation, 
+    double? scrolledUnderElevation, 
+    ScrollNotificationPredicate notificationPredicate = defaultScrollNotificationPredicate, 
+    Color? shadowColor, 
+    Color? surfaceTintColor, 
+    ShapeBorder? shape, 
+    Color? backgroundColor, 
+    Color? foregroundColor, 
+    IconThemeData? iconTheme, 
+    IconThemeData? actionsIconTheme, 
+    bool primary = true, 
+    bool? centerTitle, 
+    bool excludeHeaderSemantics = false, 
+    double? titleSpacing, 
+    double toolbarOpacity = 1.0, 
+    double bottomOpacity = 1.0, 
+    double? toolbarHeight, 
+    double? leadingWidth, 
+    TextStyle? toolbarTextStyle, 
+    TextStyle? titleTextStyle, 
+    SystemUiOverlayStyle? systemOverlayStyle, 
+    bool forceMaterialTransparency = false, 
+    bool useDefaultSemanticsOrder = true, 
+    Clip? clipBehavior, 
+    EdgeInsetsGeometry? actionsPadding, 
+    bool animateColor = false
+})
 ```
 
 ## 参数
@@ -65,14 +99,14 @@ AppBar.new({Key? key, Widget? leading, bool automaticallyImplyLeading = true, Wi
 | 方法名   |  类型    |  解释   |
 |---------|------------|---------|
 | createElement | () -> StatefulElement |  创建一个StatefulElement来管理此组件在组件树中的位置 |
-| createState | () -> State<AppBar> | 在组件树中的给定位置为组件创建可变状态 |
-| debugDescribeChildren | () -> List<DiagnosticsNode> |  返回描述此节点子节点的DiagnosticsNode对象列表 |
+| createState | () -> State\<AppBar\> | 在组件树中的给定位置为组件创建可变状态 |
+| debugDescribeChildren | () -> List\<DiagnosticsNode\> |  返回描述此节点子节点的DiagnosticsNode对象列表 |
 | debugFillProperties | (DiagnosticPropertiesBuilder properties) -> void | 添加与节点相关的附加属性  |
 | noSuchMethod | (Invocation invocation) -> dynamic |  当访问不存在的方法或属性时调用 |
-| toDiagnosticsNode | ({String? name, DiagnosticsTreeStyle? style}) -> DiagnosticsNode | 返回一个调试表示形式的对象，该对象由调试工具和DiagnosticsNode.toStringDeep使用。|
-| toString | ({DiagnosticLevel minLevel = DiagnosticLevel.info}) -> String | 将对象转为字符串 |
-| toStringDeep | ({String prefixLineOne = '', String? prefixOtherLines, DiagnosticLevel minLevel = DiagnosticLevel.debug, int wrapWidth = 65}) -> String | 将对象以及子节点转为字符串 |
-| toStringShallow | ({String joiner = ', ', DiagnosticLevel minLevel = DiagnosticLevel.debug}) -> String |  返回对象的一行详细描述 |
+| toDiagnosticsNode | (\{String? name, DiagnosticsTreeStyle? style\}) -> DiagnosticsNode | 返回一个调试表示形式的对象，该对象由调试工具和DiagnosticsNode.toStringDeep使用。|
+| toString | (\{DiagnosticLevel minLevel = DiagnosticLevel.info\}) -> String | 将对象转为字符串 |
+| toStringDeep | (\{String prefixLineOne = '', String? prefixOtherLines, DiagnosticLevel minLevel = DiagnosticLevel.debug, int wrapWidth = 65\}) -> String | 将对象以及子节点转为字符串 |
+| toStringShallow | (\{String joiner = ', ', DiagnosticLevel minLevel = DiagnosticLevel.debug\}) -> String |  返回对象的一行详细描述 |
 | toStringShort | () -> String |  此组件的简短文本描述  |
 
 

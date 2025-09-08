@@ -1,97 +1,31 @@
 export const Documents = [
     {
-        heading: "Introduction",
-        title: "Basic Setup",
-        href: "/basic-setup",
+        title: "基础组件",
+        href: "/basic-widgets",
         items: [
             {
-                title: "Installation",
-                href: "/installation",
-            },
-            {
-                title: "Setup",
-                href: "/setup",
-            },
-            {
-                title: "Changelog",
-                href: "/changelog",
-            },
-        ],
-    },
-    {
-        spacer: true,
-    },
-    {
-        title: "Navigation",
-        href: "/navigation",
-        heading: "Documents",
-    },
-    {
-        title: "Structure",
-        href: "/structure",
-        items: [
-            {
-                title: "Deep",
-                href: "/deep",
+                title: "基本组件",
+                href: "/basic",
                 items: [
                     {
-                        title: "Deeper",
-                        href: "/deeper",
-                        items: [
-                            {
-                                title: "Even deeper",
-                                href: "/even-deeper",
-                            },
-                        ],
+                        title: "AppBar",
+                        href: "/app-bar"
                     },
-                ],
-            },
+                    {
+                        title: "Container",
+                        href: '/container'
+                    },
+                    {
+                        title: "Column",
+                        href: '/column'
+                    }
+                ]
+            }
         ],
     },
     {
-        spacer: true,
-    },
-    {
-        title: "Markdown",
-        href: "/markdown",
-        heading: "Components",
-        items: [
-            {
-                title: "Cards",
-                href: "/cards",
-            },
-            {
-                title: "Diagrams",
-                href: "/diagrams",
-            },
-            {
-                title: "Filetree",
-                href: "/filetree",
-            },
-            {
-                title: "Lists",
-                href: "/lists",
-            },
-            {
-                title: "Maths",
-                href: "/maths",
-            },
-            {
-                title: "Notes",
-                href: "/notes",
-            },
-            {
-                title: "Steps",
-                href: "/steps",
-            },
-            {
-                title: "Table",
-                href: "/table",
-            },
-            {
-                title: "Tabs",
-                href: "/tabs",
-            },
-        ],
-    },
+        title: "组件一览",
+        href: "/widget-list",
+        items: []
+    }
 ];

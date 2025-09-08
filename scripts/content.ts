@@ -4,9 +4,13 @@ import path from "path"
 import { Documents } from "@/settings/documents"
 import grayMatter from "gray-matter"
 import remarkMdx from "remark-mdx"
+//@ts-ignore
 import remarkParse from "remark-parse"
+//@ts-ignore
 import remarkStringify from "remark-stringify"
+//@ts-ignore
 import { unified } from "unified"
+//@ts-ignore
 import { Node, Parent } from "unist"
 import { visit } from "unist-util-visit"
 
