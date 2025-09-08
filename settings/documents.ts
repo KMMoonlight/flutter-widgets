@@ -19,8 +19,5 @@ export const Documents: Paths[] = [
         href: "/changelog",
       },
     ],
-  },
-  {
-    spacer: true,
   }
 ]
