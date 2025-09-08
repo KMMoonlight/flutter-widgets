@@ -2,22 +2,32 @@ import { Paths } from "@/lib/pageroutes"
 
 export const Documents: Paths[] = [
   {
-    heading: "Introduction",
-    title: "Basic Setup",
-    href: "/basic-setup",
+    title: "基础组件",
+    href: "/basic-widgets",
     items: [
       {
-        title: "Installation",
-        href: "/installation",
+        title: "基本组件",
+        href: "/basic",
+        items: [
+          {
+            title: "AppBar",
+            href: "/app-bar"
+          },
+          {
+            title: "Container",
+            href: '/container'
+          },
+          {
+            title: "Column",
+            href: '/column'
+          }
+        ]
       },
       {
-        title: "Setup",
-        href: "/setup",
-      },
-      {
-        title: "Changelog",
-        href: "/changelog",
-      },
+        title: "组件一览",
+        href: "/widget-list",
+        items: []
+      }
     ],
   }
 ]
