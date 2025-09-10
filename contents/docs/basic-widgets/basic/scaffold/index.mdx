@@ -2,3 +2,65 @@
 title: Scaffold
 description: 一个实现了基本Material Design视觉布局结构的组件
 ---
+
+`Scaffold`提供了展示抽屉和底部的功能。通过`Scaffold.of`获取当前`BuildContext`的`ScaffoldState`，并使用`ScaffoldState.showBottomSheet`函数，可以展示底部抽屉，。
+
+## Scaffold布局，键盘以及刘海区域的显示
+`Scaffold`将扩展以填充可用空间。这意味着它将占据整个窗口。当键盘出现的时候，`Scaffold`的祖先组件`MediaQuery`的`MediaQueryData.viewInsets`值会改变，此时`Scaffold`会被重建。默认情况下，`Scaffold`会调整大小腾出空间给键盘。如果不想`Scaffold`调整大小，可以将`resizeToAvoidBottomInset`设置为false。在任何情况下，如果有焦点组件在可滚动容器内，它将被滚动到视图中。
+
+`MediaQueryData.padding`值定义了可能不会完全显示的区域，比如iphone上的刘海。通常情况下，`Scaffold`的`body`区域因为`AppBar`或者`BottomNavigationBar`可以避免碰触到这些不显示的区域，但是如果想要完全避免这种情况发生，可以使用`SafeArea`组件。
+
+## 设置可拖动可滚动底部抽屉时同时设置悬浮按钮
+如果`Scaffold.bottomSheet`是一个可拖动且可滚动的底部抽屉且同时设置了`Scaffold.floatingActionButton`。当底部抽屉拖动超过`Scaffold`高度的70%时，两件事将会发生：
+- `Scaffold`将会展示遮罩
+- `Scaffold.floatingActionButton`将会以`Curves.easeIn`动画缩小，并且将会在底部抽屉完全盖住`Scaffold`时完全消失
+
+一旦拖动底部抽屉覆盖小于高度的70%，那么遮罩将会消失且`Scaffold.floatingActionButton`将会恢复正常大小。
+
+
+## 例子
+
+### 例子1
+```dart
+import 'package:flutter/material.dart';
+
+/// Flutter code sample for [Scaffold].
+
+void main() => runApp(const ScaffoldExampleApp());
+
+class ScaffoldExampleApp extends StatelessWidget {
+  const ScaffoldExampleApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const MaterialApp(home: ScaffoldExample());
+  }
+}
+
+class ScaffoldExample extends StatefulWidget {
+  const ScaffoldExample({super.key});
+
+  @override
+  State<ScaffoldExample> createState() => _ScaffoldExampleState();
+}
+
+class _ScaffoldExampleState extends State<ScaffoldExample> {
+  int _count = 0;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Sample Code')),
+      body: Center(child: Text('You have pressed the button $_count times.')),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => setState(() => _count++),
+        tooltip: 'Increment Counter',
+        child: const Icon(Icons.add),
+      ),
+    );
+  }
+}
+```
+![](/images/flutter_scaffold_01.png)
+
+
