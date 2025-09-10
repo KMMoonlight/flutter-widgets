@@ -45,7 +45,7 @@ Center(
   ),
 )
 ```
-按照上面的规则，`Container`没有子组件也没有设置对齐方式，但是设置了宽高，`Center`没有设置宽高，则`Center`给`Container`的约束变为松约束(0<=w<=屏幕宽度，0<=h<=屏幕高度)，那么`Container`将会遵守自身宽高约束变为48 * 48的琥珀色方块，然后再设置了10外边距，再因为外部包裹了`Center`组件，`Container`会处于父组件的中间。
+按照上面的规则，`Container`没有子组件也没有设置对齐方式，但是设置了宽高，`Center`没有设置宽高，则`Center`给`Container`的约束变为松约束(0\<=w\<=屏幕宽度，0\<=h\<=屏幕高度)，那么`Container`将会遵守自身宽高约束变为48 * 48的琥珀色方块，然后再设置了10外边距，再因为外部包裹了`Center`组件，`Container`会处于父组件的中间。
 
 ![](https://flutter.github.io/assets-for-api-docs/assets/widgets/container_a.png)
 
