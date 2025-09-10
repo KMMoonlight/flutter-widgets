@@ -1,1 +1,111 @@
+---
+title: Container
+description: 一个集绘制、定位和大小调整于一体的容器组件
+---
+
+`Container`首先会用`padding`将内部子组件包裹起来，如果在`decoration`中设置了边框，那么`padding`还将算上边框。之后如果`height`或者`width`不为空的话，还将对内部范围添加额外根据`height`或者`width`设定的约束。最后根据`margin`设置的大小给`Container`外部包裹对应大小的外边框。
+
+在绘制过程中，`Container`会先应用给定的变化，然后根据`decoration`中的设置去绘制装饰层填充范围。再然后就会去绘制子组件，最后根据`foregroundDecoration`绘制前景装饰层填充范围。
+
+在没有子组件的时候，`Container`会尽量撑满空间，除非遇到了无限宽高限制的情况-这时候它就会反过来尽量缩小。而内部有子组件的`Container`则会根据子组件的大小进行自适应。但是如果构造器里如果传入了`width`、`height`和`constraints`参数，都将覆盖自身的这些默认行为。
+
+一般情况下，`Container`是不会响应点击事件的(它永远返回false)。在设置了`color`属性的情况下，点击就会交由`ColoredBox`进行处理(它永远返回true)。要是设置了`decoration`或者`foregroundDecoration`属性，那么就会交由`Decoration.hitTest`方法来进行响应处理。
+
+## 布局行为
+因为`Container`集成了很多其他自带布局功能的Widget，所以它的布局行为非常的复杂！
+
+总的来说，`Container`布局策略是按照如下优先级来的：
+1. 进行对齐
+2. 根据子组件调整尺寸
+3. 根据宽高和`constraints`限制进行调整
+4. 撑满父组件
+5. 尽可能缩小自己
+
+对应的具体操作就是：
+1. 如果`Container`没有子组件，也没有设置宽高，也没有约束条件，父组件也没有给约束限制，这时候`Container`就会尽可能将自己缩小
+2. 如果`Container`没有子组件，也没有设置对齐方式，但是指定了宽高或者`constraints`，这时候`Container`就会在自身约束和父级约束的共同作用下，将自己缩到最小
+3. 如果`Container`没有子组件，没有对齐方式，没有高度宽度自身约束，但是父组件设置了约束的话，那么`Container`会根据父组件设置的约束来撑满自己
+4. 如果`Container`设置了对齐方式，而父组件给了无限制约束的话，那么`Container`会主动调整自己的尺寸去包裹住子组件
+5. 如果`Container`设置了对齐方式，而父组件给了固定约束的话，那么`Container`会先撑满自己，再按照对齐方式去调整子组件在`Container`中的位置
+6. 如果`Container`没有设置尺寸，约束和对齐方式，但是有子组件，那么`Container`就会把父组件的约束条件给子组件，自己的大小跟着子组件来自适应
+7. `margin`和`padding`也会影响布局效果，它们的作用就是辅助上面那些规则。`decoration`设置可能会偷偷加大`padding`(比如`BoxDecoration`的边框会占据`padding`的空间)
+
+更多关于盒子布局模型的内容，可以参看`BoxConstraints`的文档。
+
+
+## 例子
+### 例子A
+```dart
+Center(
+  child: Container(
+    margin: const EdgeInsets.all(10.0),
+    color: Colors.amber[600],
+    width: 48.0,
+    height: 48.0,
+  ),
+)
+```
+按照上面的规则，`Container`没有子组件也没有设置对齐方式，但是设置了宽高，`Center`没有设置宽高，则`Center`给`Container`的约束变为松约束(0<=w<=屏幕宽度，0<=h<=屏幕高度)，那么`Container`将会遵守自身宽高约束变为48 * 48的琥珀色方块，然后再设置了10外边距，再因为外部包裹了`Center`组件，`Container`会处于父组件的中间。
+
+![](https://flutter.github.io/assets-for-api-docs/assets/widgets/container_a.png)
+
+
+### 例子B
+```dart
+Container(
+  constraints: BoxConstraints.expand(
+    height: Theme.of(context).textTheme.headlineMedium!.fontSize! * 1.1 + 200.0,
+  ),
+  padding: const EdgeInsets.all(8.0),
+  color: Colors.blue[600],
+  alignment: Alignment.center,
+  transform: Matrix4.rotationZ(0.1),
+  child: Text('Hello World',
+    style: Theme.of(context)
+        .textTheme
+        .headlineMedium!
+        .copyWith(color: Colors.white)),
+)
+```
+`Container`使用了`BoxConstraints.expand`且没有设置`width`，那么`width`会扩展到外部最大的宽度(通常为屏幕宽度)，`height`则设置为中号标题字体大小的1.1倍加上200。设置内边距为8，颜色为蓝色，并围绕Z轴进行旋转。设置对齐方式为居中对齐，这样子组件就被放置在`Container`的中间，然后渲染一个`Text`子组件，设置内容和样式。
+
+![](https://flutter.github.io/assets-for-api-docs/assets/widgets/container_b.png)
+
+## 构造函数
+```dart
+Container.new({
+  Key? key, 
+  AlignmentGeometry? alignment, 
+  EdgeInsetsGeometry? padding, 
+  Color? color, 
+  Decoration? decoration, 
+  Decoration? foregroundDecoration, 
+  double? width, 
+  double? height, 
+  BoxConstraints? constraints, 
+  EdgeInsetsGeometry? margin, 
+  Matrix4? transform, 
+  AlignmentGeometry? transformAlignment, 
+  Widget? child, 
+  Clip clipBehavior = Clip.none
+})
+```
+
+## 参数
+| 参数名 | 参数类型  |  解释   |
+|------|----------|---------|
+|alignment | AlignmentGeometry | 在`Container`内放置`child`的对齐方式 |
+|child | Widget? | `Container`的子组件 |
+|clipBehavior | Clip | `Container`的裁剪行为  |
+|color| Color? | `Container`填充的颜色  |
+|constraints| BoxConstraints? | 对于自身和子组件的额外约束 |
+|decoration | Decoration? | `Container`的装饰  |
+|foregroundDecoration| Decoration?| `Container`的前景装饰 (`decoration`在`child`后面，`foregroundDecoration`在`child`前面) |
+|hashCode | int | 组件哈希值|
+|key | Key? | Key值 |
+|margin | EdgeInsetsGeometry? | 外边距 |
+|padding | EdgeInsetsGeometry? | 内边距 |
+|runtimeType | Type | 运行类型|
+|transform | Matrix4? | 形状转换 |
+|transformAlignment | AlignmentGeometry? | 如果指定了形状变化，设置原点相对于容器大小的对齐方式 |
 
