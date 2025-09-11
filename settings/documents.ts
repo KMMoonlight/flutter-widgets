@@ -10,6 +10,10 @@ export const Documents: Paths[] = [
         href: "/basic",
         items: [
           {
+            title: "Scaffold",
+            href: '/scaffold'
+          },
+          {
             title: "AppBar",
             href: "/app-bar"
           },
@@ -18,16 +22,12 @@ export const Documents: Paths[] = [
             href: '/container'
           },
           {
-            title: "Column",
-            href: '/column'
-          },
-          {
-            title: "Scaffold",
-            href: '/scaffold'
-          },
-          {
             title: "ElevatedButton",
             href: '/elevated-button'
+          },
+          {
+            title: "Column",
+            href: '/column'
           }
         ]
       }
