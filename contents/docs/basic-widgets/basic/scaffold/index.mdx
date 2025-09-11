@@ -202,7 +202,7 @@ Scaffold.new({
 |body| Widget? | `Scaffold`中间的主体组件|
 |bottomNavigationBar|Widget?| `Scaffold`底部导航栏 |
 |bottomSheet| Widget? | `Scaffold`底部抽屉  |
-|bottomSheetScrimBuilder| Widget? Function(BuildContext, Animation<double>) |  一个`builder`函数用于创建底部抽屉的遮罩 |
+|bottomSheetScrimBuilder| Widget? Function(BuildContext, Animation\<double\>) |  一个`builder`函数用于创建底部抽屉的遮罩 |
 |drawer | Widget? | 从`body`侧面滑出的一个面板抽屉，默认从左往右滑出  |
 |drawerBarrierDismissible| bool | 是否可以通过点击遮罩关闭抽屉 |
 |drawerDragStartBehavior | DragStartBehavior| 设置何时才判定为抽屉滑动，`down`用户触摸到屏幕即开始算，`start`用户触摸到屏幕并拖动一段距离开始算 |
@@ -219,7 +219,7 @@ Scaffold.new({
 |onDrawerChanged| DrawerCallback? | 当`Scaffold.drawer`打开或关闭时，调用该回调函数 |
 |onEndDrawerChanged| DrawerCallback? | 当`Scaffold.endDrawer`打开或关闭时，调用该回调函数 |
 |persistentFooterAlignment| AlignmentDirectional | 设置底部按钮的排列方式  |
-|persistentFooterButtons| List<Widget>? | 设置底部按钮  |
+|persistentFooterButtons| List\<Widget\>? | 设置底部按钮  |
 |persistentFooterDecoration| BoxDecoration? | 设置包含底部按钮的`Container`的装饰样式  |
 |primary| bool| 设置这个`Scaffold`是否在屏幕最顶层展示 |
 |resizeToAvoidBottomInset | bool? | 设置为false时，弹出键盘时，`Scaffold.body`不会调整大小来腾出空间给键盘 |
