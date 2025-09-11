@@ -26,6 +26,10 @@ export const Documents: Paths[] = [
             href: '/elevated-button'
           },
           {
+            title: "Text",
+            href: '/text'
+          },
+          {
             title: "Column",
             href: '/column'
           }
