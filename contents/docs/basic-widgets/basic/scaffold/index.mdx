@@ -64,3 +64,171 @@ class _ScaffoldExampleState extends State<ScaffoldExample> {
 ![](/images/flutter_scaffold_01.png)
 
 
+### 例子2
+```dart
+import 'package:flutter/material.dart';
+
+/// Flutter code sample for [Scaffold].
+
+void main() => runApp(const ScaffoldExampleApp());
+
+class ScaffoldExampleApp extends StatelessWidget {
+  const ScaffoldExampleApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const MaterialApp(home: ScaffoldExample());
+  }
+}
+
+class ScaffoldExample extends StatefulWidget {
+  const ScaffoldExample({super.key});
+
+  @override
+  State<ScaffoldExample> createState() => _ScaffoldExampleState();
+}
+
+class _ScaffoldExampleState extends State<ScaffoldExample> {
+  int _count = 0;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Sample Code')),
+      body: Center(child: Text('You have pressed the button $_count times.')),
+      backgroundColor: Colors.blueGrey.shade200,
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => setState(() => _count++),
+        tooltip: 'Increment Counter',
+        child: const Icon(Icons.add),
+      ),
+    );
+  }
+}
+```
+![](/images/flutter_scaffold_02.png)
+
+
+### 例子3
+```dart
+import 'package:flutter/material.dart';
+
+/// Flutter code sample for [Scaffold].
+
+void main() => runApp(const ScaffoldExampleApp());
+
+class ScaffoldExampleApp extends StatelessWidget {
+  const ScaffoldExampleApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const MaterialApp(home: ScaffoldExample());
+  }
+}
+
+class ScaffoldExample extends StatefulWidget {
+  const ScaffoldExample({super.key});
+
+  @override
+  State<ScaffoldExample> createState() => _ScaffoldExampleState();
+}
+
+class _ScaffoldExampleState extends State<ScaffoldExample> {
+  int _count = 0;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Sample Code')),
+      body: Center(child: Text('You have pressed the button $_count times.')),
+      bottomNavigationBar: BottomAppBar(
+        shape: const CircularNotchedRectangle(),
+        child: Container(height: 50.0),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => setState(() {
+          _count++;
+        }),
+        tooltip: 'Increment Counter',
+        child: const Icon(Icons.add),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+    );
+  }
+}
+```
+![](/images/flutter_scaffold_03.png)
+
+
+## 构造函数
+```dart
+Scaffold.new({
+  Key? key, 
+  PreferredSizeWidget? appBar, 
+  Widget? body, 
+  Widget? floatingActionButton, 
+  FloatingActionButtonLocation? floatingActionButtonLocation, 
+  FloatingActionButtonAnimator? floatingActionButtonAnimator, 
+  List<Widget>? persistentFooterButtons, 
+  AlignmentDirectional persistentFooterAlignment = AlignmentDirectional.centerEnd, 
+  BoxDecoration? persistentFooterDecoration, 
+  Widget? drawer, 
+  DrawerCallback? onDrawerChanged, 
+  Widget? endDrawer, 
+  DrawerCallback? onEndDrawerChanged, 
+  Widget? bottomNavigationBar, 
+  Widget? bottomSheet, 
+  Color? backgroundColor, 
+  bool? resizeToAvoidBottomInset, 
+  bool primary = true, 
+  DragStartBehavior drawerDragStartBehavior = DragStartBehavior.start, 
+  bool extendBody = false, 
+  bool drawerBarrierDismissible = true, 
+  bool extendBodyBehindAppBar = false, 
+  Color? drawerScrimColor, 
+  Widget? bottomSheetScrimBuilder(BuildContext, Animation<double>) = _defaultBottomSheetScrimBuilder, 
+  double? drawerEdgeDragWidth, 
+  bool drawerEnableOpenDragGesture = true, 
+  bool endDrawerEnableOpenDragGesture = true, 
+  String? restorationId
+})
+```
+
+## 属性
+| 属性名 | 类型 |  解释 |
+|-------|-----|-------|
+|appBar|PreferredSizeWidget?| 顶部的`AppBar` |
+|backgroundColor| Color? | `Scaffold`背景色 |
+|body| Widget? | `Scaffold`中间的主体组件|
+|bottomNavigationBar|Widget?| `Scaffold`底部导航栏 |
+|bottomSheet| Widget? | `Scaffold`底部抽屉  |
+|bottomSheetScrimBuilder| Widget? Function(BuildContext, Animation<double>) |  一个`builder`函数用于创建底部抽屉的遮罩 |
+|drawer | Widget? | 从`body`侧面滑出的一个面板抽屉，默认从左往右滑出  |
+|drawerBarrierDismissible| bool | 是否可以通过点击遮罩关闭抽屉 |
+|drawerDragStartBehavior | DragStartBehavior| 设置何时才判定为抽屉滑动，`down`用户触摸到屏幕即开始算，`start`用户触摸到屏幕并拖动一段距离开始算 |
+|drawerEdgeDragWidth| double? | 从屏幕边缘拖动多少距离打开抽屉，如果设置为0，那么将禁用从屏幕边缘滑动打开抽屉的功能  |
+|drawerEnableOpenDragGesture| bool | 设置是否允许从屏幕边缘滑动打开抽屉的功能 |
+|drawerScrimColor| Color? | 抽屉遮罩颜色 |
+|endDrawer| Widget? | 从`body`侧面滑出的一个面板抽屉，默认从右往左滑出 |
+|endDrawerEnableOpenDragGesture| bool | 同上 |
+|extendBody| bool | 设置`body`内容是否延伸到底部导航栏下面，通常用于将导航栏设置为透明或者毛玻璃风格 |
+|extendBodyBehindAppBar | bool | 设置`body`内容是否延伸到`AppBar`下面，通常用于将导航栏设置为透明或者毛玻璃风格 |
+|floatingActionButton | Widget? | 在`body`右下角展示的一个悬浮按钮 |
+|floatingActionButtonLocation| FloatingActionButtonLocation? | 设置悬浮按钮展示位置 |
+|floatingActionButtonAnimator| FloatingActionButtonAnimator? | 设置悬浮按钮移动到新位置的动画 |
+|onDrawerChanged| DrawerCallback? | 当`Scaffold.drawer`打开或关闭时，调用该回调函数 |
+|onEndDrawerChanged| DrawerCallback? | 当`Scaffold.endDrawer`打开或关闭时，调用该回调函数 |
+|persistentFooterAlignment| AlignmentDirectional | 设置底部按钮的排列方式  |
+|persistentFooterButtons| List<Widget>? | 设置底部按钮  |
+|persistentFooterDecoration| BoxDecoration? | 设置包含底部按钮的`Container`的装饰样式  |
+|primary| bool| 设置这个`Scaffold`是否在屏幕最顶层展示 |
+|resizeToAvoidBottomInset | bool? | 设置为false时，弹出键盘时，`Scaffold.body`不会调整大小来腾出空间给键盘 |
+|restorationId | String? | 用于保存和恢复 Scaffold 状态的恢复 ID |
+
+## 静态方法
+| 函数名 | 类型 |  解释 |
+|-------|-----|-------|
+|geometryOf| (BuildContext context) -> ValueListenable\<ScaffoldGeometry\> | 返回给定上下文中最近的`Scaffold`祖先的`ScaffoldGeometry`的`ValueListenable` |
+|hasDrawer| (BuildContext context, \{bool registerForUpdates = true \}) -> bool | 返回给定上下文最近的`Scaffold`是否有抽屉 |
+|maybeOf| (BuildContext context) -> ScaffoldState? |  返回给定上下文最近的`Scaffold`的`ScaffoldState`, 可能为空 |
+|of| (BuildContext context) -> ScaffoldState | 返回给定上下文最近的`Scaffold`的`ScaffoldState` |
