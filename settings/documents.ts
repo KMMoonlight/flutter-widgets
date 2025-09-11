@@ -24,6 +24,10 @@ export const Documents: Paths[] = [
           {
             title: "Scaffold",
             href: '/scaffold'
+          },
+          {
+            title: "ElevatedButton",
+            href: '/elevated-button'
           }
         ]
       }
