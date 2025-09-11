@@ -72,9 +72,7 @@ AppBar.new({
 | flexibleSpace | Widget? |  该组件堆叠在tool bar和tab bar后面(即z坐标比这两者更低)。其高度与AppBar的整体高度相同 |
 | forceMaterialTransparency | bool | 强制将AppBar的Material小组件类型设置为MaterialType.transparency(而不是Material的默认类型) |
 | foregroundColor | Color? | AppBar中文本和图标的默认颜色 |
-| hashCode | int | 此对象的哈希码 |
 | iconTheme | IconThemeData? |  工具栏图标使用的颜色、不透明度和大小 |
-| key | Key? |  |
 | leading | Widget? | 在工具栏标题前显示的小组件 |
 | leadingWidth | double? | 设置AppBar.leading小组件的宽度 |
 | notificationPredicate | ScrollNotificationPredicate |  |
@@ -92,22 +90,6 @@ AppBar.new({
 | toolbarHeight | double? | 设置AppBar工具栏组件的高度 |
 | toolbarOpacity | double | 设置AppBar工具栏组件的不透明度 |
 | toolbarTextStyle | TextStyle? | 设置AppBar的文本样式(包含leading和actions，但是不包含标题)  |
-
-
-
-## 方法
-| 方法名   |  类型    |  解释   |
-|---------|------------|---------|
-| createElement | () -> StatefulElement |  创建一个StatefulElement来管理此组件在组件树中的位置 |
-| createState | () -> State\<AppBar\> | 在组件树中的给定位置为组件创建可变状态 |
-| debugDescribeChildren | () -> List\<DiagnosticsNode\> |  返回描述此节点子节点的DiagnosticsNode对象列表 |
-| debugFillProperties | (DiagnosticPropertiesBuilder properties) -> void | 添加与节点相关的附加属性  |
-| noSuchMethod | (Invocation invocation) -> dynamic |  当访问不存在的方法或属性时调用 |
-| toDiagnosticsNode | (\{String? name, DiagnosticsTreeStyle? style\}) -> DiagnosticsNode | 返回一个调试表示形式的对象，该对象由调试工具和DiagnosticsNode.toStringDeep使用。|
-| toString | (\{DiagnosticLevel minLevel = DiagnosticLevel.info\}) -> String | 将对象转为字符串 |
-| toStringDeep | (\{String prefixLineOne = '', String? prefixOtherLines, DiagnosticLevel minLevel = DiagnosticLevel.debug, int wrapWidth = 65\}) -> String | 将对象以及子节点转为字符串 |
-| toStringShallow | (\{String joiner = ', ', DiagnosticLevel minLevel = DiagnosticLevel.debug\}) -> String |  返回对象的一行详细描述 |
-| toStringShort | () -> String |  此组件的简短文本描述  |
 
 
 ## 静态方法
