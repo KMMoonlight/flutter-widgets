@@ -38,6 +38,10 @@ export const Documents: Paths[] = [
             href: '/placeholder'
           },
           {
+            title: "Image",
+            href: '/image'
+          },
+          {
             title: "Column",
             href: '/column'
           }
