@@ -50,6 +50,24 @@ export const Documents: Paths[] = [
             href: '/row'
           }
         ]
+      },
+      {
+        title: "文本组件",
+        href: '/text',
+        items: [
+          {
+            title: "DefaultTextStyle",
+            href: '/default_text_style'
+          },
+          {
+            title: "RichText",
+            href: '/rich_text'
+          },
+          {
+            title: "Text",
+            href: '/text'
+          }
+        ]
       }
     ],
   },
