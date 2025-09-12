@@ -1,0 +1,127 @@
+---
+title: Row
+description: Row会将内部的子组件以水平方式排列
+---
+
+要让子组件横向填满可用空间，可以将其包裹在`Expanded`组件中。
+
+`Row`组件本身不会滚动(通常认为当子组件超出可用空间时是一种错误)。如果有一些组件要渲染并且希望在空间不足时允许滚动，可以考虑使用`ListView`。
+
+如果只有一个子组件，可以考虑使用`Align`或`Center`包裹。
+
+默认情况下，`crossAxisAlignment`为`CrossAxisAlignment.center`，会在纵轴上将子组件居中对齐。如果多个子元素包含文本，并且它们的字体度量不同(比如由于`TextStyle.fontSize`或其他`TextStyle`属性不同，或因使用不同文字而采用不同字体)，这可能会导致视觉上未对齐。此时可以考虑使用`CrossAxisAlignment.baseline`。
+
+
+## 举例
+### 例子1
+```dart
+const Row(
+  children: <Widget>[
+    Expanded(
+      child: Text('Deliver features faster', textAlign: TextAlign.center),
+    ),
+    Expanded(
+      child: Text('Craft beautiful UIs', textAlign: TextAlign.center),
+    ),
+    Expanded(
+      child: FittedBox(
+        child: FlutterLogo(),
+      ),
+    ),
+  ],
+)
+```
+这个例子中将水平空间分为三块，前两个区域将文本内容居中放置在空间中，最后将一个`FlutterLogo`居中放置在最后一个空间中
+
+![](https://flutter.github.io/assets-for-api-docs/assets/widgets/row.png)
+
+## 常见问题
+### 为什么`Row`会产生一个黄黑警告条？
+如果`Row`中的非弹性内容(如没有被`Expanded`或`Flexible`包裹的子组件)总宽度超过了`Row`本身的宽度，就说明该`Row`发生了溢出。当`Row`溢出时，它已经没有剩余空间可供其`Expanded`和`Flexible`子组件分配。`Row`通过在溢出边缘绘制一个黄黑条纹警告框来报告这个情况。如果`Row`外部还有空间的话，溢出的量会用红色字体显示。
+
+举个例子:
+```dart
+const Row(
+  children: <Widget>[
+    FlutterLogo(),
+    Text("Flutter's hot reload helps you quickly and easily experiment, build UIs, add features, and fix bug faster. Experience sub-second reload times, without losing state, on emulators, simulators, and hardware for iOS and Android."),
+    Icon(Icons.sentiment_very_satisfied),
+  ],
+)
+```
+![](https://flutter.github.io/assets-for-api-docs/assets/widgets/row_error.png)
+
+首先`Row`询问它的第一个子元素`FlutterLogo`，想要按照它的大小进行布局。`FlutterLogo`要求了每边24像素，这为下一个子组件留下了大量的空间。接着`Row`询问下一个组件`Text`进行布局，但是`Text`并不知道自己需要多宽，就直接进行渲染，且没有进行换行。`Row`因为没有空间给其他子组件布局，于是展示了黄黑警告框。
+
+解决方法就是将`Text`组件包裹在`Expanded`组件中，这样就会告诉`Row`组件，这个`Text`组件将会占据`Row`组件剩余空间。
+```dart
+const Row(
+  children: <Widget>[
+    FlutterLogo(),
+    Expanded(
+      child: Text("Flutter's hot reload helps you quickly and easily experiment, build UIs, add features, and fix bug faster. Experience sub-second reload times, without losing state, on emulators, simulators, and hardware for iOS and Android."),
+    ),
+    Icon(Icons.sentiment_very_satisfied),
+  ],
+)
+```
+现在`Row`会先对非弹性子组件进行布局，于是先对`FlutterLogo`和`Icon`进行布局，之后再对被`Expanded`包裹的`Text`进行布局。将`FlutterLogo`和`Icon`布局剩下的宽度告诉给`Text`，`Text`在剩下的宽度里面进行布局，发现宽度不够的时候自动进行换行。
+
+![](https://flutter.github.io/assets-for-api-docs/assets/widgets/row_fixed.png)
+
+
+`textDirection`属性控制着子组件的渲染方向。默认值为`TextDirection.ltr`，所以正常情况下第一个子组件出现在左边。想要更改方向可以将属性值设置为`TextDirection.rtl`。
+```dart
+const Row(
+  textDirection: TextDirection.rtl,
+  children: <Widget>[
+    FlutterLogo(),
+    Expanded(
+      child: Text("Flutter's hot reload helps you quickly and easily experiment, build UIs, add features, and fix bug faster. Experience sub-second reload times, without losing state, on emulators, simulators, and hardware for iOS and Android."),
+    ),
+    Icon(Icons.sentiment_very_satisfied),
+  ],
+)
+```
+![](https://flutter.github.io/assets-for-api-docs/assets/widgets/row_textDirection.png)
+
+
+## 布局算法
+布局步骤:
+1. 先对非弹性子组件(如未被`Expanded`包裹的子组件)进行布局，使用无边界的宽度约束和`Row`的高度约束进行布局。如果`crossAxisAlignment`为`CrossAxisAlignment.stretch`则将高度约束变更为`Row`高度的紧约束(即强制高度与`Row`高度相同)
+2. 将剩余空间按照`flex factor`比例分配给弹性子组件
+3. 对弹性子组件进行布局，宽度约束不是无边界的宽度约束，而是第二步中分配完的剩余宽度约束。如果子组件的`Flexible.fit`为`FlexFit.tight`则使用紧约束(强制填满剩余空间)，若为`FlexFit.loose`则使用松约束(不强制填满剩余空间)
+4. `Row`的高度为子组件中的最大高度(始终满足传入的垂直约束)
+5. `Row`的宽度由`mainAxisSize`属性决定。若`mainAxisSize`为`MainAxisSize.max`则`Row`的宽度为传入约束的最大宽度，若为`MainAxisSize.min`则`Row`的宽度为子组件宽度之和(受传入约束限制)
+6. 根据`mainAxisAlignment`和`crossAxisAlignment`为每个子组件确定位置，比如`mainAxisAlignment`为`MainAxisAlignment.spaceBetween`，则未分配给子组件的水平空间会被均匀分配并放置在子组件之间
+
+
+## 构造函数
+```dart
+Row.new({
+  Key? key,
+  MainAxisAlignment mainAxisAlignment = MainAxisAlignment.start,
+  MainAxisSize mainAxisSize = MainAxisSize.max,
+  CrossAxisAlignment crossAxisAlignment = CrossAxisAlignment.center,
+  TextDirection? textDirection,
+  VerticalDirection verticalDirection = VerticalDirection.down,
+  TextBaseline? textBaseline,
+  double spacing = 0.0,
+  List<Widget> children = const <Widget>[]
+})
+```
+
+
+## 参数
+| 参数名 | 参数类型 |  说明 |
+|-------|--------|-------|
+|children| List\<Widget\>| 子组件 |
+|clipBehavior| Clip | 根据配置对组件进行裁切 |
+|crossAxisAlignment| CrossAxisAlignment| 交叉轴子组件排列方式 |
+|direction | Axis | 组件排列方向，`Row`默认为水平方向不可调整 |
+|mainAxisAlignment| MainAxisAlignment| 主轴子组件排列方式 |
+|mainAxisSize| MainAxisSize| 主轴宽度是占满`Row`的宽度还是子组件宽度之和 |
+|spacing| double | 相邻两个子组件的间距 |
+|textBaseline | TextBaseline? |  设置子组件文字使用的基准线  |
+|textDirection| TextDirection? | 决定子组件在水平方向上的排列方向是从左往右还是从右往左 |
+|verticalDirection | VerticalDirection | 决定子组件在垂直方向上是贴着顶部还是贴着底部 |
