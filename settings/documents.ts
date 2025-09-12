@@ -44,6 +44,10 @@ export const Documents: Paths[] = [
           {
             title: "Column",
             href: '/column'
+          },
+          {
+            title: "Row",
+            href: '/row'
           }
         ]
       }
