@@ -35,6 +35,6 @@ FormField.new({
 |forceErrorText| String? |  一个可选的属性，设置`FormFieldState.errorText`属性会强制`FormFieldState`在没有运行校验函数的情况下，直接进入错误状态 |
 |initialValue| T? | 一个可选的值，用于初始化表单字段，否则为null |
 |onReset |  VoidCallback? | 当表单字段被重置时，调用该回调函数  |
-|onSaved | FormFieldSetter<T>? | 当表单字段保存时，调用该回调函数  |
+|onSaved | FormFieldSetter\<T\>? | 当表单字段保存时，调用该回调函数  |
 |restorationId | String?  | 用于保存和恢复表单字段状态的Id |
 |validator| FormFieldValidator\<T\>? |  一个可选的方法，用于验证输入。如果输入无效，则返回要显示的错误字符串，否则返回null |
