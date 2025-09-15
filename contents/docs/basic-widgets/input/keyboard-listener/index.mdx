@@ -2,3 +2,26 @@
 title: KeyboardListener
 description: 一个组件当用户在键盘上按下或松开按键时会调用回调函数
 ---
+
+`KeyboardListener`通常用于监听按键事件和代表按键的硬件按钮。通常供游戏或其他将键盘用于非文本输入目的的应用使用。
+
+对于文本输入，可以考虑使用`EditableText`，它可以与屏幕键盘和输入法(IME)集成。
+
+## 构造函数
+```dart
+KeyboardListener.new({
+  Key? key, 
+  required FocusNode focusNode, 
+  bool autofocus = false, 
+  bool includeSemantics = true, 
+  ValueChanged<KeyEvent>? onKeyEvent, 
+  required Widget child
+})
+```
+
+## 属性
+|  属性名 |  属性类型 |  说明 |
+|--------|----------|--------|
+|autofocus| bool | 当设置为true时，在屏幕视窗内如无其他被聚焦的情况下，当前组件会被自动聚焦 |
+|child| Widget| 子组件  |
+|onKeyEvent| ValueChanged\<KeyEvent\>? | 当组件接收到键盘事件时，调用该方法回调  |
