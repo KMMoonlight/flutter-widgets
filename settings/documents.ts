@@ -68,6 +68,28 @@ export const Documents: Paths[] = [
             href: '/text'
           }
         ]
+      },
+      {
+        title: "输入组件",
+        href: '/input',
+        items: [
+          {
+            title: "Autocomplete",
+            href: '/autocomplete'
+          },
+          {
+            title: "Form",
+            href: '/form'
+          },
+          {
+            title: "FormField",
+            href: '/form-field'
+          },
+          {
+            title: "KeyboardListener",
+            href: '/keyboard-listener'
+          }
+        ]
       }
     ],
   },
