@@ -2,3 +2,109 @@
 title: Form
 description: 用于将多个表单字段组件组合在一起的容器组件
 ---
+
+每个单独的表单字段都应当用`FormField`组件包裹，并将这些`FormField`用`Form`组件包裹。调用`FormState`上的方法来保存、重置或校验该`Form`上的所有`FormField`。要获取`FormState`可以使用`Form.of`并传入一个组件树中有`Form`组件的`context`，或者向`Form`构造函数传递`GlobalKey`，然后通过`GlobalKey.currentState`调用。
+
+## 示例
+
+```dart
+import 'package:flutter/material.dart';
+
+/// Flutter code sample for [Form].
+
+void main() => runApp(const FormExampleApp());
+
+class FormExampleApp extends StatelessWidget {
+  const FormExampleApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: Scaffold(
+        appBar: AppBar(title: const Text('Form Sample')),
+        body: const FormExample(),
+      ),
+    );
+  }
+}
+
+class FormExample extends StatefulWidget {
+  const FormExample({super.key});
+
+  @override
+  State<FormExample> createState() => _FormExampleState();
+}
+
+class _FormExampleState extends State<FormExample> {
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+
+  @override
+  Widget build(BuildContext context) {
+    return Form(
+      key: _formKey,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          TextFormField(
+            decoration: const InputDecoration(hintText: 'Enter your email'),
+            validator: (String? value) {
+              if (value == null || value.isEmpty) {
+                return 'Please enter some text';
+              }
+              return null;
+            },
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 16.0),
+            child: ElevatedButton(
+              onPressed: () {
+                // Validate will return true if the form is valid, or false if
+                // the form is invalid.
+                if (_formKey.currentState!.validate()) {
+                  // Process data.
+                }
+              },
+              child: const Text('Submit'),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+```
+
+![](https://flutter.github.io/assets-for-api-docs/assets/widgets/form.png)
+
+这个示例展示了一个`Form`中包含一个用于输入邮箱的`TextFormField`和一个用于提交表单的`ElevatedButton`。一个`GlobalKey`用于标识`Form`并且通过这个`GlobalKey`去校验输入内容。
+
+
+## 构造函数
+```dart
+Form.new({
+  Key? key, 
+  required Widget child, 
+  bool? canPop, 
+  @Deprecated('Use onPopInvokedWithResult instead. ' 'This feature was deprecated after v3.22.0-12.0.pre.') PopInvokedCallback? onPopInvoked, 
+  PopInvokedWithResultCallback<Object?>? onPopInvokedWithResult, 
+  @Deprecated('Use canPop and/or onPopInvokedWithResult instead. ' 'This feature was deprecated after v3.12.0-1.0.pre.') WillPopCallback? onWillPop, 
+  VoidCallback? onChanged, 
+  AutovalidateMode? autovalidateMode
+})
+```
+
+## 属性
+| 属性名 | 属性类型 | 说明 |
+|-------|--------|------|
+|autovalidateMode | AutovalidateMode | 用于设置`Form`的表单字段是否自动校验并更新错误信息 |
+|canPop|bool? | 如果设置为false，阻止当前路由出栈 |
+|child| Widget | 子组件 |
+|onChanged| VoidCallback? | 当表单中有字段发生变动时，会调用该回调 |
+|onPopInvokedWithResult |  PopInvokedWithResultCallback\<Object?\>? | 当用户尝试通过系统返回键离开当前页面时，允许拦截并处理返回行为，同时可以携带一个返回值给上一个路由 |
+
+
+## 静态方法
+| 方法名 | 方法类型 | 说明 |
+|-------|--------|------|
+| maybeOf | (BuildContext context) -> FormState? | 返回传入的`context`中包含的最接近的`Form`组件的`FormState`，如果没找到则返回null |
+| of | (BuildContext context) -> FormState |  返回传入的`context`中包含的最接近的`Form`组件的`FormState`  |
