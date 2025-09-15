@@ -2,3 +2,39 @@
 title: FormField
 description: 单个表单字段，可以将字段当前的状态(如更新/验证错误)在用户界面中直观地反映出来
 ---
+
+在`Form`中使用`FormState`的方法可以查询或整体操作表单数据。例如调用`FormState.save`会依次触发每个`FormField`的`onSaved`回调。
+
+如果想获取`FormField`的当前状态(例如让一个字段依赖另一个字段)，可以给`FormField`使用`GlobalKey`。
+
+`Form`允许一次性保存、重置或验证多个字段，如果不使用`Form`，可以将`GlobalKey`传递给构造函数，并通过`GlobalKey.currentState`保存或重置该表单字段。
+
+## 构造函数
+```dart
+FormField.new({
+  Key? key, 
+  required FormFieldBuilder<T> builder, 
+  FormFieldSetter<T>? onSaved, 
+  VoidCallback? onReset, 
+  String? forceErrorText, 
+  FormFieldValidator<T>? validator, 
+  FormFieldErrorBuilder? errorBuilder, 
+  T? initialValue, 
+  bool enabled = true, 
+  AutovalidateMode? autovalidateMode, 
+  String? restorationId
+})
+```
+
+## 属性
+| 属性名 | 属性类型 |  说明 |
+|-------|--------|-------|
+|autovalidateMode| AutovalidateMode | 用于启用/禁用`FormField`的自动校验，并更新错误信息 |
+|enabled| bool | 表明这个`FormField`是否接收用户输入 |
+|errorBuilder| FormFieldErrorBuilder? | 用于组件校验错误信息展示的函数 |
+|forceErrorText| String? |  一个可选的属性，设置`FormFieldState.errorText`属性会强制`FormFieldState`在没有运行校验函数的情况下，直接进入错误状态 |
+|initialValue| T? | 一个可选的值，用于初始化表单字段，否则为null |
+|onReset |  VoidCallback? | 当表单字段被重置时，调用该回调函数  |
+|onSaved | FormFieldSetter<T>? | 当表单字段保存时，调用该回调函数  |
+|restorationId | String?  | 用于保存和恢复表单字段状态的Id |
+|validator| FormFieldValidator\<T\>? |  一个可选的方法，用于验证输入。如果输入无效，则返回要显示的错误字符串，否则返回null |
