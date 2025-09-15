@@ -2,3 +2,120 @@
 title: DefaultTextStyle
 description: 用于给没有显式设置样式的文本组件添加默认样式
 ---
+
+```dart
+import 'package:flutter/material.dart';
+
+/// Flutter code sample for [DefaultTextStyle].
+
+void main() => runApp(const DefaultTextStyleApp());
+
+class DefaultTextStyleApp extends StatelessWidget {
+  const DefaultTextStyleApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      theme: ThemeData(brightness: Brightness.light, colorSchemeSeed: Colors.purple),
+      home: const DefaultTextStyleExample(),
+    );
+  }
+}
+
+class DefaultTextStyleExample extends StatelessWidget {
+  const DefaultTextStyleExample({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('DefaultTextStyle.merge Sample')),
+      // Inherit MaterialApp text theme and override font size and font weight.
+      body: DefaultTextStyle.merge(
+        style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+        child: const Center(child: Text('Flutter')),
+      ),
+    );
+  }
+}
+```
+
+![](/images/flutter_default_text_style_01.png)
+
+
+## 构造函数
+```dart
+//给子组件树添加默认文本样式
+DefaultTextStyle.new({
+  Key? key, 
+  required TextStyle style, 
+  TextAlign? textAlign, 
+  bool softWrap = true, 
+  TextOverflow overflow = TextOverflow.clip, 
+  int? maxLines, 
+  TextWidthBasis textWidthBasis = TextWidthBasis.parent, 
+  TextHeightBehavior? textHeightBehavior, 
+  required Widget child
+})
+
+//一个可构造的常量默认文本样式，提供回退值
+DefaultTextStyle.fallback({Key? key})
+```
+
+## 参数
+| 参数 |  参数类型 |  说明  |
+|-----|----------|-------|
+|child| Widget |  子组件  |
+|maxLines|int?|  最大行数 |
+|overflow| TextOverflow| 文本溢出样式设置 |
+|softWrap | bool | 设置文本是否在合适的位置进行换行 |
+|style| TextStyle |  文本样式 |
+|textAlign| TextAlign? | 文本对齐方式 |
+|textHeightBehavior| TextHeightBehavior? |  微调行高计算规则，设置第一行或者最后一行的行空白处要不要参与整体高度计算  |
+|textWidthBasis| TextWidthBasis| 用于告诉渲染引擎文本宽度是按照文本最长的一行，还是父布局给的约束宽度 |
+
+## 方法
+| 方法名 |  方法类型 | 说明 |
+|-------|---------|------|
+|updateShouldNotify| (convariant DefaultTextStyle oldWidget) -> bool |  一个回调函数用于控制子树是否需要因为变化而重新构建 |
+
+**DefaultTextStyle**的默认实现是:
+```dart
+@override
+bool updateShouldNotify(DefaultTextStyle oldWidget) {
+  return style != oldWidget.style ||
+         textAlign != oldWidget.textAlign ||
+         softWrap != oldWidget.softWrap ||
+         overflow != oldWidget.overflow ||
+         maxLines != oldWidget.maxLines;
+}
+```
+也就是只要**样式或相关属性发生变化**，就会通知子树重建。可以通过重写这个方法来控制**何时应该通知子树更新**。
+```dart
+@override
+bool updateShouldNotify(MyDefaultTextStyle oldWidget) {
+  // 只在字体大小变化时才通知
+  return style.fontSize != oldWidget.style.fontSize;
+}
+```
+
+## 静态方法
+创建一个默认的文本样式，该样式将覆盖在当前Widget树中此点作用域内的文本样式
+```dart
+merge({
+  Key? key, 
+  TextStyle? style, 
+  TextAlign? textAlign, 
+  bool? softWrap, 
+  TextOverflow? overflow, 
+  int? maxLines, 
+  TextWidthBasis? textWidthBasis, 
+  TextHeightBehavior? textHeightBehavior, 
+  required Widget child
+}) -> Widget
+```
+
+
+根据传入的context返回组件树最靠近的`DefaultTextStyle`的实例
+```dart
+of(BuildContext context) -> DefaultTextStyle
+```
