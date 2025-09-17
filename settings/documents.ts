@@ -237,7 +237,7 @@ export const Documents: Paths[] = [
           },
           {
             title: "Sliver组件",
-            href: '/sliver',
+            href: '/sliver-layout',
             items: [
               {
                 title: "CupertinoSliverNavigationBar",
