@@ -2,3 +2,42 @@
 title: Baseline
 description: 一个根据子组件的baseline来排列子组件的组件
 ---
+
+`Baseline`将子组件向下移动，使得子组件的基线(如果子组件没有基线，则为其底部)距离顶部`baseline`个逻辑像素，然后将此组件的大小调整为足以容纳子组件。如果`baseline`小于子组件顶部到其基线的距离，则子组件顶部对齐。
+
+## 构造函数
+```dart
+Baseline.new({
+  Key? key, 
+  required double baseline, 
+  required TextBaseline baselineType, 
+  Widget? child
+})
+```
+
+## 参数
+| 参数名  | 参数类型   | 说明  |
+|---|----|-----|
+|baseline | double| 盒子顶部到子组件Baseline的逻辑像素距离 |
+|baselineType | TextBaseline | 基线类型 |
+
+
+### 额外说明
+#### `baselineType`是一个`TextBaseline`枚举，有两个可选值：
+
+- TextBaseline.alphabetic（默认值）：
+
+> 以字母基线（alphabetic baseline）作为对齐基准。这是拉丁字母等表音文字的基线标准（如字母 "x" 的底部）。
+
+- TextBaseline.ideographic：
+
+> 以表意字符基线（ideographic baseline）作为对齐基准。适用于东亚文字（如中文、日文、韩文），这些文字的基线通常位于字符视觉底部的下方，以容纳可能的下伸部（如汉字“国”的底部）。
+
+#### 为什么需要`baselineType`？
+不同语言的文本基线标准不同。例如：
+
+拉丁字母的基线（alphabetic）和汉字的基线（ideographic）在垂直方向上可能有显著差异。
+
+如果混排中英文，且统一使用`alphabetic`基线，可能导致中文看起来偏下；反之使用`ideographic`则可能导致英文偏上。
+
+通过`baselineType`，`Baseline`可以明确指定以哪种文本基线作为对齐标准，确保跨语言文本或混合组件的精准对齐。
