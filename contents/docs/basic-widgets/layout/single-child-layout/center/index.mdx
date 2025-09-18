@@ -2,3 +2,25 @@
 title: Center
 description: 将子组件居中对齐的组件
 ---
+`Center`在`widthFactor`和`heightFactor`为空时，会根据外部的约束尽可能让自己大。在这种情况下，如果外部的约束是无限的话，那么`Center`将会和子组件一样大。如果某个方向上的`Factor`系数不为空，那么`Center`在这个方向上的大小将为子组件的值 * `Factor`。如:`widthFactor`为2，那么`Center`的宽度为子组件的2倍。
+
+> 根据描述可以发现，`Center`是一种特殊的`Align`，只是`alignment`被强制设置为`AlignmentGeometry.center`。
+
+
+## 构造函数
+```dart
+Center.new({
+  Key? key, 
+  double? widthFactor, 
+  double? heightFactor, 
+  Widget? child
+})
+```
+
+## 参数
+| 参数名   |  参数类型  |  说明  |
+|---------|-----------|--------|
+|alignment|AlignmentGeometry| `Center`的`alignment`被强制设置为`AlignmentGeometry.center`，不需要调整  |
+|child|Widget?| 子组件 |
+|widthFactor| double? |  宽度系数  |
+|heightFactor| double? |  高度系数  |
