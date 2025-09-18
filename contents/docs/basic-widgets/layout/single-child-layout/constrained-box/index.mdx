@@ -47,6 +47,6 @@ ConstrainedBox.new({
 | BoxConstraints()|  4个值都要写  |  通用      |
 | BoxConstraints.tight(Size) |  min == max == Size | 固定宽高 |
 | BoxConstraints.tightFor(width: w, height: h) |  min == max == w/h(可为null)| 固定宽或高 |
-| BoxConstraints.expand({width, height}) | min == max == double.infinity (或给定值) |  占满父级 |
+| BoxConstraints.expand(\{width, height\}) | min == max == double.infinity (或给定值) |  占满父级 |
 | BoxConstraints.loosen() | 把当前对象的min全改成0，max不变 | 解除下限 |
 | BoxConstraints.copyWith() | 基于现有对象改某个值  |  局部调整  |
