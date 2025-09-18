@@ -2,3 +2,152 @@
 title: Align
 description: 一个在其内部对其子组件，并可根据子组件的大小选择调整自身尺寸的组件
 ---
+
+举个例子，想要将子组件放置外部盒子的右下角，需要给外部盒子设置比子组件原始尺寸大的紧约束，同时给外部盒子设置对齐方式为`Alignment.bottomRight`
+
+`Align`组件的大小判断:
+1. 如果组件的尺寸有约束且`widthFactor`和`heightFactor`都为null，那么`Align`将根据约束尽可能大
+2. 如果组件在某个方向上没有约束，且对应方向的`Factor`为null，那么`Align`在这个方向上将与子组件一样大
+3. 如果没有设置约束，但是对应的`Factor`有值，那么`Align`的宽高为子组件的宽高 * `Factor`值，如`WidthFactor`的值为2，那么`Align`的宽度为子组件宽度的2倍
+
+
+## 示例
+```dart
+Center(
+  child: Container(
+    height: 120.0,
+    width: 120.0,
+    color: Colors.blue[50],
+    child: const Align(
+      alignment: Alignment.topRight,
+      child: FlutterLogo(
+        size: 60,
+      ),
+    ),
+  ),
+)
+```
+
+![](https://flutter.github.io/assets-for-api-docs/assets/widgets/align_constant.png)
+
+这个例子展示了`Align`组件使用`Alignment.topRight`，将`FlutterLogo`放置在父组件的右上角。
+
+### 详细描述
+`alignment`属性描述了子组件坐标系中的一个点以及`Align`组件所在坐标系中的另一个点。`Align`组件将子组件定位，让这两个点对齐，位于同一位置。
+
+以下示例中使用的`Alignment`定义了两个点：
+
+1. 在`FlutterLogo`的坐标系中：(0.2 × `FlutterLogo`宽度/2 + `FlutterLogo`宽度/2, 0.6 × `FlutterLogo`高度/2 + `FlutterLogo`高度/2) = (36.0, 48.0)
+
+2. 在`Align`组件(蓝色区域)的坐标系中：(0.2 × `Align`宽度/2 + `Align`宽度/2, 0.6 × `Align`高度/2 + `Align`高度/2) = (72.0, 96.0)
+
+`Align`组件会将`FlutterLogo`放置在这两个点重合的位置。在此示例中，`FlutterLogo`的左上角将位于`Align`组件左上角偏移(72.0, 96.0) - (36.0, 48.0) = (36.0, 48.0)的位置。
+
+![](https://flutter.github.io/assets-for-api-docs/assets/widgets/align_alignment.png)
+
+即如果设置(0, 0)则`FlutterLogo`的中点处于容器的中点:
+- (0,0) center
+- (-1,-1) topLeft
+- (-1,0) centerLeft
+- (-1,1) bottomLeft
+- (0,-1) topCenter
+- (0,1) bottomCenter
+- (1,-1) topRight
+- (1,0) centerRight
+- (1,1) bottomRight
+
+```dart
+Center(
+  child: Container(
+    height: 120.0,
+    width: 120.0,
+    color: Colors.blue[50],
+    child: const Align(
+      alignment: Alignment(0.2, 0.6),
+      child: FlutterLogo(
+        size: 60,
+      ),
+    ),
+  ),
+)
+```
+
+
+下面示例中使用的`FractionalOffset`定义了两个点：
+- (`FlutterLogo`宽度 * 0.2，`FlutterLogo`高度 * 0.6) = `FlutterLogo`坐标系中的 (12.0, 36.0)。
+- (`Align`宽度 * 0.2，`Align`高度 * 0.6) = `Align`控件(蓝色区域)坐标系中的(24.0, 72.0)。
+
+`Align`控件将`FlutterLogo`摆放，使这两个点重合。在此示例中，`FlutterLogo`的左上角将被放置在`Align`控件左上角偏移(24.0, 72.0) - (12.0, 36.0) = (12.0, 36.0)的位置。
+
+`FractionalOffset`类使用的坐标系原点在容器的左上角，与上面示例中`Alignment`使用的以中心为原点的坐标系不同。
+```dart
+Center(
+  child: Container(
+    height: 120.0,
+    width: 120.0,
+    color: Colors.blue[50],
+    child: const Align(
+      alignment: FractionalOffset(0.2, 0.6),
+      child: FlutterLogo(
+        size: 60,
+      ),
+    ),
+  ),
+)
+```
+![](https://flutter.github.io/assets-for-api-docs/assets/widgets/align_fractional_offset.png)
+
+
+### 区别
+#### 1. `Alignment`
+坐标系：以父组件中心为原点(0, 0)，x和y的范围为[-1, 1]。
+
+示例：
+- `Alignment(-1, -1)` 表示左上角。
+- `Alignment(1, 1)` 表示右下角。
+- `Alignment(0, 0)` 表示中心。
+
+特点：
+- 直观，易于理解(类似于CSS的transform-origin)。
+- 适合对称对齐(如居中、偏左/右等)。
+
+#### 2. `FractionalOffset`
+坐标系：以父组件左上角为原点(0, 0)，x和y的范围为[0, 1]。
+
+示例：
+- `FractionalOffset(0, 0)`表示左上角。
+- `FractionalOffset(1, 1)`表示右下角。
+- `FractionalOffset(0.5, 0.5)`表示中心(等价于`Alignment(0, 0)`)。
+
+特点：
+- 更适合计算百分比偏移（如“距离左边 20%”）。
+- 与`Alignment`可以通过数学转换互相表示：`Alignment(x, y)`等价于`FractionalOffset((x + 1) / 2, (y + 1) / 2)`。
+
+
+| 特性 | Alignment  | FractionalOffset  |
+|----|----|----|
+|原点 | 父组件中心(0, 0) | 父组件左上角(0,0) |
+|范围 | [-1,-1] | [0,1] |
+|直观性| 对称对齐更直观 | 百分比偏移更直观 |
+|转换关系| `Alignment(x, y) ↔ FractionalOffset((x+1)/2, (y+1)/2)` |    |
+
+
+## 构造函数
+```dart
+Align.new({
+  Key? key, 
+  AlignmentGeometry alignment = Alignment.center, 
+  double? widthFactor, 
+  double? heightFactor, 
+  Widget? child
+})
+```
+
+
+## 参数
+| 参数名   |  参数类型    |  说明    |
+|----|-----|----|
+| alignment |   AlignmentGeometry |  排列对齐方式 |
+| child | Widget? | 子组件  |
+| heightFactor | double? | 高度系数，如果有值，则`Align`的高度为子组件高度 * 高度系数 |
+| widthFactor | double? | 宽度系数，如果有值，则`Align`的宽度为子组件宽度 * 宽度系数 |
