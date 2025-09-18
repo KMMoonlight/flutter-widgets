@@ -2,3 +2,72 @@
 title: CustomSingleChildLayout
 description: 一个单个子组件的布局组件
 ---
+
+`delegate`可以决定子组件的布局约束，并决定子组件的位置，`delegate`还可以决定父组件的大小，但父组件的大小不能依赖于子组件的大小。
+
+## 构造函数
+```dart
+CustomSingleChildLayout.new({
+  Key? key, 
+  required SingleChildLayoutDelegate delegate, 
+  Widget? child
+})
+```
+
+## 属性
+
+|属性名|属性类型|说明|
+|-----|------|------|
+| child |Widget?| 子组件 |
+|delegate| SingleChildLayoutDelegate | 布局代理 |
+
+
+### 额外说明
+`delegate`需要一个创建一个继承自`SingleChildLayoutDelegate`的类，需要实现这个类，并重写其中的几个方法:
+- `getConstraintsForChild`: 决定子组件的约束条件
+- `getPositionForChild`: 决定子组件在父组件中的位置
+- `shouldRelayout`: 决定是否需要重新布局
+
+```dart
+class MyLayoutDelegate extends SingleChildLayoutDelegate {
+  @override
+  BoxConstraints getConstraintsForChild(BoxConstraints constraints) {
+    // 给子组件一个固定大小
+    return const BoxConstraints(
+      minWidth: 100,
+      maxWidth: 100,
+      minHeight: 100,
+      maxHeight: 100,
+    );
+  }
+  @override
+  Offset getPositionForChild(Size size, Size childSize) {
+    // 将子组件居中
+    final x = (size.width - childSize.width) / 2;
+    final y = (size.height - childSize.height) / 2;
+    return Offset(x, y);
+  }
+  @override
+  bool shouldRelayout(covariant SingleChildLayoutDelegate oldDelegate) {
+    // 如果布局逻辑不变，就不需要重绘
+    return false;
+  }
+}
+```
+
+如果希望响应动画或状态变化，可以在`shouldRelayout`中返回`true`，并在`delegate`中添加字段
+```dart
+class MyLayoutDelegate extends SingleChildLayoutDelegate {
+  final double offsetX;
+  MyLayoutDelegate(this.offsetX);
+  @override
+  Offset getPositionForChild(Size size, Size childSize) {
+    return Offset(offsetX, (size.height - childSize.height) / 2);
+  }
+  @override
+  bool shouldRelayout(MyLayoutDelegate oldDelegate) {
+    return oldDelegate.offsetX != offsetX;
+  }
+}
+```
+然后在父组件中用`Animation`或`setState`改变`offsetX`。
