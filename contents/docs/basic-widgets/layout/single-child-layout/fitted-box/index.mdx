@@ -2,3 +2,55 @@
 title: FittedBox
 description: 根据fit属性的配置来缩放和布局子组件的组件
 ---
+
+## 示例
+```dart
+Container(
+  height: 400,
+  width: 300,
+  color: Colors.blue,
+  child: const FittedBox(
+    fit: BoxFit.fill,
+    child: Placeholder(),
+  ),
+)
+```
+
+![](/images/flutter_fitted_box_01.png)
+
+这个示例中，`FittedBox`组件按照`fit`的配置让`Placeholder`组件完全填充满外部的`Container`组件。
+
+
+## 构造函数
+```dart
+FittedBox.new({
+  Key? key, 
+  BoxFit fit = BoxFit.contain, 
+  AlignmentGeometry alignment = Alignment.center, 
+  Clip clipBehavior = Clip.none, 
+  Widget? child
+})
+```
+
+## 属性
+| 属性名   | 属性类型   | 说明   |
+|----|-----|-----|
+|alignment| AlignmentGeometry |  设置如何排列子组件 |
+|child    |  Widget?  |  子组件 |
+|clipBehavior | Clip  |  根据配置裁剪内容  |
+|fit | BoxFit | 设置子组件如何填充父组件   |
+
+
+
+### 额外说明
+
+`fit`属性有多种取值，以下是对应的区别：
+| 模式   |  说明   |   示例    |
+|-------|---------|----------|
+|BoxFit.fill | 完全填满父容器，不保持宽高比，子组件可能会被拉伸或压缩   |  背景图必须铺满整个区域，可以接受变形 |
+|BoxFit.none| 不缩放，子组件按原始尺寸绘制，超出部分会被裁剪 | 需要精确像素级控制，或故意裁剪部分内容 |
+|BoxFit.contain| 完整显示子组件，保持比例，可能在四周留白  | 类似 Image 的默认适配方式，确保内容完整可见  |
+|BoxFit.cover| 填满父容器，保持比例，可能裁剪掉部分子组件  | 类似 Image 的封面模式，常用于背景图或头像  |
+|BoxFit.fitWidth| 宽度填满，高度按原比例缩放，可能上下留白  |  横向滚动列表中的图片，确保宽度一致  |
+|BoxFit.fitHeight| 高度填满，宽度按原比例缩放，可能左右留白  |  纵向滚动列表中的卡片，确保高度一致  |
+|BoxFit.scaleDown| 类似 contain，但只在子组件大于父容器时才缩小，否则不缩放  | 小图不放大，大图缩小到容器内，避免模糊  |
