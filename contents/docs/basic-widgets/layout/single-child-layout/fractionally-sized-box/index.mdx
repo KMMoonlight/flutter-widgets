@@ -2,3 +2,41 @@
 title: FractionallySizedBox
 description: 一个将其子部件大小调整为总可用空间一定比例的部件。有关布局算法的更多细节，请参见 RenderFractionallySizedOverflowBox
 ---
+
+## 示例
+```dart
+SizedBox.expand(
+  child: FractionallySizedBox(
+    widthFactor: 0.5,
+    heightFactor: 0.5,
+    alignment: Alignment.center,
+    child: DecoratedBox(
+      decoration: BoxDecoration(border: Border.all(color: Colors.blue, width: 4)),
+    ),
+  ),
+)
+```
+
+![](/images/flutter_factionally_size_box_01.png)
+
+这个例子展示了根据`Factor`系数将子组件的宽高都设置为父组件的50%，根据`alignment`设置排列子组件在父组件中间。
+
+
+## 构造函数
+```dart
+FractionallySizedBox.new({
+  Key? key, 
+  AlignmentGeometry alignment = Alignment.center, 
+  double? widthFactor, 
+  double? heightFactor, 
+  Widget? child
+})
+```
+
+## 属性
+| 属性名 |  属性类型  | 说明  |
+|---|---|---|
+|alignment | AlignmentGeometry | 对齐方式 |
+|child| Widget? | 子组件 |
+|heightFactor| double?  |  高度系数   |
+|widthFactor| double? | 宽度系数   |
