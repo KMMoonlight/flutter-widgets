@@ -2,3 +2,53 @@
 title: IntrinsicHeight
 description: 一个将其子项大小调整为其子项固有高度的组件
 ---
+
+`IntrinsicHeight`的核心功能是**将子组件的高度调整为子组件本身的固有高度(intrinsic height)**，而不是尽可能扩展。
+
+具体行为：
+- 通常`Row`，`Column`等组件会尽可能扩展来填满父容器
+- 但如果把`Row`或者`Column`放进`IntrinsicHeight`中，它会强制这些组件收缩高度到它们内容的最小高度(即固有高度)
+- 这在某些布局场景中非常有用，比如当想让多个子组件在交叉轴上对齐，但又不想它们扩展填满整个可用空间时
+
+
+这个类消耗很大，因为它在最终布局阶段之前会额外进行一次推测性的布局计算。尽可能避免使用它。在最坏情况下，这个组件会导致一次O(N²)的耗时布局，其中N是树的深度。
+
+
+## 示例
+```dart
+IntrinsicHeight(
+  child: Row(
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    children: [
+      Container(
+        color: Colors.red,
+        width: 50,
+        child: Text('A'),
+      ),
+      Container(
+        color: Colors.blue,
+        width: 50,
+        child: Text('B\nB'),
+      ),
+    ],
+  ),
+)
+```
+
+![](/images/flutter_intrinsic_height_01.png)
+
+这个例子中如果没有`IntrinsicHeight`，`Row`会扩展以填满整个父容器。有了`IntrinsicHeight`之后，`Row`会压缩到两个子组件中最高的那个组件的高度。
+
+
+## 构造函数
+```dart
+IntrinsicHeight.new({
+  Key? key, 
+  Widget? child
+})
+```
+
+## 属性
+| 属性名  | 属性类型   | 说明   |
+|----|-----|-----|
+| child |  Widget? |  子组件 |
