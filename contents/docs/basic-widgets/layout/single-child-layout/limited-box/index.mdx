@@ -2,3 +2,21 @@
 title: LimitedBox
 description: 仅在无约束时限制其大小的盒子组件
 ---
+如果该组件的宽高没有约束，那么该组件的子组件最大宽高将会被限制为`maxWidth`与`maxHeight`。这样的话，就可以给子组件在无约束的环境中获得自然尺寸，比如：通过给一个尽可能大的Widget设置`maxHeight`，当该Widget独立放置时，它会调整自己的尺寸来适配父组件，而当它被放入垂直列表时，就会采用给定的高度。这在组合那些匹配父级尺寸的组件时非常有用，让它们在列表(列表本身是无尺寸约束的)中表现得非常合理。
+
+## 构造函数
+```dart
+LimitedBox.new({
+  Key? key, 
+  double maxWidth = double.infinity, 
+  double maxHeight = double.infinity, 
+  Widget? child
+})
+```
+
+## 属性
+| 属性名 |  属性类型 |   说明  |
+|------|----------|---------|
+| child  |  Widget?  |  子组件 |
+| maxHeight | double |  设置子组件的最大高度 |
+| maxWidth | double | 设置子组件的最大宽度 |
