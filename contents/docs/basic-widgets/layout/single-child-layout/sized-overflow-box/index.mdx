@@ -2,3 +2,36 @@
 title: SizedOverflowBox
 description: 一个具有固定尺寸的组件，它会将原始约束直接传递给其子组件，从而可能导致子组件溢出
 ---
+
+`SizedOverflowBox`主要用于**在特定尺寸约束下允许child溢出**。它不会限制child的大小，而是允许child绘制超出其自身边界的区域。
+
+## 构造函数
+```dart
+SizedOverflowBox.new({
+  Key? key, 
+  required Size size, 
+  AlignmentGeometry alignment = Alignment.center, 
+  Widget? child
+})
+```
+
+说明
+- `size`是`SizedOverflowBox`自身在布局中占用的尺寸。
+- `child`可以比`size`大，**不会被裁剪**，可以溢出显示。
+- 它不会限制`child`的大小，也不会强制`child`适配`size`。
+- 类似于`OverflowBox`，但是`SizedOverflowBox`明确指定了自身的大小。
+- `alignment`只有在`child`比`size`小的时候才会起作用。
+
+对比其他的组件
+| 组件             | 是否裁剪 child | 是否允许溢出 | 是否控制自身大小 |
+|------------------|----------------|---------------|------------------|
+| `SizedBox`       | ✅              | ❌             | ✅                |
+| `OverflowBox`    | ❌              | ✅             | ❌                |
+| `SizedOverflowBox` | ❌            | ✅             | ✅                |
+
+## 属性
+| 属性名             | 属性类型 | 说明 | 
+|------------------|----------------|---------------|
+| alignment        | AlignmentGeometry |    对齐方式       |
+| child            | Widget?  |  子组件 |
+| size |  Size |  组件自身大小  |
