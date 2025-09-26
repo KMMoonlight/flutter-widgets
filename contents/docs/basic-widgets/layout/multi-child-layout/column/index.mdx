@@ -2,3 +2,108 @@
 title: Column
 description: Column会将内部的子组件以垂直方式排列
 ---
+
+要让某个子组件子垂直方向上填满可用空间，可以将该子组件包裹在`Expanded`组件中。
+
+`Column`组件不会滚动(通常情况下，如果`Column`的子组件超过可用空间会被视为错误)。如果希望在空间不足的时候能够滚动，可以考虑使用`ListView`组件。如果想要横向排列，可以使用`Row`。
+
+如果只有一个子组件，可以考虑使用`Align`或者`Center`来定位该子组件。
+
+## 举例
+### 例子1
+```dart
+const Column(
+  children: <Widget>[
+    Text('Deliver features faster'),
+    Text('Craft beautiful UIs'),
+    Expanded(
+      child: FittedBox(
+        child: FlutterLogo(),
+      ),
+    ),
+  ],
+)
+```
+这个例子使用`Column`将三个子组件纵向排列，最后一个组件会占满所有剩余空间。
+
+![](https://flutter.github.io/assets-for-api-docs/assets/widgets/column.png)
+
+
+### 例子2
+```dart
+Column(
+  crossAxisAlignment: CrossAxisAlignment.start,
+  mainAxisSize: MainAxisSize.min,
+  children: <Widget>[
+    const Text('We move under cover and we move as one'),
+    const Text('Through the night, we have one shot to live another day'),
+    const Text('We cannot let a stray gunshot give us away'),
+    const Text('We will fight up close, seize the moment and stay in it'),
+    const Text("It's either that or meet the business end of a bayonet"),
+    const Text("The code word is 'Rochambeau,' dig me?"),
+    Text('Rochambeau!', style: DefaultTextStyle.of(context).style.apply(fontSizeFactor: 2.0)),
+  ],
+)
+```
+在例子1中，所有的文本和logo都在每行中居中显示。在例子2中`crossAxisAlignment`设置为了`CrossAxisAlignment.start`，这样所有的子组件都是左对齐的。`mainAxisSize`设置为了`MainAxisSize.min`，这样`Column`会收缩来适应子组件。
+
+![](https://flutter.github.io/assets-for-api-docs/assets/widgets/column_properties.png)
+
+
+## 常见问题
+### 当传入的垂直约束是无边界的(无限大):
+当`Column`拥有一个或多个`Expanded`或`Flexible`子组件，并且被嵌套在另一个`Column`或者`ListView`以及其他未提供最大高度约束的组件中，此时运行会抛出异常：存在具有非零flex的子组件，但垂直约束无边界。
+
+根据这个异常信息，使用`Flexible`或`Expanded`意味着在布局完其他子组件后，剩余空间必须均分，然而如果传入的垂直约束没有边界，那么剩余空间为无限大。
+
+解决这个问题的关键在于找出`Column`为什么会收到没有边界的垂直约束。
+
+常见原因：
+1. 该`Column`被嵌套在另一个`Column`中(且内层`Column`没有包裹`Expanded`或`Flexible`)。当外层的`Column`为它非弹性(即没有包裹在`Expanded`或`Flexible`中)子组件进行布局时，会向其传递无边界约束，让它们自行确定尺寸(传递没有边界约束意味着子组件应当收缩包裹其内容)。此时解决这个问题，只需要将内层的`Column`使用`Expanded`包裹，表明它应该占满外层`Column`的剩余空间，而不是想占多少占多少。
+2. 该`Column`被嵌套在`ListView`或者其他垂直可滚动组件中且此时`Column`被`Expanded`或者`Flexible`包裹。在这种情况下，垂直方向确实存在无限空间(垂直滚动列表的本质就是允许无限高度)。此时应该需要移除`Column`包裹的`Expanded`或`Flexible`，因为`Expanded`或`Flexible`需要占满外层组件的剩余空间，但是`ListView`的高度是无限的。
+
+### 黄色和黑色条纹横幅
+当`Column`的内容超出可用空间，`Column`会溢出，内容会被裁剪。在调试模式下，会在溢出边缘渲染一条黄色与黑色相间的条纹条以指示问题，并在`Column`下方打印一条信息，说明检测到了溢出量。
+
+通常的解决方案是使用`ListView`而不是`Column`，以便在垂直空间受限时让内容可以滚动。
+
+
+## 布局算法
+`Column`的布局分为六个步骤:
+1. 传入无限高度约束以及外部的宽度约束，对`flex factor`为null或零的子节点(如没有使用`Expanded`之类的组件进行包裹)进行布局。如果`crossAxisAlignment`为`CrossAxisAlignment.stretch`，则改用与`Column`传入宽度一致的严格宽度约束(stretch会强制填满宽度)
+2. 根据`flex factor`将剩余的垂直空间分配给`flex factor`非零的子节点(如使用`Expanded`之类的组件进行包裹)。例如`flex factor`为2.0的子节点获得的垂直空间是`flex factor`为1.0的子节点的两倍
+3. 根据第2步分配的空间，对弹性子项进行布局
+4. 确定`Column`的宽度，取所有子项中的最大宽度，一定满足传入的宽度约束
+5. 确定`Column`的高度，如果`MainAxisSize.max`取传入约束的最大高度，`MainAxisSize.min`取子项高度之和
+6. 根据`mainAxisAlignment`和`crossAxisAlignment`把每个子项放到对应的位置上
+
+
+## 构造函数
+```dart
+Column.new({
+  Key? key, 
+  MainAxisAlignment mainAxisAlignment = MainAxisAlignment.start, 
+  MainAxisSize mainAxisSize = MainAxisSize.max, 
+  CrossAxisAlignment crossAxisAlignment = CrossAxisAlignment.center, 
+  TextDirection? textDirection, 
+  VerticalDirection verticalDirection = VerticalDirection.down, 
+  TextBaseline? textBaseline, 
+  double spacing = 0.0, 
+  List<Widget> children = const <Widget>[]
+})
+```
+
+## 参数
+| 参数 | 参数类型  |  说明  |
+|-----|----------|-------|
+|children| List\<Widget\> | 子组件 |
+|clipBehavior| Clip | 根据配置进行裁切 |
+|crossAxisAlignment| CrossAxisAlignment | 交叉轴上子组件排列方式 |
+|direction|  Axis | 决定主轴方向，在`Column`中只能是垂直 |
+|mainAxisAlignment| MainAxisAlignment| 主轴上子组件排列方式 |
+|mainAxisSize| MainAxisSize | 主轴占据多少空间 |
+|spacing| double| 主轴上相邻子组件的间距 |
+|textBaseline|TextBaseline? | `crossAxisAlignment`设置为`baseline`时，决定具体使用哪个基线 |
+|textDirection|TextDirection? | 控制水平方向上的排列方向，从左往右还是从右往左 |
+|verticalDirection| VerticalDirection |主轴上子组件的排列方向，是从上往下还是从下往上 |
+
