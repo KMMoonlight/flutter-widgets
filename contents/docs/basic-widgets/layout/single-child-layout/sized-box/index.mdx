@@ -2,3 +2,69 @@
 title: SizedBox
 description: 一个指定宽高的盒子组件
 ---
+
+`SizedBox`会强制其子组件使用指定的宽高。如果不符合`SizedBox`父组件的约束，那么设置的值将失效，比如`SizedBox`的父组件是屏幕或者是另一个`SizedBox`，那么这些父组件会施加一个紧约束强制要求子组件的宽高和这些父组件一致。可以通过将`SizedBox`包裹在一个松约束(允许子组件的宽高在0到父组件的宽高中的任意值)的组件中来解决这些问题，如`Center`或者`Align`组件等。
+
+如果宽高中有设置为null值的，那么`SizedBox`将会尝试在对应维度上使用子组件的大小，如果子组件的大小依赖于`SizedBox`的大小，那么必须提供对应的宽高值。
+
+如果没有指定子组件，`SizedBox`将会在父组件约束的情况下尽可能接近指定的高度和宽度。如果宽度/宽度设置为null或者未指定，那么会被视为0。
+
+可以使用`SizedBox.expand`构造函数来创建一个自动适应父级大小的`SizedBox`，这等同于将宽度和高度设置为`double.infinity`。
+
+
+## 示例
+```dart
+const SizedBox(
+  width: 200.0,
+  height: 300.0,
+  child: Card(child: Text('Hello World!')),
+)
+```
+
+## 构造函数
+```dart
+//普通指定宽高创建SizedBox
+SizedBox.new({
+  Key? key, 
+  double? width, 
+  double? height, 
+  Widget? child
+})
+
+//指定无限宽高的SizedBox
+SizedBox.expand({
+  Key? key, 
+  Widget? child
+})
+
+//根据传入的Size对象创建SizedBox
+SizedBox.fromSize({
+  Key? key, 
+  Widget? child, 
+  Size? size
+})
+
+
+//创建在父组件约束情况下尽可能小的SizedBox
+SizedBox.shrink({
+  Key? key, 
+  Widget? child
+})
+
+
+//创建宽高相等的方型SizedBox
+SizedBox.square({
+  Key? key, 
+  Widget? child, 
+  double? dimension
+})
+```
+
+
+## 属性
+| 属性名 | 属性类型 | 说明 |
+|--|--|--|
+|child| Widget? | 子组件 |
+|height| double? | 高 |
+|width| double? | 宽 |
+
