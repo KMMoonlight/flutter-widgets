@@ -2,3 +2,148 @@
 title: LayoutBuilder
 description: 构建一个可以依赖于父组件尺寸的组件树
 ---
+
+在Flutter中，`LayoutBuilder`是一个非常有用的组件，用于根据父组件的约束(constraints)动态构建UI。它允许开发者在构建布局时获取父组件提供的最大和最小尺寸(宽度和高度)，从而根据这些约束条件动态调整子组件的布局。
+
+`LayoutBuilder`是一个Widget，它会在布局阶段调用其`builder`函数，并传递当前的`BuildContext`和`BoxConstraints`。`BoxConstraints`包含了父组件传递给子组件的尺寸约束，包括：
+- `maxWidth`: 最大宽度
+- `maxHeight`: 最大高度
+- `minWidth`: 最小宽度
+- `minHeight`: 最小高度
+
+## 示例
+
+### 示例1
+```dart
+import 'package:flutter/material.dart';
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: Scaffold(
+        appBar: AppBar(title: Text('LayoutBuilder 示例')),
+        body: Center(
+          child: LayoutBuilder(
+            builder: (BuildContext context, BoxConstraints constraints) {
+              // 根据父组件的宽度调整布局
+              if (constraints.maxWidth > 600) {
+                return WideLayout();
+              } else {
+                return NarrowLayout();
+              }
+            },
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class WideLayout extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: Colors.blue,
+      child: Center(
+        child: Text(
+          '宽屏布局 (> 600)',
+          style: TextStyle(color: Colors.white, fontSize: 24),
+        ),
+      ),
+    );
+  }
+}
+
+class NarrowLayout extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: Colors.green,
+      child: Center(
+        child: Text(
+          '窄屏布局 (<= 600)',
+          style: TextStyle(color: Colors.white, fontSize: 24),
+        ),
+      ),
+    );
+  }
+}
+```
+
+![](/images/flutter_layout_builder_01.gif)
+
+
+`LayoutBuilder`在以下场景中非常有用：
+- **响应式布局**: 根据屏幕尺寸或父组件大小调整UI(如手机、平板、桌面端适配)
+- **动态调整子组件**: 根据可用空间决定子组件的排列方式(例如，网格还是列表)
+- **避免硬编码尺寸**: 通过约束动态计算尺寸，而不是使用固定值
+- **处理不同方向**: 结合`MediaQuery`或设备方向调整布局
+
+
+### 示例2
+```dart
+import 'package:flutter/material.dart';
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: Scaffold(
+        appBar: AppBar(title: Text('动态网格示例')),
+        body: LayoutBuilder(
+          builder: (BuildContext context, BoxConstraints constraints) {
+            // 根据宽度计算列数
+            int columns = (constraints.maxWidth / 150).floor().clamp(1, 4);
+            return GridView.builder(
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: columns,
+                mainAxisSpacing: 8,
+                crossAxisSpacing: 8,
+                childAspectRatio: 1,
+              ),
+              padding: EdgeInsets.all(8),
+              itemCount: 20,
+              itemBuilder: (context, index) {
+                return Container(
+                  color: Colors.purple[100 * ((index % 9) + 1)],
+                  child: Center(child: Text('Item $index')),
+                );
+              },
+            );
+          },
+        ),
+      ),
+    );
+  }
+}
+```
+
+![](/images/flutter_layout_builder_02.gif)
+
+- 根据`constraints.maxWidth`，动态计算`GridView`的列数(每列宽度约为 150)。
+- 使用`clamp`确保列数在1到4之间。
+- 网格中的每个单元格会根据宽度自适应。
+
+
+## 构造函数
+```dart
+LayoutBuilder.new({
+  Key? key, 
+  required Widget builder(BuildContext context, BoxConstraints constraints)
+})
+```
+
+
+## 属性
+| 属性名 | 属性类型  |  说明  |
+|---|----|----|
+|builder| Widget Function(BuildContext context, BoxConstraints constraints) | 子组件build函数 |
