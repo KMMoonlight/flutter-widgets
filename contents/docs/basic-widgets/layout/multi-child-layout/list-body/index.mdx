@@ -2,3 +2,48 @@
 title: ListBody
 description: 一个沿给定轴向依次排列子项的组件，并强制它们在另一个轴向的尺寸与父级相同
 ---
+
+`ListBody`会在指定方向上依次排列子组件，并强制这些子组件在另一个方向上的大小与父组件相同。`ListBody`是一个轻量级的布局组件，用于按单一方向(垂直或水平)线性排列其子组件，类似于简化版的`Column`或`Row`，但没有弹性空间分配如`Expanded`或主轴对齐等高级功能。
+
+### 核心特点
+#### 1. 单向排列
+通过`axis`参数控制方向(默认`Axis.vertical`即垂直排列)
+```dart
+ListBody(
+  axis: Axis.horizontal,
+  children: [Text('A'), Text('B'), Text('C')]
+)
+```
+
+#### 2. 无对齐和弹性
+与`Column/Row`不同，`ListBody`不会尝试填充主轴空间，子组件仅按自然尺寸排列，如：
+- 垂直排列时，子组件高度为自身高度，总高度为所有子组件之和。
+- 水平排列时，子组件宽度为自身宽度，总宽度为所有子组件之和。
+
+#### 3. 常用于`ListView`的底层
+`ListView`在内部使用`ListBody`实现子组件的线性排列。
+
+#### 4. 无滚动能力
+需要滚动时，应使用`ListView`而非`ListBody`。
+
+### 何时使用ListBody
+- 简单场景，当只需要按单一方向排列子组件，且不需要对齐、弹性空间或滚动时。
+- 自定义滚动容器，结合`SingleChildScrollView`实现自定义滚动效果(但通常直接用`ListView`更简单)。
+
+
+## 构造函数
+```dart
+ListBody.new({
+  Key? key,
+  Axis mainAxis = Axis.vertical,
+  bool reverse = false,
+  List<Widget> children = const <Widget>[]
+})
+```
+
+## 属性
+| 属性名  |  类型  |  说明  |
+|--------|-------|--------|
+| children |  List\<Widget\> |  子组件列表  |
+| mainAxis | Axis | 主轴方向 |
+| reverse | bool |  反向排列 |
