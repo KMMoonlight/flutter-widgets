@@ -2,3 +2,139 @@
 title: Table
 description: 表格组件
 ---
+
+Flutter中的`Table`组件是一个专门用来展示表格布局的组件，它把子组件按照行列的形式排列，适合需要精确控制单元格尺寸、对齐方式或合并单元格的场景。
+
+### 核心概念
+1. 结构
+- `Table` 整个表格
+- `TableRow` 一行
+- `TableCell` 一个单元格(通常用`TableRow`的children列表中的Widget隐式代表)
+
+2. 与GridView/Row+Column的区别
+- `GridView`适合大量、可滚动的网格，`Row+Column`适合简单行列
+- `Table`适合"已知行列数、需要边框/对齐/合并单元格"的场景，且不会自动滚动
+
+
+## 示例
+```dart
+Table(
+  border: TableBorder.all(color: Colors.grey),   // 边框
+  defaultColumnWidth: IntrinsicColumnWidth(),    // 列宽策略
+  children: const [
+    TableRow(children: [
+      Center(child: Text('姓名')),
+      Center(child: Text('年龄')),
+      Center(child: Text('城市')),
+    ]),
+    TableRow(children: [
+      Text('张三'),
+      Text('28'),
+      Text('北京'),
+    ]),
+    TableRow(children: [
+      Text('李四'),
+      Text('35'),
+      Text('上海'),
+    ]),
+  ],
+)
+```
+
+`defaultColumnWidth`设置不同的方式且此时没有设置`columnWidths`时，会默认使用`defaultColumnWidth`的值:
+- `IntrinsicColumnWidth`根据内容自适应宽度
+![](/images/flutter_table_01.png)
+
+- `FixedColumnWidth(100)`设置固定宽度
+![](/images/flutter_table_02.png)
+
+- `FlexColumnWidth(1)` Flex形式弹性列宽，类似于`Expanded`
+![](/images/flutter_table_03.png)
+
+
+也可以使用`columnWidths`来为每一列单独指定宽度
+```dart
+Table(
+  border: TableBorder.all(color: Colors.grey),   // 边框
+  defaultColumnWidth: IntrinsicColumnWidth(),    // 列宽策略
+  columnWidths: {
+    0: FixedColumnWidth(80),
+    1: FlexColumnWidth(2),
+    2: FlexColumnWidth(1),
+  },
+  children: const [
+    TableRow(children: [
+      Center(child: Text('姓名')),
+      Center(child: Text('年龄')),
+      Center(child: Text('城市')),
+    ]),
+    TableRow(children: [
+      Text('张三'),
+      Text('28'),
+      Text('北京'),
+    ]),
+    TableRow(children: [
+      Text('李四'),
+      Text('35'),
+      Text('上海'),
+    ]),
+  ],
+)
+```
+指定首列宽度80，第2列占剩余宽度的2份，第三列占剩余宽度的1份。
+
+![](/images/flutter_table_04.png)
+
+
+### 合并单元格
+使用`TableCell`的`verticalAlignment`和`TableSpan`并不直接支持合并，但官方推荐用`TableCell`包裹后，通过`RowSpan/ColumnSpan`的思路实现：
+
+`Flutter`官方暂未提供原生合并API，需要手动占位或改用`CustomPaint/CustomMultiChildLayout`实现。
+
+社区方案：
+- 使用`syncfusion_flutter_datagrid`或`pluto_grid`等三方库；
+- 用空白`SizedBox`占位+计算布局。
+
+
+## 常见问题
+- 内容过长导致溢出
+  - 给单元格里的 Text 设置 softWrap: false、overflow: TextOverflow.ellipsis；
+  - 或者把 defaultColumnWidth 改为 FlexColumnWidth 让它自动分配剩余空间。
+
+- 表格宽度超出屏幕
+  - 用 SingleChildScrollView + HorizontalScrollView 包一层；
+  - 或者把 Table 换成 DataTable（自带横向滚动）。
+
+- 性能
+  - 行列数很多（>100）时，考虑 ListView + Row 或 DataTable；
+  - 避免在 build 里反复计算 TableRow 列表，可提前缓存。
+
+- 对齐问题
+  - 如果整列需要统一对齐，用 defaultVerticalAlignment；
+  - 如果单个单元格需要特殊对齐，用 TableCell(verticalAlignment: ...) 包裹。
+
+
+
+## 构造函数
+```dart
+Table.new({
+  Key? key, 
+  List<TableRow> children = const <TableRow>[], 
+  Map<int, TableColumnWidth>? columnWidths, 
+  TableColumnWidth defaultColumnWidth = const FlexColumnWidth(), 
+  TextDirection? textDirection, 
+  TableBorder? border, 
+  TableCellVerticalAlignment defaultVerticalAlignment = TableCellVerticalAlignment.top, 
+  TextBaseline? textBaseline
+})
+```
+
+
+## 参数
+| 参数名 |  参数类型 |  说明 |
+|-------|----------|-------|
+|border| TableBorder? | 设置表格边框 |
+|children| List\<TableRow\> | 每一行的内容 |
+|columnWidths| Map\<int, TableColumnWidth\>?  | 为每一列单独设置列宽 |
+|defaultColumnWidth |  TableColumnWidth | 默认的列宽设置策略  |
+|defaultVerticalAlignment | TableCellVerticalAlignment | 每个单元格在垂直方向上的对齐设置 |
