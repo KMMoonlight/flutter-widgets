@@ -2,3 +2,105 @@
 title: Stack
 description: 一个根据顺序布局子组件的栈容器组件
 ---
+
+`Stack`组件是Flutter中用于**层叠布局**的核心组件，允许将多个子组件按照插入顺序依次叠加，后插入的在上层。适用于需要重叠视图的场景，如悬浮按钮、徽章、背景图叠加等。
+
+### Stack的核心特性
+- 层叠顺序: 后添加的子组件在上层。
+- 定位支持: 结合`Positioned`或者`Align`组件可精确控制子组件位置。
+- 尺寸规则: 默认以**最大子组件**为自身尺寸(除非指定`fit`或者`alignment`)。
+
+`Stack`组件的每个子组件要么是定位的，要么是非定位的。定位的子组件是指那些被`Positioned`组件包裹且至少有一个非空属性(如top、right、bottom或left)的子组件。`Stack`会根据所有非定位子组件的大小来确定自身的尺寸，这些非定位子组件会根据`alignment`属性进行定位(在从左往右的环境中默认为左上角)。而定位的子组件则会根据其top、right、bottom和left属性相对于`Stack`进行放置。
+
+`Stack`会按照顺序绘制其子组件，第一个子组件位于最底层。如果希望更改子组件的绘制顺序，可以使用新的子组件顺序重新构建`Stack`，如果以这这种方式重新排列子组件，最好考虑为子组件指定非空的key，这些key会促使框架将子组件的底层对象移动到新位置，而不是在新位置重新创建它们。
+
+## 示例
+```dart
+Stack(
+  children: <Widget>[
+    Container(
+      width: 100,
+      height: 100,
+      color: Colors.red,
+    ),
+    Container(
+      width: 90,
+      height: 90,
+      color: Colors.green,
+    ),
+    Container(
+      width: 80,
+      height: 80,
+      color: Colors.blue,
+    ),
+  ],
+)
+```
+![](https://flutter.github.io/assets-for-api-docs/assets/widgets/stack.png)
+
+
+
+```dart
+SizedBox(
+  width: 250,
+  height: 250,
+  child: Stack(
+    children: <Widget>[
+      Container(
+        width: 250,
+        height: 250,
+        color: Colors.white,
+      ),
+      Container(
+        padding: const EdgeInsets.all(5.0),
+        alignment: Alignment.bottomCenter,
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: <Color>[
+              Colors.black.withAlpha(0),
+              Colors.black12,
+              Colors.black45
+            ],
+          ),
+        ),
+        child: const Text(
+          'Foreground Text',
+          style: TextStyle(color: Colors.white, fontSize: 20.0),
+        ),
+      ),
+    ],
+  ),
+)
+```
+![](https://flutter.github.io/assets-for-api-docs/assets/widgets/stack_with_gradient.png)
+
+
+## 构造函数
+```dart
+Stack.new({
+  Key? key, 
+  AlignmentGeometry alignment = AlignmentDirectional.topStart, 
+  TextDirection? textDirection, 
+  StackFit fit = StackFit.loose, 
+  Clip clipBehavior = Clip.hardEdge, 
+  List<Widget> children = const <Widget>[]
+})
+```
+
+## 属性
+|属性名 | 属性类型 |  说明 |
+|------|--------|-------|
+|alignment| AlignmentGeometry | 子组件布局位置 |
+|children | List\<Widget\> | 子组件列表 |
+|clipBehavior| Clip | 根据配置裁剪组件 |
+|fit |  StackFit| 子组件的大小设置   |
+
+
+`StackFit`的取值:
+- loose: 子组件**保持自身想要的尺寸**，最大不超过`Stack`的尺寸，宽松约束
+- expand: 子组件**强制拉伸**到与`Stack`一样大，严格约束。
+- passthrough: 子组件**完全忽略Stack的尺寸**，按父级传给Stack的约束来决定大小，透传约束。
+
+> ps: 如果子组件被`Positioned`包裹，那么`fit`对该子组件**完全无效**。只有“自由”的子组件才会受`fit`影响。
