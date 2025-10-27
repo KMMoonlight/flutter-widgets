@@ -2,3 +2,120 @@
 title: CupertinoSliverNavigationBar
 description: 一个带有iOS11风格大标题的iOS风格导航栏，使用slivers实现
 ---
+
+`CupertinoSliverNavigationBar`是Flutter中用于实现`iOS风格(Cupertino)`的**可折叠导航栏(Sliver Navigation Bar)**的组件，通常与`CustomScrollView`或者`NestedScrollView`结合使用，实现类似iOS原生"大标题"导航栏的效果(如iOS设置应用)。
+
+### 核心特性
+1. **大标题模式**: 滚动时标题从大字体变为小字体(类似iOS 11+的导航栏)
+2. **可折叠**: 滚动时导航栏会收缩(类似`SliverAppBar`的`floating`效果)
+3. **iOS风格**: 自动适配iOS的过渡动画和样式
+
+
+
+## 构造函数
+```dart
+CupertinoSliverNavigationBar.new({
+  Key? key, 
+  Widget? largeTitle, 
+  Widget? leading, 
+  bool automaticallyImplyLeading = true, 
+  bool automaticallyImplyTitle = true, 
+  bool alwaysShowMiddle = true, 
+  String? previousPageTitle, 
+  Widget? middle, 
+  Widget? trailing, 
+  Border? border = _kDefaultNavBarBorder, 
+  Color? backgroundColor, 
+  bool automaticBackgroundVisibility = true, 
+  bool enableBackgroundFilterBlur = true, 
+  Brightness? brightness, 
+  EdgeInsetsDirectional? padding, 
+  bool transitionBetweenRoutes = true, 
+  Object heroTag = _defaultHeroTag, 
+  bool stretch = false, 
+  PreferredSizeWidget? bottom, 
+  NavigationBarBottomMode? bottomMode
+})
+```
+
+“大标题导航栏 + 折叠搜索框” 做成一条`Sliver`，滚动时搜索框会像原生iOS的`Settings/Mail`一样:
+- 在顶部时：大标题+下方搜索框
+- 向上滚动后：搜索框被吸到导航栏中间，成为紧凑的搜索栏
+
+```dart
+CupertinoSliverNavigationBar.search({
+  Key? key, 
+  required Widget searchField, 
+  Widget? largeTitle, 
+  Widget? leading, //自定义左侧按钮
+  bool automaticallyImplyLeading = true, 
+  bool automaticallyImplyTitle = true, 
+  bool alwaysShowMiddle = true, 
+  String? previousPageTitle,   //返回按钮文字
+  Widget? middle, 
+  Widget? trailing, //右侧按钮
+  Border? border = _kDefaultNavBarBorder,  //底部分隔线 
+  Color? backgroundColor, //背景色
+  bool automaticBackgroundVisibility = true, 
+  bool enableBackgroundFilterBlur = true, 
+  Brightness? brightness, 
+  EdgeInsetsDirectional? padding, 
+  bool transitionBetweenRoutes = true, 
+  Object heroTag = _defaultHeroTag, 
+  bool stretch = false, //弹性拉伸
+  NavigationBarBottomMode? bottomMode = NavigationBarBottomMode.automatic, 
+  ValueChanged<bool>? onSearchableBottomTap
+})
+```
+
+
+## 属性
+| 属性名  |  属性类型  |  说明   |
+|---|-----|-----|
+| alwaysShowMiddle | bool |  让`middle`字段对应的组件始终可见 |
+| automaticallyImplyLeading | bool | 若没有提供`leading`组件，且automaticallyImplyLeading为true，则`leading`会自动显示为返回箭头图标按钮 |
+| automaticallyImplyTitle | bool | 若没有提供`largeTitle`组件，且automaticallyImplyTitle设置为true，则`largeTitle`会自动从当前`CupertinoPageRoute`中提取标题文本 |
+| automaticBackgroundVisibility | bool |  导航栏滚动后背景显示情况  |
+| backgroundColor | Color? | 背景颜色 |
+| border | Border? | 导航栏边框，默认情况下只显示底部的边框  |
+| bottom | PreferredSizeWidget? | 如果没有设置`largeTitle`情况下，设置`bottom`组件显示在导航栏底部  |
+| bottomMode | NavigationBarBottomMode? | 当导航栏折叠到最小时，「大标题」是否仍然保留在导航栏底部，还是完全切换到中间的小标题  |
+| enableBackgroundFilterBlur | bool | 是否给导航栏背景加iOS风格的(毛玻璃blur)效果 |
+| heroTag | Object |  当页面发生**Hero转场**，告诉Flutter哪两个导航栏是同一对Hero，避免同类型组件因为默认tag相同而互相抢动画 |
+| largeTitle | Widget? |  导航栏标题组件  |
+| leading | Widget? |  放置在导航栏首部的组件，如果不设置的话，通常会展示一个返回箭头或者取消按钮  |
+| middle | Widget? | 导航栏中间用于替换`largeTitle`的组件  |
+| onSearchableBottomTap | ValueChanged\<bool\>? | 点击折叠的搜索区域时的回调  |
+| opaque |  bool | 设置为true时，当内容向上滚动、导航栏被压缩成普通高度后，背景是否强制保持100%不透明 |
+| padding | EdgeInsetsDirectional? | 内边距 |
+| previousPageTitle | String? | 路由返回按钮旁边的文字内容  |
+| searchField | Widget? |  导航栏搜索栏的搜索框组件 |
+| stretch | bool |  设置导航栏向下滚动时，区域展示效果   |
+| trailing | Widget? |  导航栏尾部的组件，通常会设置搜索或者额外操作 |
+| transitionBetweenRoutes | bool | 路由切换时，上下页是否共享Hero动画 |
+
+
+`automaticBackgroundVisibility`设置:
+| 场景 | `true`（默认） | `false` |
+|------|----------------|---------|
+| 用户把列表 **拉到最顶部再往下拽** | 导航栏背景 **完全透明**，只剩标题文字和按钮 | 导航栏背景 **始终可见**（毛玻璃/颜色不消失） |
+| 向上滚动一点点 | 背景立即重新出现 | 背景保持可见，无变化 |
+
+`onSearchableBottomTap`的作用是:
+1. 页面处于**折叠状态**(用户往上滑了一段，大标题已收起)
+2. 搜索栏此时变成一条**细高的横条**(高度≈56 pt，iOS 叫它 searchable bottom)
+3. 用户**点一下这条横条** → 框架会先**自动展开搜索框并聚焦键盘**，随后再调用设置的**onSearchableBottomTap**
+
+`previousPageTitle`的作用是:
+| 场景 | 返回按钮文字 |
+|------|--------------|
+| 不设置 `previousPageTitle` | 系统规则：\<br\>• 如果上一页是 `CupertinoPageRoute` 且设置了 `title`，就用它；\<br\>• 否则显示本地化 “Back”。 |
+| 设置 `previousPageTitle: '列表'` | 无论上一页标题是什么，统一显示 **“列表”**。 |
+
+
+`stretch`的作用是:
+| `stretch` 值 | 下拉时的表现 |
+|--------------|--------------|
+| `false`（默认） | 导航栏高度固定，下拉只会露出空白背景，无弹性拉伸。 |
+| `true` | 下拉时大标题区域会被 **拉长**（最多约 100 pt），松手后弹性回弹，和 iOS 系统 Mail、设置等应用一致。 |
+
