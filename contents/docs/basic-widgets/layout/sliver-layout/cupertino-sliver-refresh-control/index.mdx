@@ -2,3 +2,150 @@
 title: CupertinoSliverRefreshControl
 description: 实现iOS风格下拉刷新内容控件的sliver小部件
 ---
+
+`CupertinoSliverRefreshControl`是Flutter中**iOS风格(Cupertino)**的下拉刷新组件，用于在`CustomScrollView`或者`NestedScrollView`中实现类似iOS原生APP的**下拉刷新**效果。
+
+### 核心特性
+- **iOS风格**: 带有弹性动画和圆形进度指示器
+- **基于Sliver**: 必须配合`CustomScrollView`使用
+- **异步刷新**: 通过`Future`处理刷新逻辑
+
+当作为滚动视图中的第一个`Sliver`插入，或置于其他仍允许在该`Sliver`前方产生滚动越界的`Sliver`(例如`CupertinoSliverNavigationBar`)之后时，此组件将:
+- 通过传入的`builder`允许用户在越界滚动区域中进行绘制
+- 当越界滚动距离超过`refreshTriggerPullDistance`时，触发提供的`onRefresh`函数
+- 在`onRefresh`返回的`Future`执行期间，继续保留`refreshIndicatorExtent`大小的空间，供`builder`持续绘制
+- 一旦`onRefresh`的`Future`完成，该组件将滚动消失
+
+`builder`函数在调用时会收到当前的`RefreshIndicatorMode`状态，但在`RefreshIndicatorMode.inactive`状态下(此时没有可用空间，也无需构建内容)不会被调用。除此之外，当可用空间因越界滚动、`onRefresh`任务完成后`Sliver`滚动消失等情况发生变化时，`builder`函数将持续被调用。
+
+> ps: 在上一次刷新完成且指示器`Sliver`至少回缩90%之前，无法触发新的刷新。
+
+该组件仅可用于支持越界滚动的向下滚动垂直列表。换言之，在默认使用`ClampingScrollPhysics`(Android平台默认)的可滚动组件中无法触发刷新。若要在Android上启用越界滚动，可以使用支持越界滚动的物理效果，例如`BouncingScrollPhysics`。可以通过以下方式实现:
+- 在构建可滚动组件时提供`BouncingScrollPhysics`(可与`AlwaysScrollableScrollPhysics`结合使用)
+- 在可滚动组件上方插入一个使用`BouncingScrollPhysics`的`ScrollConfiguration`
+- 使用`CupertinoApp`，它会无视平台始终使用带有`BouncingScrollPhysics`的`ScrollConfiguration`
+
+在典型应用中，该组件应插入在应用栏`Sliver`(如`CupertinoSliverNavigationBar`)和主滚动内容的`Sliver`之间。
+
+
+## 代码示例
+```dart
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+
+void main() => runApp(const MyApp());
+
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const CupertinoApp(
+      title: 'CupertinoSliverRefreshControl Demo',
+      home: RefreshPage(),
+    );
+  }
+}
+
+class RefreshPage extends StatefulWidget {
+  const RefreshPage({super.key});
+
+  @override
+  State<RefreshPage> createState() => _RefreshPageState();
+}
+
+class _RefreshPageState extends State<RefreshPage> {
+  List<String> items = List.generate(20, (index) => 'Item ${index + 1}');
+
+  // 模拟异步刷新
+  Future<void> _handleRefresh() async {
+    await Future.delayed(const Duration(seconds: 2)); // 模拟网络请求
+    setState(() {
+      items = List.generate(20, (index) => 'Refreshed Item ${index + 1}');
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return CupertinoPageScaffold(
+      navigationBar: const CupertinoNavigationBar(
+        middle: Text('下拉刷新'),
+      ),
+      child: CustomScrollView(
+        slivers: [
+          CupertinoSliverRefreshControl(
+            onRefresh: _handleRefresh,
+            // 可选：自定义刷新指示器颜色
+            // refreshIndicatorExtent: 100,
+            // builder: (context, refreshState, pulledExtent, ...) { ... },
+          ),
+          SliverList(
+            delegate: SliverChildBuilderDelegate(
+              (context, index) => CupertinoListTile(
+                title: Text(items[index]),
+              ),
+              childCount: items.length,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+```
+
+
+自定义刷新指示器
+```dart
+CupertinoSliverRefreshControl(
+  onRefresh: _handleRefresh,
+  builder: (
+    BuildContext context,
+    RefreshIndicatorMode refreshState,
+    double pulledExtent,
+    double refreshTriggerPullDistance,
+    double refreshIndicatorExtent,
+  ) {
+    return Center(
+      child: CupertinoActivityIndicator(
+        animating: refreshState == RefreshIndicatorMode.refresh,
+      ),
+    );
+  },
+)
+```
+
+
+### 注意事项
+1. **必须配合`CustomScrollView`**: 不能直接在`ListView`中使用
+2. **iOS风格限制**: 在Android上可能看起来不协调，建议使用`RefreshIndicator`(Material风格)
+3. **异步逻辑**: 确保`onRefresh`返回的`Future`正确完成，否则会一直显示加载动画
+
+
+### 进阶功能
+- **结合`NestedScrollView`**: 实现嵌套滚动刷新(如`TabBar`+列表)
+- **动态控制刷新**: 通过`GlobalKey`或状态管理触发刷新
+
+
+
+## 构造函数
+```dart
+CupertinoSliverRefreshControl.new({
+  Key? key, 
+  double refreshTriggerPullDistance = _defaultRefreshTriggerPullDistance, 
+  double refreshIndicatorExtent = _defaultRefreshIndicatorExtent, 
+  RefreshControlIndicatorBuilder? builder = buildRefreshIndicator, 
+  RefreshCallback? onRefresh
+})
+```
+
+
+
+## 属性
+| 参数名 | 类型 | 说明 |
+|--------|------|------|
+| `onRefresh` | `Future<void> Function()` | **必填**，触发刷新时调用的异步函数。 |
+| `refreshTriggerPullDistance` | `double` | 触发刷新的下拉距离（默认 `100.0`）。 |
+| `refreshIndicatorExtent` | `double` | 刷新指示器的固定高度（默认 `60.0`）。 |
+| `builder` | `Widget Function(...)` | 自定义刷新指示器的 UI（可选）。 |
+
