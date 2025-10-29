@@ -2,3 +2,74 @@
 title: SliverChildBuilderDelegate
 description: 一个通过`builder`回调函数为sliver组件提供子组件的`delegate`
 ---
+
+`SliverChildBuilderDelegate`是Flutter中专门给“可滚动区域(Sliver)”使用的**懒构建代理(lazy builder delegate)**。它最常见的搭档是`ListView.custom`、`GridView.custom`、`SliverList`、`SliverFixedExtentList`等需要**按需构建子项**的组件。
+
+## 示例
+1. 无限列表
+```dart
+CustomScrollView(
+  slivers: [
+    SliverList(
+      delegate: SliverChildBuilderDelegate(
+        (context, index) => ListTile(title: Text('Item $index')),
+        // childCount 不传 -> 无限列表
+      )
+    )
+  ]
+)
+```
+
+2. 有限列表 + 空视图
+```dart
+SliverList(
+  delegate: SliverChildBuilderDelegate(
+    (context, index) => _buildRow(index),
+    childCount: _items.length, //当_items.length为0时，builder不会被调用，列表为空
+  )
+)
+```
+
+
+### 与ListView.builder的关系
+`ListView.builder`内部其实就是:
+```dart
+ListView.custom(
+  childrenDelegate: SliverChildBuilderDelegate(...)
+)
+```
+
+因此:
+- 如果只想做一个简单的可滚动列表 -> 直接用`ListView.builder`更简洁。
+- 如果需要**与Sliver家族混排**(例如AppBar、吸顶Tab、交错网格等) -> 用`SliverChildBuilderDelegate` + `SliverList/SliverGrid`。
+
+
+### 总结
+**凡是带Sliver的列表/网格，想懒加载就用SliverChildBuilderDelegate**。
+
+
+## 构造函数
+```dart
+SliverChildBuilderDelegate.new(
+  NullableIndexedWidgetBuilder builder, 
+  {
+    ChildIndexGetter? findChildIndexCallback, 
+    int? childCount, 
+    bool addAutomaticKeepAlives = true, 
+    bool addRepaintBoundaries = true, 
+    bool addSemanticIndexes = true, 
+    SemanticIndexCallback semanticIndexCallback = _kDefaultSemanticIndexCallback, 
+    int semanticIndexOffset = 0
+  }
+)
+```
+
+## 属性
+| 参数 | 类型 | 作用一句话 | 常见取值 |
+|---|---|---|---|
+| **builder** | `Widget? Function(BuildContext, int)` | 按需创建子 Widget | 返回 `ListTile`、`Card` 等 |
+| **childCount** | `int?` | 告诉框架“我一共有多少个孩子”，决定滚动条长度、是否还能继续滑 | 列表长度；无限列表可省略 |
+| **addAutomaticKeepAlives** | `bool` | 是否给子项自动包一层 `AutomaticKeepAliveClientMixin`，让状态（如 TextField 内容）在滑出可视区后仍保留 | 默认 `true`；如果子项无状态可设 `false` 省内存 |
+| **addRepaintBoundaries** | `bool` | 是否给子项自动包一层 `RepaintBoundary`，减少重绘范围 | 默认 `true`；极端性能优化时才关 |
+| **estimatedChildCount** | `int?` | 给框架一个"预估"子项数量 | 它不会限制`builder`的调用次数，也不会影响实际渲染，只是告诉框架一个大概值，当子项数量未知或很大，但又想滚动条不至于"忽大忽小"  |
+| **findChildIndexCallback** | `ChildIndexGetter?` | 反向查找某个Key对应的子项索引 |  当滚动位置恢复或跳转时，框架需要知道“当前屏幕上那个Key的Widget是第几个元素”，才能正确地把滚动偏移量映射到列表索引  | 
