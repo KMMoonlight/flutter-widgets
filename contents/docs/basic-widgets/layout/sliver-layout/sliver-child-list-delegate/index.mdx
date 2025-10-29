@@ -2,3 +2,88 @@
 title: SliverChildListDelegate
 description: 一个通过显式列表为slivers提供子组件的`delegate`
 ---
+
+`SliverChildListDelegate`是Flutter中用于Sliver系列组件(如`CustomScrollView`、`SliverList`、`SliverGrid`等)的一个委托类，用于提供子组件列表。它的作用类似于`ListView`的`children`参数，但专门为`Sliver`设计。
+
+### 核心介绍
+- 接受一个**固定的子组件列表(List\<Widget\>)**
+- 不支持懒加载(所有子组件会一次性构建)
+- 适合子组件数量较少或需要精确控制布局的场景
+
+
+## 示例
+1. 配合`SliverList`使用
+```dart
+CustomScrollView(
+  slivers: [
+    SliverList(
+      delegate: SliverChildListDelegate(
+        [
+          Container(height: 50, color: Colors.red),
+          Container(height: 50, color: Colors.green),
+          Container(height: 50, color: Colors.blue)
+        ]
+      )
+    )
+  ]
+)
+```
+
+2. 动态生成子组件
+```dart
+SliverList(
+  delegate: SliverChildListDelegate(
+    List.generate(5, (index) {
+      return ListTile(
+        title: Text('Item $index')
+      );
+    })
+  )
+)
+```
+
+## 对比`SliverChildBuilderDelegate`
+| 特性               | `SliverChildListDelegate` | `SliverChildBuilderDelegate` |
+|--------------------|---------------------------|------------------------------|
+| 子组件来源         | 固定列表                  | 动态构建（懒加载）           |
+| 性能               | 一次性构建所有子组件      | 按需构建（适合长列表）       |
+| 适用场景           | 少量固定子组件             | 大量或动态数据               |
+
+
+注意事项:
+- **避免在长列表中使用**: `SliverChildListDelegate`会一次性构建所有子组件，可能导致性能问题
+- **子组件数量固定**: 无法像`SliverChildBuilderDelegate`那样动态调整数量
+
+
+
+## 构造函数
+```dart
+SliverChildListDelegate.new(
+  List<Widget> children, {
+  bool addAutomaticKeepAlives = true, 
+  bool addRepaintBoundaries = true, 
+  bool addSemanticIndexes = true, 
+  SemanticIndexCallback semanticIndexCallback = _kDefaultSemanticIndexCallback, 
+  int semanticIndexOffset = 0
+})
+
+
+SliverChildListDelegate.fixed(
+  List<Widget> children, {
+  bool addAutomaticKeepAlives = true, 
+  bool addRepaintBoundaries = true, 
+  bool addSemanticIndexes = true, 
+  SemanticIndexCallback semanticIndexCallback = _kDefaultSemanticIndexCallback, 
+  int semanticIndexOffset = 0
+})
+```
+
+
+## 属性
+| 属性 / 参数名             | 类型                           | 默认值 | 作用说明 |
+|---------------------------|--------------------------------|--------|----------|
+| **children** *必填*       | `List\<Widget\>`                 | —      | 要显示的子组件列表。 |
+| addAutomaticKeepAlives    | `bool`                         | `true` | 是否给每个子节点自动包裹 `AutomaticKeepAliveClientMixin`，防止滚动出可视区域时被销毁。 |
+| addRepaintBoundaries      | `bool`                         | `true` | 是否给每个子节点自动包裹 `RepaintBoundary`，减少重绘范围，提高性能。 |
+| estimatedChildCount | `int?` |  | 给框架一个"预估"子项数量，它不会限制`builder`的调用次数，也不会影响实际渲染，只是告诉框架一个大概值，当子项数量未知或很大，但又想滚动条不至于"忽大忽小"  |
+
