@@ -2,3 +2,227 @@
 title: SliverGrid
 description: 一个以网格排列多个盒子子组件的sliver
 ---
+
+`SliverGrid`是Flutter中用于创建可滚动网格布局sliver组件，特别适用于`CustomScrollView`中。与普通的`GridView`不同，`SliverGrid`可以与其他sliver组件(如`SliverAppBar`、`SliverList`等)协同工作。
+
+## 示例
+创建一个简单的`SliverGird`
+```dart
+CustomScrollView(
+  slivers: [
+    SliverGrid(
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2, // 每行显示2个 item
+        crossAxisSpacing: 10, // 水平间距
+        mainAxisSpacing: 10, // 垂直间距
+      ),
+      delegate: SliverChildBuilderDelegate(
+        (context, index) {
+          return Container(
+            color: Colors.blue[100 * (index % 9)],
+            child: Center(child: Text('Item $index')),
+          );
+        },
+        childCount: 20,
+      ),
+    ),
+  ],
+)
+```
+
+## 网格布局委托(Grid Delegate)
+`SliverGrid`提供两种主要的网格委托:
+
+### 1. SliverGridDelegateWithFixedCrossAxisCount
+固定每行的项目数量
+```dart
+SliverGridDelegateWithFixedCrossAxisCount(
+  crossAxisCount: 3, // 每行3个项目
+  mainAxisSpacing: 10, // 主轴间距
+  crossAxisSpacing: 10, // 交叉轴间距
+  childAspectRatio: 1.0, // 子项宽高比
+)
+```
+
+### 2. SliverGridDelegateWithMaxCrossAxisExtent
+限制每个项目的最大宽度
+```dart
+SliverGridDelegateWithMaxCrossAxisExtent(
+  maxCrossAxisExtent: 200, //每个项目最大宽度为200
+  mainAxisSpacing: 10,
+  crossAxisSpacing: 10,
+  childAspectRatio: 3/4, //宽高比 3:4
+)
+```
+
+## 子项委托(Delegate)
+### 1. SliverChildListDelegate
+适用于已知且数量较少的子项
+```dart
+delegate: SliverChildListDelegate(
+  [
+    Container(color: Colors.red, child: Text('Item 1')),
+    Container(color: Colors.green, child: Text('Item 2')),
+    Container(color: Colors.blue, child: Text('Item 3')),
+  ],
+)
+```
+
+### 2. SliverChildBuilderDelegate
+适用于大量或动态生成的子项
+```dart
+delegate: SliverChildBuilderDelegate(
+  (context, index) {
+    return YourGridItem(index: index);
+  },
+  childCount: 100, // 项目总数
+  addAutomaticKeepAlives: true, // 自动保持状态
+  addRepaintBoundaries: true, // 添加重绘边界
+)
+```
+
+
+## 性能优化
+1. 使用`const`构造函数
+```dart
+// 好的做法
+SliverGrid(
+  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+    crossAxisCount: 2,
+  ),
+  delegate: SliverChildBuilderDelegate(
+    (context, index) => const ProductItem(), // 使用 const
+    childCount: 100,
+  ),
+)
+```
+
+2. 合理设置`addAutomaticKeepAlives`
+```dart
+delegate: SliverChildBuilderDelegate(
+  (context, index) => ProductItem(index: index),
+  childCount: 1000,
+  addAutomaticKeepAlives: true, // 对于需要保持状态的项设置为 true
+  addRepaintBoundaries: true,   // 提高性能
+)
+```
+
+3. 使用`SliverGrid.extent`快捷方式
+```dart
+SliverGrid.extent(
+  maxCrossAxisExtent: 150, // 最大宽度
+  children: [
+    // 直接添加子项
+    Container(color: Colors.red),
+    Container(color: Colors.blue),
+  ],
+)
+```
+
+4. 使用`SliverGrid.count`快捷方式
+```dart
+SliverGrid.count(
+  crossAxisCount: 3, // 每行3个项目
+  children: List.generate(9, (index) => 
+    Container(color: Colors.primaries[index])
+  ),
+)
+```
+
+## 与其他Sliver组件结合
+```dart
+CustomScrollView(
+  slivers: [
+    SliverAppBar(...),
+    SliverToBoxAdapter(...), // 普通组件
+    SliverPadding(           // 添加内边距
+      padding: EdgeInsets.all(16),
+      sliver: SliverGrid(...),
+    ),
+    SliverList(              // 结合列表
+      delegate: SliverChildListDelegate([...]),
+    ),
+  ],
+)
+```
+
+## 响应式设计
+```dart
+class ResponsiveGrid extends StatelessWidget {
+  const ResponsiveGrid({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    
+    int crossAxisCount;
+    if (screenWidth > 1200) {
+      crossAxisCount = 4;
+    } else if (screenWidth > 800) {
+      crossAxisCount = 3;
+    } else if (screenWidth > 600) {
+      crossAxisCount = 2;
+    } else {
+      crossAxisCount = 1;
+    }
+    
+    return SliverGrid(
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: crossAxisCount,
+        mainAxisSpacing: 10,
+        crossAxisSpacing: 10,
+      ),
+      delegate: SliverChildBuilderDelegate(...),
+    );
+  }
+}
+```
+
+
+## 构造函数
+```dart
+SliverGrid.new({
+  Key? key, 
+  required SliverChildDelegate delegate, 
+  required SliverGridDelegate gridDelegate
+})
+
+
+SliverGrid.builder({
+  Key? key, 
+  required SliverGridDelegate gridDelegate, 
+  required NullableIndexedWidgetBuilder itemBuilder, 
+  ChildIndexGetter? findChildIndexCallback, 
+  int? itemCount, 
+  bool addAutomaticKeepAlives = true, 
+  bool addRepaintBoundaries = true, 
+  bool addSemanticIndexes = true
+})
+
+
+SliverGrid.count({
+  Key? key, 
+  required int crossAxisCount, 
+  double mainAxisSpacing = 0.0, 
+  double crossAxisSpacing = 0.0, 
+  double childAspectRatio = 1.0, 
+  List<Widget> children = const <Widget>[]
+})
+
+
+SliverGrid.extent({
+  Key? key, 
+  required double maxCrossAxisExtent, 
+  double mainAxisSpacing = 0.0, 
+  double crossAxisSpacing = 0.0, 
+  double childAspectRatio = 1.0, 
+  List<Widget> children = const <Widget>[]
+})
+```
+
+
+## 属性
+| 属性名 |  属性类型  |  说明 |
+|-------|----------|-------|
+|delegate |  SliverChildDelegate | 子项构造委托对象 |
+| gridDelegate | SliverGridDelegate  |  网格布局委托对象 |
