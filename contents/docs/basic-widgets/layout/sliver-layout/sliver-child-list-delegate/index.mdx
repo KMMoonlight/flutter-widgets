@@ -82,7 +82,7 @@ SliverChildListDelegate.fixed(
 ## 属性
 | 属性 / 参数名             | 类型                           | 默认值 | 作用说明 |
 |---------------------------|--------------------------------|--------|----------|
-| **children** *必填*       | `List\<Widget\>`                 | —      | 要显示的子组件列表。 |
+| **children** *必填*       | `List<Widget>`                 | —      | 要显示的子组件列表。 |
 | addAutomaticKeepAlives    | `bool`                         | `true` | 是否给每个子节点自动包裹 `AutomaticKeepAliveClientMixin`，防止滚动出可视区域时被销毁。 |
 | addRepaintBoundaries      | `bool`                         | `true` | 是否给每个子节点自动包裹 `RepaintBoundary`，减少重绘范围，提高性能。 |
 | estimatedChildCount | `int?` |  | 给框架一个"预估"子项数量，它不会限制`builder`的调用次数，也不会影响实际渲染，只是告诉框架一个大概值，当子项数量未知或很大，但又想滚动条不至于"忽大忽小"  |
