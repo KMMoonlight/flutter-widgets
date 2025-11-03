@@ -2,3 +2,100 @@
 title: SliverFillRemaining
 description: 一个包含单个盒子子组件的sliver，它会填充满视口中剩余的空间
 ---
+
+在Flutter中，`SliverFillRemaining`是一个构建灵活的`Sliver`组件的类。它可以用来填充一个`Sliver`在`CustomScrollView`中剩余的空间，这意味着可以指定该`Sliver`如何使用剩余的空间，比如可以决定它是否填满整个剩余空间，或者是否滚动到未填满的空间等。
+
+### `SliverFillRemaining`的作用
+1. **填充剩余空间**
+
+`SliverFillRemaining`最主要的用途是，它会尝试填充`CustomScrollView`中剩余的空间。可以通过`fillOverscroll`属性指定是否允许滚动超出未被填充满的空间。
+
+2. **在滚动视图中灵活展示内容**
+
+在自定义滚动视图中，它可以让内容更加灵活地使用剩余空间，这种特性非常适用于那些需要动态填充剩余空间的UI设计，比如在一个动态更新的列表或者结合多个部件的页面布局中。
+
+### `SliverFillRemaining`实现原理
+在`CustomScrollView`中`SliverFillRemaining`和其他`sliver`一样的工作原理:
+- 它会监听滚动视图的总布局空间大小变动情况，根据滚动位置和已经布局的`sliver`高度来确定当前可用的剩余空间，然后按照设定的填充策略(`fillOverscroll`属性控制)，把自身的子组件或者是总体布局的结果填充到这个空间里。
+
+
+## 示例
+```dart
+import 'package:flutter/material.dart';
+
+void main() => runApp(MyApp());
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: Scaffold(
+        appBar: AppBar(
+          title: Text('SliverFillRemaining Example'),
+        ),
+        body: CustomScrollView(
+          slivers: <Widget>[
+            SliverList(
+              delegate: SliverChildListDelegate(
+                [
+                  ListTile(title: Text('Item 1')),
+                  ListTile(title: Text('Item 2')),
+                  ListTile(title: Text('Item 3')),
+                ],
+              ),
+            ),
+            SliverFillRemaining(
+              hasScrollBody: false, // 设置 SliverFillRemaining 并不参与滚动交互
+              // 占据剩余空间的子组件
+              child: Center(child: Text('这是练习大盗的占位')),
+              // 设置 hasScrollBody 的属性来确保剩余的空间及其他部分充当头部不滚，只当啦啦_contents占位.toUpperCase()
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+```
+
+
+## 构造函数
+```dart
+SliverFillRemaining.new({
+  Key? key, 
+  Widget? child, 
+  bool hasScrollBody = true, 
+  bool fillOverscroll = false
+})
+```
+
+## 属性
+| 参数名 |  参数类型 |  说明  |
+|-------|---------|--------|
+| child | Widget? |  子组件 |
+| fillOverScroll | bool |  是否继续滚动列表以显示填满剩余空间的内容。默认值为false，如果设置为true,那么当SliverFillRemaining有一个不够高填充整个剩余空间的子元素，滚动时，子元素会跟着继续滚动超出其高度，直到它的确对剩余空间为止。 |
+| hasScrollBody | bool | 一般用于确定是否将剩余空间算入滚动布局范围。设为true时，它会重新计算滚动布局，这在某些布局场景中用于在滚动交互时优化性能和减少不必要的重建。  |
+
+
+### `hasScrollBody`属性说明
+1. hasScrollBody: false
+- **行为**: 在这种模式下，`SliverFillRemaining`会将其子组件拉伸，以**填充视口的剩余空间**。无论子组件自身的大小是多少，它都会被强制拉伸或压缩到刚好占满屏幕剩下的部分。
+- **滚动行为**: **子组件本身不可滚动**。如果`CustomScrollView`的总体内容高度小于视口高度，整个视图将无法滚动（因为没有超出视口的内容）。如果总体内容高度大于视口高度，滚动到最底部时，这个`SliverFillRemaining`的子项会看起来像是“粘贴”在底部，随着其他内容一起被推上去。
+- **适用场景**: 这是最常见的用法。非常适合用于占满剩余空间的布局，例如:
+  - **登录页面**: 将表单放在顶部，一个按钮放在最底部。你可以用`SliverList`放表单，最后用一个`SliverFillRemaining (hasScrollBody: false)`来放置按钮，并让按钮始终位于屏幕底部。
+  - **“加载更多”或错误信息**: 在列表底部放置一个加载指示器或信息提示，并让它始终可见。
+
+2. hasScrollBody: true
+- **行为**: 在这种模式下，`SliverFillRemaining`会为其子组件**提供一个无限的约束（unconstrained constraints）**。这意味着它的子组件可以拥有自己原本的高度，而不会被强制拉伸。
+- **滚动行为**: `SliverFillRemaining`本身会**参与滚动**。它表现得就像一个普通的`SliverList`或`SliverBox`一样。如果子组件很高，它会产生滚动；如果子组件不高，它只会占据自己本身的高度，而不会去填充剩余空间。
+- **适用场景**: 当你希望`SliverFillRemaining`的子组件**保持其固有大小，并且可以独立滚动**时使用。一个典型场景是嵌套一个可滚动的组件(如`ListView`或`SingleChildScrollView`)。
+  - **注意事项**：直接在这种模式下嵌套另一个`ListView`会导致滚动冲突，除非使用`NeverScrollableScrollPhysics`禁用内层滚动。更常见的做法是嵌套一个`SingleChildScrollView`。
+
+总结:
+| 特性 | `hasScrollBody: false` (默认) | `hasScrollBody: true` |
+| :--- | :--- | :--- |
+| **核心行为** | 填充视口剩余空间 | 允许子组件拥有固有大小 |
+| **子组件约束** | 强制拉伸/压缩以填满空间 | 无限约束，不改变其大小 |
+| **滚动性** | 子组件**不可滚动** | 子组件**可以独立滚动** |
+| **常见用途** | 底部按钮、占位、静态内容 | 嵌套 `SingleChildScrollView`、`Column` 等 |
+| **视觉表现** | 像一块“粘”在底部的静态区域 | 像一个可以滚动的普通列表项 |
