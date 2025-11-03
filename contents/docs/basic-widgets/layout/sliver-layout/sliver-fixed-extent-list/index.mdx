@@ -2,3 +2,190 @@
 title: SliverFixedExtentList
 description: 一个将多个具有相同主轴尺寸的盒子子项按线性排列的sliver组件
 ---
+
+`SliverFixedExtentList`是Flutter中`CustomScrollView`的一个Sliver组件，它用于创建一个具有固定高度子项的滚动列表。和`SliverList`不同，`SliverFixedExtentList`不需要为每个子项计算高度，因为所有子项都具有相同的高度，这使得它在性能上更高效。
+
+
+## 示例
+1. 基本使用
+```dart
+CustomScrollView(
+  slivers: <Widget>[
+    SliverFixedExtentList(
+      itemExtent: 80.0, // 每个子项的高度
+      delegate: SliverChildBuilderDelegate(
+        (BuildContext context, int index) {
+          return ListItem(index: index);
+        },
+        childCount: 50, // 列表项数量
+      ),
+    ),
+  ],
+)
+```
+
+2. 结合其他的Sliver组件
+```dart
+CustomScrollView(
+  slivers: <Widget>[
+    SliverAppBar(
+      expandedHeight: 250.0,
+      flexibleSpace: FlexibleSpaceBar(
+        title: Text('高级示例'),
+        background: Image.network(
+          'https://picsum.photos/800/600',
+          fit: BoxFit.cover,
+        ),
+      ),
+      pinned: true,
+      actions: [IconButton(icon: Icon(Icons.search), onPressed: () {})],
+    ),
+    
+    SliverToBoxAdapter(
+      child: Padding(
+        padding: EdgeInsets.all(16.0),
+        child: Text(
+          '分类标题',
+          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+        ),
+      ),
+    ),
+    
+    SliverFixedExtentList(
+      itemExtent: 100.0,
+      delegate: SliverChildBuilderDelegate(
+        (BuildContext context, int index) {
+          return Card(
+            margin: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+            child: ListTile(
+              leading: CircleAvatar(
+                backgroundColor: Colors.blue,
+                child: Text('$index'),
+              ),
+              title: Text('项目 $index'),
+              subtitle: Text('这是项目 $index 的描述'),
+              trailing: Icon(Icons.arrow_forward),
+            ),
+          );
+        },
+        childCount: 20,
+      ),
+    ),
+    
+    SliverToBoxAdapter(
+      child: Divider(thickness: 2.0),
+    ),
+    
+    SliverToBoxAdapter(
+      child: Padding(
+        padding: EdgeInsets.all(16.0),
+        child: Text(
+          '另一个分类',
+          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+        ),
+      ),
+    ),
+    
+    SliverFixedExtentList(
+      itemExtent: 60.0,
+      delegate: SliverChildBuilderDelegate(
+        (BuildContext context, int index) {
+          return ListTile(
+            title: Text('选项 ${index + 1}'),
+            onTap: () {
+              print('点击了选项 ${index + 1}');
+            },
+          );
+        },
+        childCount: 10,
+      ),
+    ),
+  ],
+)
+```
+
+3. 除了使用`SliverChildBuilderDelegate`之外，还可以使用`SliverChildListDelegate`
+```dart
+SliverFixedExtentList(
+  itemExtent: 70.0,
+  delegate: SliverChildListDelegate(
+    [
+      ListTile(title: Text('固定项 1'), leading: Icon(Icons.star)),
+      ListTile(title: Text('固定项 2'), leading: Icon(Icons.star)),
+      ListTile(title: Text('固定项 3'), leading: Icon(Icons.star)),
+      ListTile(title: Text('固定项 4'), leading: Icon(Icons.star)),
+      ListTile(title: Text('固定项 5'), leading: Icon(Icons.star)),
+    ],
+  ),
+)
+```
+
+## 构造函数
+```dart
+SliverFixedExtentList.new({
+  Key? key, 
+  required SliverChildDelegate delegate, 
+  required double itemExtent
+})
+
+SliverFixedExtentList.builder({
+  Key? key, 
+  required NullableIndexedWidgetBuilder itemBuilder, 
+  required double itemExtent, 
+  ChildIndexGetter? findChildIndexCallback, 
+  int? itemCount, 
+  bool addAutomaticKeepAlives = true, 
+  bool addRepaintBoundaries = true, 
+  bool addSemanticIndexes = true
+})
+
+SliverFixedExtentList.list({
+  Key? key, 
+  required List<Widget> children, 
+  required double itemExtent, 
+  bool addAutomaticKeepAlives = true, 
+  bool addRepaintBoundaries = true, 
+  bool addSemanticIndexes = true
+})
+```
+
+## 属性
+| 属性名 | 属性类型  | 说明  |
+|---|---|----|
+| itemExtent | double | 子项的高度  |
+| delegate | SliverChildDelegate | 用于创建子项列表的委托对象 |
+
+
+**itemExtent的示例**
+```dart
+SliverFixedExtentList(
+  itemExtent: 80.0, // 所有列表项都是80像素高
+  delegate: SliverChildBuilderDelegate(
+    (context, index) => ListTile(title: Text('Item $index')),
+    childCount: 20,
+  ),
+)
+```
+
+
+**delegate的示例**
+```dart
+// 1. SliverChildBuilderDelegate - 懒加载创建
+delegate: SliverChildBuilderDelegate(
+  (BuildContext context, int index) {
+    return ListTile(title: Text('Item $index'));
+  },
+  childCount: 50, // 可选：指定子项数量
+  addAutomaticKeepAlives: true, // 保持状态
+  addRepaintBoundaries: true, // 添加重绘边界
+),
+
+// 2. SliverChildListDelegate - 预先创建所有子项
+delegate: SliverChildListDelegate(
+  [
+    ListTile(title: Text('Item 1')),
+    ListTile(title: Text('Item 2')),
+    ListTile(title: Text('Item 3')),
+  ],
+)
+```
