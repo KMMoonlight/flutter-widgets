@@ -1,0 +1,227 @@
+---
+title: Image
+description: 用于展示图片的组件
+---
+
+`Image`提供了多种构造函数用于展示不同数据来源的图片:
+- `Image.new` 展示一张来自于`ImageProvider`的图片
+- `Image.asset` 展示一张来自于本地文件(使用`key`在`AssetBundle`中获取)的图片
+- `Image.network` 展示一张来自于网络的图片
+- `Image.file` 展示一张来自于文件的图片
+- `Image.memory` 展示一张来自于内存的图片
+
+`Image`支持以下的文件格式:
+- JPEG
+- PNG
+- GIF
+- Animated GIF
+- WebP
+- Animated WebP
+- WBMP
+
+加载其他的图片格式，如果对应底层的平台硬件能支持的话，那么Flutter将会将其渲染出来。
+
+如果想要Flutter根据设备的像素比例(devicePixelRatio)自动选择合适的图片资源(1.0x、2.0x、3.0x等文件夹中的图片)，需要使用`AssetImage`组件而不是直接使用`Image.asset`，并且需要确保组件树中存在`MaterialApp`、`WidgetsApp`或者`MediaQuery Widget`组件，因为这种自动选择依赖于`MediaQuery`提供的设备信息，而`MediaQuery`通常由`MaterialApp`或者`WidgetsApp`自动引入。
+
+`Image`使用`paintImage`函数来渲染图片，这个函数中有针对配置字段更详细的描述。
+
+## 举例
+```dart
+const Image(
+  image: NetworkImage('https://flutter.github.io/assets-for-api-docs/assets/widgets/owl.jpg'),
+)
+```
+默认的构造函数可以使用任何`ImageProvider`，比如使用`NetworkImage`来展示一张来自网络的图片。
+
+![](https://flutter.github.io/assets-for-api-docs/assets/widgets/owl.jpg)
+
+
+
+```dart
+Image.network('https://flutter.github.io/assets-for-api-docs/assets/widgets/owl-2.jpg')
+```
+`Image`组件同样可以使用多种不同的构造函数来让展示不同`ImageProvider`的图片更加方便，上面的例子可以使用`Image.network`来替换。
+
+![](https://flutter.github.io/assets-for-api-docs/assets/widgets/owl-2.jpg)
+
+
+
+## 内存占用
+图片如果以未压缩的形式存储在内存中会占用很多内存空间，大图片更加明显，一张4K的图片将会占用超过30MB的内存大小。
+
+这个问题在使用`ImageCache`做缓存的时候更被加剧了，所以大图片使用的内存空间远远大于它实际展示所需要的内存空间。
+
+`Image.asset`，`Image.network`，`Image.file`和`Image.memory`允许使用`cacheWidth`和`cacheHeight`自定义解码尺寸。随后引擎将会使用指定的大小对图片进行解码和存储，而不是使用图片的原始大小。这个操作可以显著降低内存消耗，比如将一张4K的图片在384*216像素大小的区域上展示，将只会消耗330KB的内存，这是原来的100分之一。
+
+
+
+## 构造函数
+```dart
+Image.new({
+  Key? key,
+  required ImageProvider<Object> image,
+  ImageFrameBuilder? frameBuilder,
+  ImageLoadingBuilder? loadingBuilder,
+  ImageErrorWidgetBuilder? errorBuilder,
+  String? semanticLabel,
+  bool excludeFromSemantics = false,
+  double? width,
+  double? height,
+  Color? color,
+  Animation<double>? opacity,
+  BlendMode? colorBlendMode,
+  BoxFit? fit,
+  AlignmentGeometry alignment = Alignment.center,
+  ImageRepeat repeat = ImageRepeat.noRepeat,
+  Rect? centerSlice,
+  bool matchTextDirection = false,
+  bool gaplessPlayback = false,
+  bool isAntiAlias = false,
+  FilterQuality filterQuality = FilterQuality.medium
+})
+
+
+Image.asset(String name, {
+  Key? key,
+  AssetBundle? bundle,
+  ImageFrameBuilder? frameBuilder,
+  ImageErrorWidgetBuilder? errorBuilder,
+  String? semanticLabel,
+  bool excludeFromSemantics = false,
+  double? scale,
+  double? width,
+  double? height,
+  Color? color,
+  Animation<double>? opacity,
+  BlendMode? colorBlendMode,
+  BoxFit? fit,
+  AlignmentGeometry alignment = Alignment.center,
+  ImageRepeat repeat = ImageRepeat.noRepeat,
+  Rect? centerSlice,
+  bool matchTextDirection = false,
+  bool gaplessPlayback = false,
+  bool isAntiAlias = false,
+  String? package,
+  FilterQuality filterQuality = FilterQuality.medium,
+  int? cacheWidth,
+  int? cacheHeight
+})
+
+
+Image.file(File file, {
+  Key? key,
+  double scale = 1.0,
+  ImageFrameBuilder? frameBuilder,
+  ImageErrorWidgetBuilder? errorBuilder,
+  String? semanticLabel,
+  bool excludeFromSemantics = false,
+  double? width,
+  double? height,
+  Color? color,
+  Animation<double>? opacity,
+  BlendMode? colorBlendMode,
+  BoxFit? fit,
+  AlignmentGeometry alignment = Alignment.center,
+  ImageRepeat repeat = ImageRepeat.noRepeat,
+  Rect? centerSlice,
+  bool matchTextDirection = false,
+  bool gaplessPlayback = false,
+  bool isAntiAlias = false,
+  FilterQuality filterQuality = FilterQuality.medium,
+  int? cacheWidth,
+  int? cacheHeight
+})
+
+
+Image.memory(Uint8List bytes, {
+  Key? key,
+  double scale = 1.0,
+  ImageFrameBuilder? frameBuilder,
+  ImageErrorWidgetBuilder? errorBuilder,
+  String? semanticLabel,
+  bool excludeFromSemantics = false,
+  double? width,
+  double? height,
+  Color? color,
+  Animation<double>? opacity,
+  BlendMode? colorBlendMode,
+  BoxFit? fit,
+  AlignmentGeometry alignment = Alignment.center,
+  ImageRepeat repeat = ImageRepeat.noRepeat,
+  Rect? centerSlice,
+  bool matchTextDirection = false,
+  bool gaplessPlayback = false,
+  bool isAntiAlias = false,
+  FilterQuality filterQuality = FilterQuality.medium,
+  int? cacheWidth,
+  int? cacheHeight
+})
+
+
+Image.network(String src, {
+  Key? key,
+  double scale = 1.0,
+  ImageFrameBuilder? frameBuilder,
+  ImageLoadingBuilder? loadingBuilder,
+  ImageErrorWidgetBuilder? errorBuilder,
+  String? semanticLabel,
+  bool excludeFromSemantics = false,
+  double? width,
+  double? height,
+  Color? color,
+  Animation<double>? opacity,
+  BlendMode? colorBlendMode,
+  BoxFit? fit,
+  AlignmentGeometry alignment = Alignment.center,
+  ImageRepeat repeat = ImageRepeat.noRepeat,
+  Rect? centerSlice,
+  bool matchTextDirection = false,
+  bool gaplessPlayback = false,
+  FilterQuality filterQuality = FilterQuality.medium,
+  bool isAntiAlias = false,
+  Map<String, String>? headers,
+  int? cacheWidth,
+  int? cacheHeight,
+  WebHtmlElementStrategy webHtmlElementStrategy = WebHtmlElementStrategy.never
+})
+```
+
+
+## 参数
+|参数名|参数类型|说明|
+|-----|-------|------|
+|alignment|AlignmentGeometry| 图片排列方式 |
+|centerSlice| Rect ? |  用于将一张九宫图的可拉伸区域标注出来  |
+|color | Color? | 如果设置颜色，那么该颜色将以`colorBlendMode`的配置与图片进行混合叠加 |
+|colorBlendMode| BlendMode? | 颜色与图片混合时使用的混合模式  |
+|errorBuilder | ImageErrorWidgetBuilder? | 图片加载出错时调用的一个`builder`函数 |
+|filterQuality| FilterQuality | 图片渲染质量 |
+|fit| BoxFit? | 用于在图片原始宽高比例与`Image`目标区域不一致时，如何填充`Image`组件空间，拉伸还是裁切 |
+|frameBuilder| ImageFrameBuilder? | 用来在图片加载、解码、渲染的每一个“帧阶段”插入自定义的过渡动画或占位UI |
+|gaplessPlayback| bool | 用于设置在`ImageProvider`发生变化时，是保留旧图等新图加载完成后进行替换，还是直接切换出现短暂空白(或占位图)|
+|height | double? | 高度 |
+|image|ImageProvider\<Object\>| 要展示的图片数据源 |
+|isAntiAlias| bool | 设置图片是否抗锯齿 |
+|loadingBuilder| ImageLoadingBuilder? | 图片在加载时候的占位UI |
+|matchTextDirection| bool | 绘制的图片方向是否跟随`TextDirection`  |
+|opacity| Animation\<double\>? | 给图片添加不透明度 |
+|repeat | ImageRepeat | 设置图片如何重复渲染来填充满`Image`空白区域  |
+|width| double? | 宽度 |
+
+### 额外说明
+#### fit参数取值:
+|取值|含义|说明|
+|---|---|----|
+|fill|完全填满，拉伸| 宽高独立拉伸，比例失真，不裁剪 |
+|contain|完整显示，留空隙| 等比缩放直到完全放下，可能留黑边|
+|cover| 铺满不留空，裁剪| 等比例缩放至完全覆盖，多余部分裁剪|
+|fitWidth|宽度优先，高可溢出| 等比例缩放至宽度等于目标宽度，如果高度超出裁剪掉|
+|fitHeight|高度优先，宽可溢出 | 等比例缩放至高度等于目标高度，如果宽度超出裁剪掉 |
+|none|原图大小，不缩放| 不做任何缩放，左上角对齐，多余部分裁剪掉|
+|scaleDown|智能缩小，不放大| 类似contain，但不会放大原图，原图比目标区域小时就原尺寸|
+
+
+#### frameBuilder和loadingBuilder的区别:
+- `loadingBuilder`只关心下载进度(0 -100%)，不涉及解码后的帧
+- `frameBuilder`关心解码后的帧，可以处理GIF多帧，淡入动画等
+两者可以同时使用，互不冲突。
