@@ -2,3 +2,230 @@
 title: SliverPersistentHeader
 description: 一个当其滚动到与自身GrowthDirection相反方向的视口边缘时，大小会发生变化的sliver
 ---
+
+`SliverPersistentHeader`是Flutter中用于创建可定制滑动头部的重要组件，属于Sliver系列组件之一。其主要功能是在`CustomScrollView`中提供一个可以随着滚动而动态调整高度和外观的头部区域。该组件能够实现类似Material Design中`AppBar`的折叠效果，但具有更高的自定义灵活性。
+
+**核心逻辑**: 当用户滚动内容时，`SliverPersistentHeader`会根据滚动位置自动调整其显示状态，支持两种模式: 固定模式(pinned)和浮动模式(floating)，满足不同场景的交互需求。
+
+### 使用场景
+- **分类导航栏**: 在商品列表顶部实现可固定的分类筛选栏
+- **详情页头部**: 实现可折叠的商品详情头部图片区域
+- **社交应用**: 用户资料页面的可折叠头部设计
+- **数据仪表盘**: 保持重要统计信息在滚动时可见
+
+## 示例
+### 1. 基本使用
+```dart
+CustomScrollView(
+  slivers: <Widget>[
+    SliverPersistentHeader(
+      pinned: true, // 固定模式，滚动时保持可见
+      delegate: _SliverAppBarDelegate(
+        minHeight: 60.0,
+        maxHeight: 200.0,
+        child: Container(
+          color: Colors.blue,
+          child: Center(
+            child: Text(
+              '固定头部示例',
+              style: TextStyle(color: Colors.white, fontSize: 24),
+            ),
+          ),
+        ),
+      ),
+    ),
+    SliverList(
+      delegate: SliverChildBuilderDelegate(
+        (context, index) => ListTile(title: Text('项目 $index')),
+        childCount: 50,
+      ),
+    ),
+  ],
+)
+
+class _SliverAppBarDelegate extends SliverPersistentHeaderDelegate {
+  final double minHeight;
+  final double maxHeight;
+  final Widget child;
+
+  _SliverAppBarDelegate({
+    required this.minHeight,
+    required this.maxHeight,
+    required this.child,
+  });
+
+  @override
+  double get minExtent => minHeight;
+  @override
+  double get maxExtent => maxHeight;
+
+  @override
+  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
+    return SizedBox.expand(child: child);
+  }
+
+  @override
+  bool shouldRebuild(_SliverAppBarDelegate oldDelegate) {
+    return maxHeight != oldDelegate.maxHeight ||
+        minHeight != oldDelegate.minHeight ||
+        child != oldDelegate.child;
+  }
+}
+```
+
+### 2. 动态渐变背景头部
+```dart
+class DynamicHeaderExample extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return CustomScrollView(
+      slivers: [
+        SliverPersistentHeader(
+          floating: true, // 浮动模式，快速滚动时出现
+          delegate: _GradientHeaderDelegate(),
+        ),
+        // ... 其他 sliver 组件
+      ],
+    );
+  }
+}
+
+class _GradientHeaderDelegate extends SliverPersistentHeaderDelegate {
+  @override
+  double get minExtent => 80;
+  @override
+  double get maxExtent => 150;
+
+  @override
+  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
+    final progress = shrinkOffset / maxExtent;
+    final color = Color.lerp(Colors.blue, Colors.red, progress)!;
+    
+    return Container(
+      color: color,
+      child: Center(
+        child: Opacity(
+          opacity: 1 - progress,
+          child: Text(
+            '动态渐变头部',
+            style: TextStyle(color: Colors.white, fontSize: 20),
+          ),
+        ),
+      ),
+    );
+  }
+
+  @override
+  bool shouldRebuild(covariant SliverPersistentHeaderDelegate oldDelegate) => true;
+}
+```
+
+### 3. 带标签的复杂头部
+```dart
+class TabbedHeaderExample extends StatefulWidget {
+  @override
+  _TabbedHeaderExampleState createState() => _TabbedHeaderExampleState();
+}
+
+class _TabbedHeaderExampleState extends State<TabbedHeaderExample> {
+  final List<String> tabs = ['详情', '评论', '推荐'];
+  int selectedTab = 0;
+
+  @override
+  Widget build(BuildContext context) {
+    return DefaultTabController(
+      length: tabs.length,
+      child: CustomScrollView(
+        slivers: [
+          SliverPersistentHeader(
+            pinned: true,
+            delegate: _TabBarHeaderDelegate(
+              tabBar: TabBar(
+                tabs: tabs.map((tab) => Tab(text: tab)).toList(),
+                onTap: (index) => setState(() => selectedTab = index),
+              ),
+            ),
+          ),
+          SliverFillRemaining(
+            child: TabBarView(
+              children: tabs.map((tab) => Center(child: Text('$tab 内容'))).toList(),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _TabBarHeaderDelegate extends SliverPersistentHeaderDelegate {
+  final TabBar tabBar;
+
+  _TabBarHeaderDelegate({required this.tabBar});
+
+  @override
+  double get minExtent => 48;
+  @override
+  double get maxExtent => 48;
+
+  @override
+  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
+    return ColoredBox(
+      color: Colors.white,
+      child: tabBar,
+    );
+  }
+
+  @override
+  bool shouldRebuild(covariant _TabBarHeaderDelegate oldDelegate) {
+    return tabBar != oldDelegate.tabBar;
+  }
+}
+```
+
+## 注意点
+### 常见问题
+- **性能优化**: 避免在`delegate`的`build`方法中执行复杂计算，特别是对于频繁重建的情况
+- **重叠内容**: 注意`overlapsContent`参数的处理，确保头部与其他内容正确重叠显示
+- **高度计算**: `minExtent`和`maxExtent`必须精确计算，否则可能导致布局异常
+
+### 优化技巧
+- **使用`ConstrainedBox`**: 在`delegate`中合理约束子组件大小
+- **缓存计算结果**: 对于昂贵的计算，考虑在`shouldRebuild`中优化重建逻辑
+- **响应式设计**: 根据屏幕尺寸动态调整`minExtent`和`maxExtent`值
+
+### 最佳实践
+优先使用`SliverAppBar`(基于`SliverPersistentHeader`的封装)满足常见需求
+复杂自定义需求时才直接使用`SliverPersistentHeader`
+确保`delegate`的`shouldRebuild`方法正确实现，避免不必要的重建
+
+
+## 构造函数
+```dart
+SliverPersistentHeader.new({
+  Key? key, 
+  required SliverPersistentHeaderDelegate delegate, 
+  bool pinned = false, 
+  bool floating = false
+})
+```
+
+
+## 属性
+| 属性名 | 属性类型 | 说明 |
+|--------|----------|------|
+| delegate | SliverPersistentHeaderDelegate | 定义头部渲染逻辑和尺寸的委托对象 |
+| pinned | bool | 设置为 true 时，头部在滚动时会保持固定可见 |
+| floating | bool | 设置为 true 时，头部在快速向上滚动时会立即显示 |
+
+### 关键属性详解
+`delegate`：这是最重要的属性，必须实现`SliverPersistentHeaderDelegate`接口。它负责：
+- 定义头部的最大和最小高度（maxExtent/minExtent）
+- 构建头部的实际内容（build 方法）
+- 控制何时需要重新构建（shouldRebuild 方法）
+
+
+`pinned`与`floating`组合效果：
+- pinned: false, floating: false：普通滚动头部
+- pinned: true, floating: false：固定头部（类似传统的 sticky header）
+- pinned: false, floating: true：浮动头部（快速滚动时出现）
+- pinned: true, floating: true：固定且浮动头部（Material AppBar 的默认行为）
