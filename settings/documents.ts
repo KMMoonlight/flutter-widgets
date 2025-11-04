@@ -52,6 +52,28 @@ export const Documents: Paths[] = [
         ]
       },
       {
+        title: "资源组件",
+        href: '/assets',
+        items: [
+          {
+            title: "AssetsBundle",
+            href: '/assets_bundle'
+          },
+          {
+            title: "Icon",
+            href: '/icon'
+          },
+          {
+            title: "Image",
+            href: '/image'
+          },
+          {
+            title: "RawImage",
+            href: '/raw_image'
+          }
+        ]
+      },
+      {
         title: "文本组件",
         href: '/text',
         items: [
