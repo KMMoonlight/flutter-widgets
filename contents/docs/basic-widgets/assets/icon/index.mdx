@@ -1,0 +1,81 @@
+---
+title: Icon
+description: 一个使用IconData绘制的图标组件
+---
+
+一个使用`IconData`绘制的图标组件，例如Material中就预定义了`IconData`。
+
+`Icon`本身不可交互。如果需要可交互的图标，可以考虑使用`IconButton`组件。
+
+使用`Icon`时必须存在一个`Directionality`祖先组件，通常`WidgetsApp`或`MaterialApp`会自动引入。`Directionality`组件用于告诉组件树当前环境是**从左往右**还是**从右往左**。
+
+`Icon`组件假定所渲染的图标为正方形，非正方形的图标可能会显示异常。
+
+
+## 举例
+```dart
+const Row(
+  mainAxisAlignment: MainAxisAlignment.spaceAround,
+  children: <Widget>[
+    Icon(
+      Icons.favorite,
+      color: Colors.pink,
+      size: 24.0
+    ),
+    Icon(
+      Icons.audiotrack,
+      color: Colors.green,
+      size: 30.0,
+    ),
+    Icon(
+      Icons.beach_access,
+      color: Colors.blue,
+      size: 36.0,
+    ),
+  ],
+)
+```
+
+这个例子展示了如何创建一排不同大小以及颜色的图标。
+
+![](/images/flutter_icon_01.png)
+
+
+## 构造函数
+```dart
+Icon.new(IconData? icon, {
+  Key? key,
+  double? size,
+  double? fill,
+  double? weight,
+  double? grade,
+  double? opticalSize,
+  Color? color,
+  List<Shadow>? shadows,
+  String? semanticLabel,
+  TextDirection? textDirection,
+  bool? applyTextScaling,
+  BlendMode? blendMode,
+  FontWeight? fontWeight
+})
+```
+
+## 属性
+| 属性名 | 属性类型 |  说明 |
+|-------|---------|------|
+|applyTextScaling| bool? | 是否使用`MediaQuery`的`TextScaler`来缩放图标大小 |
+|blendMode| BlendMode? | 应用于图标前景的混合模式 |
+|color| Color? | 图标颜色 |
+|fill | double? | 控制图标填充程度，值为0.0为完全空心轮廓，1.0完全实心填充，中间值为部分填充状态，仅对设置了填充变体的图标有效(如星星、书签、心形等) |
+|fontWeight| FontWeight? | 文本的字重 |
+|grade| double? | 绘制图标的轮廓的粗细 |
+|icon| IconData? | 使用的图标内容 |
+|opticalSize| double? |用于控制图标的视觉平衡和比例，光学补偿: 图标在不同尺寸下需要不同的视觉调整。小尺寸图标: 需要稍粗的笔画防止看起来稀疏。大尺寸图标: 需要精细的细节避免显得笨重。 让引擎知道目标的显示尺寸自动优化笔画粗细和比例|
+|shadows| List\<Shadow\>? |在图标下方展示的阴影列表|
+|size| double? | `icon`的逻辑像素尺寸大小 |
+|textDirection| TextDirection? | 给图标使用的方向  |
+|weight| double? | 控制图标的笔画粗细和整体视觉重量 |
+
+
+
+
