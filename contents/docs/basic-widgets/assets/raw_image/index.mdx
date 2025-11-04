@@ -2,3 +2,261 @@
 title: RawImage
 description: 用于直接展示原始图片的组件
 ---
+
+`RawImage`是Flutter中的一个底层图像显示组件，主要用于直接渲染原始的图像数据(ui.Image对象)。与`Image`组件不同，`RawImage`不包含内置的图像加载、缓存或解码功能，而是要求开发者手动管理图像数据的整个生命周期。
+
+**核心逻辑**: `RawImage`接收一个`ui.Image`对象作为输入，将其直接绘制到屏幕上。这种设计使得它特别适合需要精细控制图像处理流程的场景，如自定义图像解码、实时图像流处理或性能敏感的应用。
+
+### 使用场景
+- **实时图像流**: 摄像头预览、视频帧显示
+- **自定义图像处理**: 手动解码、滤镜应用后的图像显示
+- **性能优化**: 避免`Image`组件的自动缓存和加载开销
+- **低级图像操作**: 与`dart:ui`层直接交互的场景
+
+## 示例
+### 1. 基础RawImage使用
+```dart
+import 'dart:ui' as ui;
+import 'package:flutter/material.dart';
+
+class BasicRawImageExample extends StatefulWidget {
+  @override
+  _BasicRawImageExampleState createState() => _BasicRawImageExampleState();
+}
+
+class _BasicRawImageExampleState extends State<BasicRawImageExample> {
+  ui.Image? _image;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadImage();
+  }
+
+  Future<void> _loadImage() async {
+    final ByteData data = await rootBundle.load('assets/images/sample.png');
+    final Uint8List bytes = data.buffer.asUint8List();
+    final ui.Codec codec = await ui.instantiateImageCodec(bytes);
+    final ui.FrameInfo frameInfo = await codec.getNextFrame();
+    
+    setState(() {
+      _image = frameInfo.image;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('基础 RawImage 示例')),
+      body: Center(
+        child: _image != null 
+            ? RawImage(image: _image)
+            : CircularProgressIndicator(),
+      ),
+    );
+  }
+}
+```
+
+### 2. 带交互控制的 RawImage
+```dart
+import 'dart:ui' as ui;
+import 'package:flutter/material.dart';
+
+class InteractiveRawImageExample extends StatefulWidget {
+  @override
+  _InteractiveRawImageExampleState createState() => _InteractiveRawImageExampleState();
+}
+
+class _InteractiveRawImageExampleState extends State<InteractiveRawImageExample> {
+  ui.Image? _image;
+  double _scale = 1.0;
+  double _rotation = 0.0;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadImage();
+  }
+
+  Future<void> _loadImage() async {
+    // 图像加载逻辑同上
+    final ByteData data = await rootBundle.load('assets/images/sample.png');
+    final Uint8List bytes = data.buffer.asUint8List();
+    final ui.Codec codec = await ui.instantiateImageCodec(bytes);
+    final ui.FrameInfo frameInfo = await codec.getNextFrame();
+    
+    setState(() {
+      _image = frameInfo.image;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('交互式 RawImage 示例')),
+      body: Column(
+        children: [
+          Expanded(
+            child: Center(
+              child: _image != null
+                  ? RawImage(
+                      image: _image,
+                      scale: _scale,
+                      // 注意：RawImage 本身不支持旋转，需要配合 Transform
+                    )
+                  : CircularProgressIndicator(),
+            ),
+          ),
+          Padding(
+            padding: EdgeInsets.all(16.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                ElevatedButton(
+                  onPressed: () => setState(() => _scale *= 1.2),
+                  child: Text('放大'),
+                ),
+                ElevatedButton(
+                  onPressed: () => setState(() => _scale /= 1.2),
+                  child: Text('缩小'),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+```
+
+### 3. 主题适配的RawImage
+```dart
+import 'dart:ui' as ui;
+import 'package:flutter/material.dart';
+
+class ThemedRawImageExample extends StatelessWidget {
+  final ui.Image image;
+
+  ThemedRawImageExample({required this.image});
+
+  @override
+  Widget build(BuildContext context) {
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
+    
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('主题适配 RawImage'),
+        backgroundColor: isDark ? Colors.grey[800] : Colors.blue,
+      ),
+      body: Container(
+        color: isDark ? Colors.grey[900] : Colors.white,
+        child: Center(
+          child: RawImage(
+            image: image,
+            width: 300,
+            height: 300,
+            fit: BoxFit.contain,
+            // 可以根据主题调整颜色滤镜
+            color: isDark ? Colors.white.withOpacity(0.9) : null,
+            colorBlendMode: isDark ? BlendMode.modulate : BlendMode.srcIn,
+          ),
+        ),
+      ),
+    );
+  }
+}
+```
+
+## 注意点
+### 常见问题
+- **内存泄漏风险**: `ui.Image`对象需要手动释放，否则可能导致内存泄漏
+- **性能瓶颈**: 大型图像的直接渲染可能影响性能，需要适当缩放
+- **平台兼容性**: 某些图像格式在不同平台上可能有不同的支持情况
+
+### 优化技巧
+- **图像尺寸适配**: 根据显示区域调整图像尺寸，避免渲染过大图像
+- **对象复用**: 尽可能复用`ui.Image`对象，减少重复解码
+- **及时释放**: 在不需要时调用`image.dispose()`释放资源
+
+### 最佳实践
+```dart
+// 正确的资源管理示例
+class ImageManager {
+  static final Map<String, ui.Image> _cache = {};
+  
+  static Future<ui.Image> loadImage(String path) async {
+    if (_cache.containsKey(path)) {
+      return _cache[path]!;
+    }
+    
+    // 加载和解码逻辑
+    final ui.Image image = await _decodeImage(path);
+    _cache[path] = image;
+    return image;
+  }
+  
+  static void disposeImage(String path) {
+    _cache[path]?.dispose();
+    _cache.remove(path);
+  }
+}
+```
+
+## 构造函数
+```dart
+RawImage({
+  Key? key,
+  this.image,           // ui.Image 对象
+  this.width,           // 图像宽度
+  this.height,          // 图像高度
+  this.scale = 1.0,     // 缩放比例
+  this.color,           // 颜色滤镜
+  this.colorBlendMode,  // 颜色混合模式
+  this.fit,             // 适应模式
+  this.alignment = Alignment.center,  // 对齐方式
+  this.repeat = ImageRepeat.noRepeat, // 重复模式
+  this.centerSlice,     // 九宫格切片
+  this.matchTextDirection = false,    // 文本方向匹配
+  this.filterQuality = FilterQuality.low, // 过滤质量
+})
+```
+
+
+## 属性
+| 属性名 | 属性类型 | 说明 |
+|--------|----------|------|
+| image | ui.Image? | 要显示的原始图像对象，核心属性 |
+| width | double? | 图像的显示宽度 |
+| height | double? | 图像的显示高度 |
+| scale | double | 图像缩放比例，默认1.0 |
+| color | Color? | 应用于图像的颜色滤镜 |
+| colorBlendMode | BlendMode? | 颜色混合模式 |
+| fit | BoxFit? | 图像在容器中的适应方式 |
+| alignment | Alignment | 图像对齐方式，默认居中 |
+| repeat | ImageRepeat | 图像重复模式，默认不重复 |
+| centerSlice | Rect? | 九宫格拉伸时的中心切片区域 |
+| matchTextDirection | bool | 是否匹配文本方向，默认false |
+| filterQuality | FilterQuality | 图像过滤质量，默认低质量 |
+
+### 关键属性详解
+**image (ui.Image?)**
+- **重要性**: 核心必需属性，没有图像数据则无法显示
+- **性能影响**: 直接持有图像数据，需要手动管理内存
+- **使用建议**: 确保在组件销毁时适当处理图像资源
+
+**filterQuality (FilterQuality)**
+- **选项**: low, medium, high, none
+- **性能权衡**: 高质量过滤消耗更多性能
+- **适用场景**: 静态图像建议使用medium，动态内容使用low
+
+**fit (BoxFit?)**
+- **常用值**: contain, cover, fill, fitWidth, fitHeight
+- **布局影响**: 控制图像如何适应可用空间
+- **默认行为**: null时按原始尺寸显示，可能被裁剪
+
+**color和colorBlendMode**
+- **功能**: 实现图像着色效果
+- **典型应用**: 主题适配、状态指示器
+- **注意事项**: 配合使用才能达到预期效果
