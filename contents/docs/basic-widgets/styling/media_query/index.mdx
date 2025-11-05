@@ -1,1 +1,268 @@
+---
+title: MediaQuery
+description: 用于获取设备屏幕和应用程序相关信息的组件
+---
 
+`MediaQuery`是Flutter中用于获取设备屏幕和应用程序相关信息的核心组件。它作为数据容器，提供了访问设备尺寸、方向、文本缩放因子、像素密度等关键信息的接口。`MediaQuery`采用`InheritedWidget`设计模式，允许在widget树中任何位置轻松访问设备特性数据。
+
+**核心逻辑**: `MediaQuery`通过`BuildContext`将设备信息向下传递到widget树中，子组件可以通过`MediaQuery.of(context)`方法读取当前设备的配置信息，实现响应式UI设计。
+
+### 使用场景
+- **响应式布局**: 根据屏幕尺寸动态调整界面布局
+- **适配不同设备**: 处理手机、平板、桌面等不同屏幕尺寸
+- **方向检测**: 监听横竖屏切换并调整界面
+- **无障碍功能**: 响应系统字体大小、高对比度等设置
+- **安全区域处理**: 避开刘海屏、状态栏等系统UI区域
+
+## 示例
+### 1. 基础屏幕信息获取
+```dart
+import 'package:flutter/material.dart';
+
+class BasicMediaQueryExample extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    // 获取 MediaQueryData 对象
+    final mediaQuery = MediaQuery.of(context);
+    
+    return Scaffold(
+      appBar: AppBar(title: Text('MediaQuery 基础示例')),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text('屏幕宽度: ${mediaQuery.size.width}px'),
+            Text('屏幕高度: ${mediaQuery.size.height}px'),
+            Text('设备像素比: ${mediaQuery.devicePixelRatio}'),
+            Text('屏幕方向: ${mediaQuery.orientation == Orientation.portrait ? '竖屏' : '横屏'}'),
+            Text('文本缩放因子: ${mediaQuery.textScaleFactor}'),
+          ],
+        ),
+      ),
+    );
+  }
+}
+```
+
+### 2. 响应式布局设计
+```dart
+import 'package:flutter/material.dart';
+
+class ResponsiveLayoutExample extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final mediaQuery = MediaQuery.of(context);
+    final screenWidth = mediaQuery.size.width;
+    
+    // 根据屏幕宽度决定布局
+    if (screenWidth > 600) {
+      // 平板或桌面布局
+      return _buildTabletLayout();
+    } else {
+      // 手机布局
+      return _buildMobileLayout();
+    }
+  }
+  
+  Widget _buildMobileLayout() {
+    return Scaffold(
+      appBar: AppBar(title: Text('手机布局')),
+      body: ListView(
+        children: [
+          ListTile(title: Text('项目 1')),
+          ListTile(title: Text('项目 2')),
+          ListTile(title: Text('项目 3')),
+        ],
+      ),
+    );
+  }
+  
+  Widget _buildTabletLayout() {
+    return Scaffold(
+      appBar: AppBar(title: Text('平板布局')),
+      body: Row(
+        children: [
+          Expanded(
+            flex: 1,
+            child: Container(
+              color: Colors.grey[200],
+              child: ListView(
+                children: [
+                  ListTile(title: Text('导航 1')),
+                  ListTile(title: Text('导航 2')),
+                ],
+              ),
+            ),
+          ),
+          Expanded(
+            flex: 2,
+            child: Container(
+              padding: EdgeInsets.all(16),
+              child: Column(
+                children: [
+                  Text('主要内容区域'),
+                  // 更多内容...
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+```
+
+### 3. 安全区域和系统UI处理
+```dart
+import 'package:flutter/material.dart';
+
+class SafeAreaExample extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final mediaQuery = MediaQuery.of(context);
+    
+    return Scaffold(
+      // 使用 MediaQuery.removePadding 处理系统重叠
+      body: MediaQuery.removePadding(
+        context: context,
+        removeTop: true, // 移除顶部状态栏间距
+        child: Container(
+          // 考虑安全区域避免系统 UI 遮挡
+          padding: mediaQuery.padding,
+          color: Colors.blue,
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text('安全区域顶部: ${mediaQuery.padding.top}px'),
+                Text('安全区域底部: ${mediaQuery.padding.bottom}px'),
+                Text('安全区域左侧: ${mediaQuery.padding.left}px'),
+                Text('安全区域右侧: ${mediaQuery.padding.right}px'),
+                SizedBox(height: 20),
+                ElevatedButton(
+                  onPressed: () {
+                    // 检查暗色模式
+                    final isDark = mediaQuery.platformBrightness == Brightness.dark;
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text(isDark ? '暗色模式' : '亮色模式'))
+                    );
+                  },
+                  child: Text('检查主题模式'),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+```
+
+## 注意点
+### 常见问题
+1. **空指针异常**: 在`widget`树外调用`MediaQuery.of(context)`会导致异常
+2. **性能问题**: 过度频繁调用`MediaQuery`可能引起不必要的重建
+3. **初始化时机**: 在`initState`中无法获取正确的`MediaQuery`数据
+4. **嵌套MediaQuery**: 多层`MediaQuery`可能导致数据不一致
+
+### 优化技巧
+```dart
+// 避免在 build 方法中频繁计算
+class OptimizedExample extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    // 将 MediaQuery 数据提取到变量中
+    final mediaQuery = MediaQuery.of(context);
+    final screenSize = mediaQuery.size;
+    final isLandscape = mediaQuery.orientation == Orientation.landscape;
+    
+    return Container(
+      // 使用缓存的数据
+      width: isLandscape ? screenSize.width * 0.5 : screenSize.width,
+      // ...
+    );
+  }
+}
+
+// 使用 LayoutBuilder 作为替代方案
+class LayoutBuilderAlternative extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // constraints 提供类似的尺寸信息
+        return Container(
+          width: constraints.maxWidth > 600 ? 300 : double.infinity,
+          // ...
+        );
+      },
+    );
+  }
+}
+```
+
+### 最佳实践
+- **合理使用时机**: 只在需要设备信息时使用`MediaQuery`
+- **缓存数据**: 将`MediaQuery`数据存储在变量中避免重复调用
+- **组合使用**: 与`LayoutBuilder`、`OrientationBuilder`等组件配合使用
+- **测试覆盖**: 为不同屏幕尺寸和设备特性编写测试用例
+
+
+## 构造函数
+```dart
+MediaQuery({
+  Key? key,
+  required MediaQueryData data,
+  required Widget child,
+})
+
+
+MediaQuery.removePadding({
+  Key? key,
+  required BuildContext context,
+  bool removeLeft = false,
+  bool removeTop = false,
+  bool removeRight = false,
+  bool removeBottom = false,
+  required Widget child,
+})
+
+
+MediaQuery.removeViewInsets({
+  Key? key,
+  required BuildContext context,
+  required Widget child,
+})
+```
+
+
+## 属性
+| 属性名 | 属性类型 | 说明 |
+|--------|----------|------|
+| data | MediaQueryData | 包含所有设备媒体信息的核心数据对象 |
+| child | Widget | 接收 MediaQuery 数据的子组件 |
+
+### MediaQueryData 关键属性详解
+| 属性名 | 类型 | 说明 |
+|--------|------|------|
+| size | Size | 屏幕逻辑像素尺寸（宽度和高度） |
+| devicePixelRatio | double | 设备像素比（物理像素与逻辑像素的比例） |
+| textScaleFactor | double | 系统文本缩放因子 |
+| platformBrightness | Brightness | 平台亮度主题（亮色/暗色） |
+| padding | EdgeInsets | 安全区域边距（避开系统 UI） |
+| viewInsets | EdgeInsets | 系统 UI 遮挡区域（如键盘） |
+| orientation | Orientation | 屏幕方向（横屏/竖屏） |
+| alwaysUse24HourFormat | bool | 是否使用24小时时间格式 |
+| accessibleNavigation | bool | 是否启用无障碍导航 |
+| invertColors | bool | 颜色是否反转（无障碍功能） |
+| disableAnimations | bool | 是否禁用动画（无障碍功能） |
+| boldText | bool | 是否使用粗体文本（无障碍功能） |
+
+#### 关键属性重点说明
+**size**: 最重要的属性之一，提供屏幕的逻辑像素尺寸。注意这与物理像素尺寸不同，需要结合`devicePixelRatio`进行转换。
+**devicePixelRatio**: 影响图像和文本的清晰度。高DPR设备需要更高分辨率的资源。
+**padding**: 处理刘海屏、状态栏等系统UI的关键属性，使用`SafeArea`组件或直接应用此边距来避免内容被遮挡。
+**platformBrightness**: 用于检测系统主题模式，实现暗色/亮色主题适配。
+**textScaleFactor**: 必须考虑的用户无障碍设置，影响所有文本尺寸，确保UI在不同文本缩放设置下正常工作。
