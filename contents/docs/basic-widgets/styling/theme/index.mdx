@@ -1,0 +1,271 @@
+---
+title: Theme
+description: 统一管理应用主题和样式的组件
+---
+
+`Theme`组件是Flutter中用于管理应用主题和样式统一性的核心组件。它通过`ThemeData`对象封装了颜色、字体、形状等视觉属性，实现了Material Design主题系统的完整支持。`Theme`组件采用**继承机制**，子组件可以
+通过`Theme.of(context)`方法获取当前主题配置，确保整个应用界面风格的一致性。
+
+### 使用场景
+- **全局主题配置**: 为整个应用设置统一的视觉风格
+- **局部主题覆盖**: 在特定页面或组件区域使用不同的主题样式
+- **动态主题切换**: 实现日间/夜间模式切换功能
+- **品牌一致性**: 保持企业品牌色彩和设计规范
+
+
+## 示例
+### 1. 基础全局主题配置
+```dart
+import 'package:flutter/material.dart';
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      theme: ThemeData(
+        // 主色调配置
+        primaryColor: Colors.blue,
+        primarySwatch: Colors.blue,
+        // 字体配置
+        fontFamily: 'Roboto',
+        // 亮度设置
+        brightness: Brightness.light,
+        // 组件默认样式
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(
+            primary: Colors.blue,
+            onPrimary: Colors.white,
+          ),
+        ),
+      ),
+      home: MyHomePage(),
+    );
+  }
+}
+
+class MyHomePage extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('主题示例'),
+      ),
+      body: Center(
+        child: ElevatedButton(
+          onPressed: () {},
+          child: Text('使用主题样式的按钮'),
+        ),
+      ),
+    );
+  }
+}
+```
+
+
+### 2. 局部主题覆盖与嵌套
+```dart
+class ThemeNestingExample extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('嵌套主题示例')),
+      body: Theme(
+        data: Theme.of(context).copyWith(
+          // 覆盖主色调
+          primaryColor: Colors.green,
+          // 修改卡片主题
+          cardTheme: CardTheme(
+            color: Colors.green[100],
+            elevation: 8,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+          ),
+        ),
+        child: Container(
+          padding: EdgeInsets.all(16),
+          child: Column(
+            children: [
+              Card(
+                child: Padding(
+                  padding: EdgeInsets.all(16),
+                  child: Text('使用局部主题的卡片'),
+                ),
+              ),
+              // 进一步嵌套主题
+              Theme(
+                data: Theme.of(context).copyWith(
+                  primaryColor: Colors.red,
+                ),
+                child: Card(
+                  child: Padding(
+                    padding: EdgeInsets.all(16),
+                    child: Text('红色主题卡片'),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+```
+
+### 3. 动态主题切换
+```dart
+class ThemeSwitcherExample extends StatefulWidget {
+  @override
+  _ThemeSwitcherExampleState createState() => _ThemeSwitcherExampleState();
+}
+
+class _ThemeSwitcherExampleState extends State<ThemeSwitcherExample> {
+  bool _isDarkMode = false;
+
+  ThemeData _buildLightTheme() {
+    return ThemeData(
+      brightness: Brightness.light,
+      primaryColor: Colors.blue,
+      backgroundColor: Colors.white,
+      scaffoldBackgroundColor: Colors.grey[100],
+    );
+  }
+
+  ThemeData _buildDarkTheme() {
+    return ThemeData(
+      brightness: Brightness.dark,
+      primaryColor: Colors.blue[700],
+      backgroundColor: Colors.grey[900],
+      scaffoldBackgroundColor: Colors.grey[850],
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      theme: _isDarkMode ? _buildDarkTheme() : _buildLightTheme(),
+      home: Scaffold(
+        appBar: AppBar(
+          title: Text('主题切换示例'),
+          actions: [
+            IconButton(
+              icon: Icon(_isDarkMode ? Icons.light_mode : Icons.dark_mode),
+              onPressed: () {
+                setState(() {
+                  _isDarkMode = !_isDarkMode;
+                });
+              },
+            ),
+          ],
+        ),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                '当前主题: ${_isDarkMode ? '暗色' : '亮色'}',
+                style: Theme.of(context).textTheme.headline6,
+              ),
+              SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: () {},
+                child: Text('主题化按钮'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+```
+
+## 注意点
+### 常见问题
+1. **性能瓶颈**: 频繁调用`Theme.of(context)`可能导致不必要的重建，使用时应避免在`build`方法中频繁调用
+2. **主题继承冲突**: 嵌套主题时可能出现样式覆盖混乱，需要明确主题的作用范围
+3. **颜色一致性**: 确保主题颜色符合WCAG可访问性标准
+
+### 优化技巧
+- 使用`const`构造函数创建`ThemeData`以提高性能
+- 通过`copyWith`方法复用现有主题配置，避免重复定义
+- 在`StatefulWidget`中缓存`ThemeData`实例
+
+```dart
+// 好的实践：使用扩展方法简化主题访问
+extension ThemeExtension on BuildContext {
+  ThemeData get theme => Theme.of(this);
+  TextTheme get textTheme => Theme.of(this).textTheme;
+  ColorScheme get colorScheme => Theme.of(this).colorScheme;
+}
+
+// 在组件中使用
+class OptimizedThemeUsage extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final theme = context.theme;
+    final textTheme = context.textTheme;
+    
+    return Container(
+      color: theme.backgroundColor,
+      child: Text('优化后的主题使用', style: textTheme.bodyText1),
+    );
+  }
+}
+```
+
+## 构造函数
+```dart
+Theme({
+  Key? key,
+  required ThemeData data,
+  required Widget child,
+  bool isMaterialAppTheme = false,
+})
+
+
+Theme(
+  data: ThemeData.light().copyWith(
+    primaryColor: Colors.blue,
+    accentColor: Colors.orange,
+  ),
+  child: MyWidget(),
+)
+```
+
+## 属性
+| 属性名 | 类型 | 说明 |
+|--------|------|------|
+| `data` | `ThemeData` | 主题数据对象，包含所有样式配置 |
+| `child` | `Widget` | 应用主题的子组件 |
+| `isMaterialAppTheme` | `bool` | 是否为MaterialApp主题标志 |
+
+
+### 关键属性详解
+**data属性**
+```dart
+ThemeData(
+  brightness: Brightness.light,        // 亮度主题
+  primaryColor: Colors.blue,           // 主色调
+  accentColor: Colors.orange,          // 强调色
+  scaffoldBackgroundColor: Colors.white, // 脚手架背景色
+  fontFamily: 'Roboto',                // 默认字体
+  textTheme: TextTheme(...),           // 文本样式
+  buttonTheme: ButtonThemeData(...),   // 按钮主题
+  // ... 数十种其他样式配置
+)
+```
+
+**child属性**
+
+child属性定义了主题的作用范围，所有子组件都可以通过`Theme.of(context)`访问当前主题配置。主题的继承机制确保了样式的层级管理。
+
+性能优化提示
+- 使用`const ThemeData`实例避免不必要的重创建
+- 通过`Theme.of(context).copyWith()`进行局部主题调整
+- 在需要频繁访问主题的组件中考虑使用`InheritedWidget`模式优化性能
