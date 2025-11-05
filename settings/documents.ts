@@ -110,6 +110,20 @@ export const Documents: Paths[] = [
         ]
       },
       {
+        title: "异步组件",
+        href: '/async',
+        items: [
+          {
+            title: "FutureBuilder",
+            href: '/future_builder'
+          },
+          {
+            title: "StreamBuilder",
+            href: '/stream_builder'
+          }
+        ]
+      },
+      {
         title: "输入组件",
         href: '/input',
         items: [
