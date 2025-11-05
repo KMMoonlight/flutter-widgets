@@ -1,0 +1,262 @@
+---
+title: BackdropFilter
+description: 给子组件施加滤镜效果的组件
+---
+
+`BackdropFilter`是一个特殊的Flutter组件，用于对其子组件应用滤镜效果，同时将背景内容进行模糊或其他图像处理。该组件基于`ImageFilter`类，能够创建视觉上吸引人的毛玻璃效果、模糊背景等`UI`设计。
+
+**核心逻辑**: `BackdropFilter`会捕获其后方的内容(即背景)，应用指定的滤镜效果，然后将滤镜后的背景与子组件进行合成显示。
+
+### 使用场景
+- **模态对话框**: 创建半透明的模糊背景，突出显示对话框内容
+- **侧边栏菜单**: 实现毛玻璃效果的导航菜单
+- **卡片组件**: 为卡片添加模糊背景效果，增强视觉层次感
+- **图片预览**: 在图片上叠加文字信息时使用模糊背景提高可读性
+
+## 示例
+### 1. 基础模糊背景效果
+```dart
+import 'package:flutter/material.dart';
+
+class BasicBackdropFilterExample extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Stack(
+        children: [
+          // 背景内容
+          Container(
+            width: double.infinity,
+            height: double.infinity,
+            decoration: BoxDecoration(
+              image: DecorationImage(
+                image: NetworkImage('https://picsum.photos/400/800'),
+                fit: BoxFit.cover,
+              ),
+            ),
+          ),
+          // 模糊滤镜层
+          Center(
+            child: ClipRect(
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 5.0, sigmaY: 5.0),
+                child: Container(
+                  width: 200,
+                  height: 100,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.2),
+                  ),
+                  child: Center(
+                    child: Text(
+                      '模糊效果',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+```
+
+### 2. 毛玻璃效果导航栏
+```dart
+import 'package:flutter/material.dart';
+
+class GlassNavigationBar extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      extendBody: true,
+      backgroundColor: Colors.transparent,
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Colors.blue, Colors.purple],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
+      ),
+      bottomNavigationBar: ClipRect(
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 10.0, sigmaY: 10.0),
+          child: Container(
+            height: 80,
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.1),
+              border: Border.all(color: Colors.white.withOpacity(0.2)),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                _buildNavItem(Icons.home, '首页'),
+                _buildNavItem(Icons.search, '搜索'),
+                _buildNavItem(Icons.person, '我的'),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildNavItem(IconData icon, String label) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Icon(icon, color: Colors.white),
+        SizedBox(height: 4),
+        Text(label, style: TextStyle(color: Colors.white)),
+      ],
+    );
+  }
+}
+```
+
+### 3. 自定义滤镜效果组合
+```dart
+import 'dart:ui';
+import 'package:flutter/material.dart';
+
+class CustomFilterExample extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Stack(
+        children: [
+          // 复杂背景
+          Container(
+            width: double.infinity,
+            height: double.infinity,
+            child: GridView.builder(
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 4,
+              ),
+              itemCount: 16,
+              itemBuilder: (context, index) {
+                return Container(
+                  color: Colors.primaries[index % Colors.primaries.length],
+                );
+              },
+            ),
+          ),
+          // 多种滤镜组合
+          Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                _buildFilteredCard(
+                  '高斯模糊',
+                  ImageFilter.blur(sigmaX: 8.0, sigmaY: 8.0),
+                ),
+                SizedBox(height: 20),
+                _buildFilteredCard(
+                  '矩阵变换',
+                  ImageFilter.matrix(Matrix4.rotationZ(0.1).storage),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFilteredCard(String title, ImageFilter filter) {
+    return ClipRect(
+      child: BackdropFilter(
+        filter: filter,
+        child: Container(
+          width: 250,
+          height: 100,
+          padding: EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.black.withOpacity(0.3),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: Colors.white.withOpacity(0.5)),
+          ),
+          child: Center(
+            child: Text(
+              title,
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+```
+
+## 注意点
+### 常见问题
+1. **性能影响**: `BackdropFilter`是比较消耗性能的组件，特别是在低端设备上或频繁使用时
+2. **ClipRect必要性**: 必须使用`ClipRect`包装`BackdropFilter`，否则滤镜会应用到整个屏幕
+3. **透明度控制**: 背景颜色需要设置透明度，否则滤镜效果不可见
+4. **Sigma值限制**: 模糊半径(sigma)值过大会导致性能急剧下降
+
+### 优化技巧
+```dart
+// 优化示例：限制模糊区域和强度
+ClipRect(
+  child: BackdropFilter(
+    filter: ImageFilter.blur(
+      sigmaX: 3.0, // 控制在 1.0-5.0 之间以获得最佳性能
+      sigmaY: 3.0,
+    ),
+    child: Container(
+      // 明确指定尺寸，避免不必要的重绘
+      width: 200,
+      height: 100,
+      color: Colors.white.withOpacity(0.1), // 合适的透明度
+    ),
+  ),
+)
+```
+
+### 最佳实践
+1. **仅在必要时使用**: 避免在列表项或频繁更新的组件中使用
+2. **控制模糊强度**: `sigma`值通常保持在10.0以下
+3. **明确边界**: 使用`ClipRect`明确界定滤镜应用范围
+4. **测试性能**: 在不同设备上测试性能表现
+
+
+## 构造函数
+```dart
+const BackdropFilter({
+  Key? key,
+  required ImageFilter filter,
+  Widget? child,
+}) : super(key: key);
+```
+
+## 属性
+| 属性名 | 属性类型 | 说明 |
+|--------|----------|------|
+| `filter` | `ImageFilter` | 必须参数，定义要应用的图像滤镜效果 |
+| `child` | `Widget?` | 可选参数，显示在滤镜上方的子组件 |
+
+
+### 关键属性详解
+`filter`属性:
+- `ImageFilter.blur(sigmaX: 5.0, sigmaY: 5.0)`: 高斯模糊
+- `ImageFilter.matrix()`: 矩阵变换效果
+- 性能影响: 模糊半径越大，性能消耗越高
+
+使用建议：
+- 对于简单的模糊效果，优先使用`ImageFilter.blur()`
+- 矩阵变换适用于更复杂的图像处理需求
+- 始终将`sigma`值控制在合理范围内(通常 1.0-8.0)
