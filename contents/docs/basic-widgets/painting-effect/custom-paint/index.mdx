@@ -1,0 +1,214 @@
+---
+title: CustomPaint
+description: 提供Canvas对象来进行绘制的组件
+---
+
+`CustomPaint`是Flutter中一个强大的绘图组件，允许开发者通过自定义画笔(`CustomPainter`)在画布(`Canvas`)上绘制任意2D图形。它不依赖预置的UI控件，而是直接使用底层绘
+图`API`(如绘制路径、形状、文本或图像)，适用于需要高度定制化视觉效果的场景，例如图表、动画、游戏界面或艺术化设计。
+
+### 核心逻辑：
+`CustomPaint`组件将绘图任务委托给一个`CustomPainter`对象。当组件需要渲染时，Flutter会调用`CustomPainter`的`paint()`方法，传入一个`Canvas`对象和可用区域大小，开发者在此方法内实现绘图指令。
+
+### 使用场景
+- **数据可视化**: 绘制折线图、柱状图或圆形进度条。
+- **自定义图标/按钮**: 创建非标准形状的UI元素(如波浪形背景)。
+- **游戏开发**: 渲染2D游戏中的角色或场景。
+- **艺术设计**: 实现手绘风格或动态涂鸦效果。
+
+
+## 示例
+### 1. 绘制简单图形(圆形和矩形)
+```dart
+import 'package:flutter/material.dart';
+
+class BasicPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = Colors.blue
+      ..style = PaintingStyle.fill;
+    
+    // 绘制一个圆形
+    canvas.drawCircle(Offset(size.width / 2, size.height / 2), 50, paint);
+    
+    // 绘制一个矩形
+    paint.color = Colors.red;
+    canvas.drawRect(Rect.fromLTWH(0, 0, 100, 80), paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
+// 在 UI 中使用
+class Example1 extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Center(
+        child: CustomPaint(
+          painter: BasicPainter(),
+          size: const Size(200, 200), // 指定绘图区域大小
+        ),
+      ),
+    );
+  }
+}
+```
+
+### 2. 交互式绘图(动态更新颜色)
+```dart
+import 'package:flutter/material.dart';
+
+class InteractivePainter extends CustomPainter {
+  final Color color;
+
+  InteractivePainter(this.color);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    canvas.drawCircle(
+      Offset(size.width / 2, size.height / 2),
+      60,
+      Paint()..color = color,
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant InteractivePainter oldDelegate) {
+    return oldDelegate.color != color; // 颜色变化时重绘
+  }
+}
+
+class Example2 extends StatefulWidget {
+  @override
+  _Example2State createState() => _Example2State();
+}
+
+class _Example2State extends State<Example2> {
+  Color _currentColor = Colors.blue;
+
+  void _changeColor() {
+    setState(() {
+      _currentColor = _currentColor == Colors.blue ? Colors.green : Colors.blue;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            CustomPaint(
+              painter: InteractivePainter(_currentColor),
+              size: const Size(150, 150),
+            ),
+            ElevatedButton(
+              onPressed: _changeColor,
+              child: const Text('切换颜色'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+```
+
+
+### 3. 适配主题的复杂路径绘制
+```dart
+import 'package:flutter/material.dart';
+
+class ThemeAwarePainter extends CustomPainter {
+  final Color primaryColor;
+
+  ThemeAwarePainter(this.primaryColor);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final path = Path()
+      ..moveTo(0, size.height)
+      ..quadraticBezierTo(
+        size.width / 2,
+        size.height - 80,
+        size.width,
+        size.height,
+      )
+      ..lineTo(size.width, 0)
+      ..lineTo(0, 0)
+      ..close();
+    
+    canvas.drawPath(
+      path,
+      Paint()
+        ..color = primaryColor
+        ..style = PaintingStyle.fill,
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant ThemeAwarePainter oldDelegate) {
+    return oldDelegate.primaryColor != primaryColor;
+  }
+}
+
+class Example3 extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Scaffold(
+      body: CustomPaint(
+        painter: ThemeAwarePainter(theme.primaryColor),
+        size: MediaQuery.of(context).size, // 全屏绘制
+      ),
+    );
+  }
+}
+```
+
+## 注意点
+### 常见问题与性能优化
+1. **性能瓶颈**:
+- 避免在`paint()`方法中执行复杂计算或频繁分配内存(如创建新`Paint`对象)。应在初始化阶段预定义对象。
+- 对于静态图形，设置`shouldRepaint`返回false以防止不必要的重绘。
+
+2. **兼容性警告**:
+- 在不同设备分辨率下，确保使用`Size`参数适配画布比例，避免图形拉伸或模糊。
+
+3. **优化技巧**:
+- 使用`RepaintBoundary`包裹`CustomPaint`，将绘图隔离为独立图层，减少父组件重建的影响。
+- 对于动态图形（如动画），考虑使用`CustomPaint`的`foregroundPainter`属性分离静态和动态部分。
+
+### 最佳实践
+- **重用`Painter`对象**: 在`StatefulWidget`中缓存`CustomPainter`实例。
+- **测试多平台**: 在`iOS/Android/Web`上验证绘图效果，尤其是路径和文本渲染。
+- **使用`Canvas`高级特性**: 如`save()/restore()`管理绘图状态，或`clipPath()`实现裁剪效果。
+
+
+## 构造函数
+```dart
+const CustomPaint({
+  Key? key,
+  this.painter,        // 主绘图器（背景层）
+  this.foregroundPainter, // 前景绘图器（覆盖在子组件上方）
+  required this.size,     // 画布大小（必须提供）
+  Widget? child,          // 可选的子组件（绘制在背景和前景之间）
+})
+```
+
+## 属性
+| 属性名               | 属性类型             | 说明                                                                 |
+|----------------------|----------------------|----------------------------------------------------------------------|
+| `painter`            | CustomPainter?       | 主绘图器，绘制背景层内容。当需要更新时触发重绘。                     |
+| `foregroundPainter`  | CustomPainter?       | 前景绘图器，绘制内容覆盖在 `child` 上方。适用于动态效果（如动画）。 |
+| `size`               | Size                 | 画布的大小。如果为 `Size.infinite`，将使用父组件约束的最大范围。     |
+| `child`              | Widget?              | 可选的子组件，位于背景和前景绘图之间。                               |
+
+
+### 关键属性详解
+- `size`: 这是最关键的属性，直接影响绘图区域。如果未正确设置，可能导致图形溢出或空白。建议显式指定`size`以确保一致性。
+- `painter`与`foregroundPainter`: 两者均为`CustomPainter`类型，但`foregroundPainter`更适合处理高频更新(如动画)，因为它可以独立于主绘图器重绘，避免整体刷新。
+- `child`: 用于在自定义图形上叠加交互元素(如按钮)。例如，在绘制一个自定义图表后，通过`child`添加一个可点击的标签。
