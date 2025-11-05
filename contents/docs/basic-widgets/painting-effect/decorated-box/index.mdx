@@ -1,0 +1,146 @@
+---
+title: DecoratedBox
+description: 一个在子组件绘制之前或之后绘制装饰的组件
+---
+
+`DecoratedBox`是Flutter中用于装饰子组件的容器类widget，它可以在子组件周围添加各种视觉装饰效果，如背景色、边框、阴影、渐变等。该组件本身不改变子组件的大小，只是在其基础上叠加装饰效果。
+
+### 使用场景
+- **背景装饰**: 为任意widget添加背景色或渐变背景
+- **边框效果**: 为组件添加各种样式的边框
+- **阴影效果**: 创建卡片式阴影或投影效果
+- **形状装饰**: 实现圆角、自定义形状等视觉效果
+- **组合装饰**: 多种装饰效果叠加使用
+
+
+## 示例
+### 1. 基础背景色和边框
+```dart
+DecoratedBox(
+  decoration: BoxDecoration(
+    color: Colors.blue, // 背景色
+    border: Border.all(
+      color: Colors.black,
+      width: 2.0,
+    ),
+    borderRadius: BorderRadius.circular(8.0), // 圆角
+  ),
+  child: Padding(
+    padding: EdgeInsets.all(16.0),
+    child: Text(
+      '带边框的文本',
+      style: TextStyle(color: Colors.white),
+    ),
+  ),
+)
+```
+
+### 2. 渐变背景和阴影
+```dart
+DecoratedBox(
+  decoration: BoxDecoration(
+    gradient: LinearGradient(
+      colors: [Colors.red, Colors.orange],
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+    ),
+    boxShadow: [
+      BoxShadow(
+        color: Colors.black26,
+        blurRadius: 8.0,
+        offset: Offset(2, 2),
+      ),
+    ],
+    borderRadius: BorderRadius.circular(12.0),
+  ),
+  child: Container(
+    width: 200,
+    height: 100,
+    child: Center(
+      child: Text(
+        '渐变阴影卡片',
+        style: TextStyle(color: Colors.white, fontSize: 16),
+      ),
+    ),
+  ),
+)
+```
+
+### 3. 复杂形状和图像装饰
+```dart
+DecoratedBox(
+  decoration: BoxDecoration(
+    color: Colors.green,
+    border: Border.all(color: Colors.white, width: 3),
+    borderRadius: BorderRadius.only(
+      topLeft: Radius.circular(20),
+      bottomRight: Radius.circular(20),
+    ),
+    image: DecorationImage(
+      image: AssetImage('assets/pattern.png'),
+      fit: BoxFit.cover,
+      colorFilter: ColorFilter.mode(
+        Colors.green.withOpacity(0.3),
+        BlendMode.dstATop,
+      ),
+    ),
+  ),
+  child: Container(
+    padding: EdgeInsets.all(20),
+    child: Icon(Icons.star, size: 40, color: Colors.white),
+  ),
+)
+```
+
+## 注意点
+### 常见问题
+1. **性能考虑**: 复杂的装饰效果(特别是多重阴影)可能影响渲染性能
+2. **层级关系**: `DecoratedBox`的装饰效果位于子组件下方
+3. **大小限制**: 装饰效果不会改变子组件的大小，需要确保容器有足够空间显示装饰
+4. **边框重叠**: 当使用圆角边框时，确保边框宽度不会遮盖过多内容
+
+### 优化技巧
+- 对于简单的背景色，优先考虑使用`Container`的`color`属性
+- 使用`RoundedRectangleBorder`替代复杂的圆角设置
+- 避免在动画中频繁改变装饰属性
+
+### 最佳实践
+- 将常用的装饰样式提取为常量或扩展方法
+- 使用`Theme`统一管理应用的装饰样式
+- 考虑使用`PhysicalModel`或`Card`组件替代复杂的阴影效果
+
+
+## 构造函数
+```dart
+DecoratedBox({
+  Key? key,
+  required Decoration decoration,
+  DecorationPosition position = DecorationPosition.background,
+  Widget? child,
+})
+```
+
+
+## 属性
+| 属性名 | 类型 | 说明 |
+|--------|------|------|
+| `decoration` | `Decoration` | 必需的装饰配置，定义视觉效果 |
+| `position` | `DecorationPosition` | 装饰位置：background 或 foreground |
+| `child` | `Widget?` | 被装饰的子组件 |
+
+
+### 关键属性详解
+**decoration(核心属性)**
+- 类型: 必须为`Decoration`的子类，通常是`BoxDecoration`
+- 功能: 定义所有的视觉装饰效果，包括颜色、边框、阴影等
+- 重要性: 这是`DecoratedBox`的核心功能所在
+
+**position(重要选项)**
+- 默认值: `DecorationPosition.background`
+- 选项: `background`(装饰在子组件下方)或`foreground`(装饰在子组件上方)
+- 用途: 控制装饰与子组件的层级关系，影响视觉效果的重叠顺序
+
+**使用建议**: 
+- 大多数情况下使用`background`位置
+- 当需要装饰效果覆盖在子组件上方时使用`foreground`
+- 合理选择位置可以避免不必要的层级嵌套
