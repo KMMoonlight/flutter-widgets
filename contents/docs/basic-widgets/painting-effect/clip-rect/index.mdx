@@ -1,0 +1,168 @@
+---
+title: ClipRect
+description: 通过矩形形状对子组件进行裁剪的组件
+---
+
+`ClipRect`是Flutter中一个用于裁剪子组件的组件，它通过矩形边界(默认为父容器大小)限制子组件的显示区域，超出部分将被隐藏。该组件基于`CustomClipper<Rect>`实现裁剪逻辑，常用于创建圆角效果、部分隐藏内容或实现自定义裁剪动画。
+
+### 主要用途：
+- 限制子组件的可见区域，避免溢出。
+- 结合其他组件(如`Transform`)实现复杂动画效果。
+- 优化性能，减少不必要的渲染。
+
+### 核心逻辑：
+`ClipRect`通过`clipper`参数定义裁剪区域(默认为子组件边界)，使用`Canvas`的裁剪操作确保子组件仅在矩形区域内绘制。裁剪不改变布局大小，仅影响视觉表现。
+
+### 典型使用场景：
+- 图片裁剪(如头像圆角)。
+- 滚动时隐藏部分内容(如列表项渐隐)。
+- 与动画结合(如缩放时裁剪边缘)。
+
+
+## 示例
+### 1. 基础图片裁剪
+```dart
+ClipRect(
+  clipper: RectClipper(), // 自定义裁剪器，定义矩形区域
+  child: Image.network(
+    'https://example.com/image.jpg',
+    width: 200,
+    height: 200,
+    fit: BoxFit.cover,
+  ),
+);
+// 自定义裁剪器类
+class RectClipper extends CustomClipper<Rect> {
+  @override
+  Rect getClip(Size size) {
+    return Rect.fromLTWH(0, 0, size.width, size.height); // 使用完整区域
+  }
+  @override
+  bool shouldReclip(covariant CustomClipper<Rect> oldClipper) => false;
+}
+```
+
+### 2. 滚动时渐隐效果(结合透明度)
+```dart
+ListView(
+  children: [
+    ClipRect(
+      child: Align(
+        heightFactor: 0.5, // 仅显示上半部分
+        child: Container(
+          color: Colors.blue,
+          height: 100,
+          child: const Center(child: Text('部分可见内容')),
+        ),
+      ),
+    ),
+  ],
+);
+```
+
+### 3. 动态裁剪动画
+```dart
+class AnimatedClipDemo extends StatefulWidget {
+  @override
+  _AnimatedClipDemoState createState() => _AnimatedClipDemoState();
+}
+
+class _AnimatedClipDemoState extends State<AnimatedClipDemo> with SingleTickerProviderStateMixin {
+  AnimationController _controller;
+
+  @override
+  void initState() {
+    _controller = AnimationController(
+      vsync: this,
+      duration: Duration(seconds: 2),
+    )..repeat(reverse: true);
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (context, child) {
+        return ClipRect(
+          clipper: _DynamicRectClipper(_controller.value), // 动态裁剪区域
+          child: Container(
+            width: 200,
+            height: 200,
+            color: Colors.green,
+          ),
+        );
+      },
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+}
+
+// 动态裁剪器
+class _DynamicRectClipper extends CustomClipper<Rect> {
+  final double animationValue;
+
+  _DynamicRectClipper(this.animationValue);
+
+  @override
+  Rect getClip(Size size) {
+    return Rect.fromLTRB(
+      0,
+      0,
+      size.width * animationValue, // 宽度随动画值变化
+      size.height,
+    );
+  }
+
+  @override
+  bool shouldReclip(covariant CustomClipper<Rect> oldClipper) => true;
+}
+```
+
+## 注意点
+- 性能影响：
+  - 裁剪操作会额外消耗GPU资源，避免在频繁重绘的组件(如动画)中过度使用。
+  - 若需高性能裁剪，优先考虑使用`BoxDecoration`的`borderRadius`替代。
+
+- 布局行为：
+  - `ClipRect`不改变子组件的布局大小，仅视觉裁剪。需确保父容器提供足够空间。
+
+- 常见问题：
+  - 裁剪区域未更新：自定义`clipper`时，需在`shouldReclip`中返回true以触发重绘。
+	- 边界模糊：可配合`Clip.antiAliasWithSaveLayer`抗锯齿，但会显著增加内存占用。
+
+- 最佳实践：
+  - 对静态内容使用默认裁剪器，减少不必要的重绘。
+  - 动态裁剪时，将clipper与`AnimationController`绑定以实现平滑效果。
+
+
+## 构造函数
+```dart
+ClipRect({
+  Key key,
+  CustomClipper<Rect> clipper, // 自定义裁剪器，默认为子组件边界
+  Clip clipBehavior = Clip.hardEdge, // 裁剪行为（如抗锯齿）
+  Widget child, // 被裁剪的子组件
+})
+```
+
+
+## 属性
+| 属性名         | 属性类型               | 说明                                                                 |
+|----------------|------------------------|----------------------------------------------------------------------|
+| `clipper`      | `CustomClipper<Rect>`  | 自定义裁剪逻辑，定义矩形区域。若为`null`，使用子组件布局边界。        |
+| `clipBehavior` | `Clip`                 | 裁剪边缘处理方式，影响视觉平滑度和性能。                            |
+| `child`        | `Widget`               | 被裁剪的子组件，必须提供。                                          |
+
+
+### 关键属性详解
+- **clipBehavior**:
+  - `Clip.hardEdge`: 默认值，裁剪边缘锐利，性能最佳但可能有锯齿。
+  - `Clip.antiAlias`: 启用抗锯齿，边缘更平滑，适用于圆角等场景。
+  - `Clip.antiAliasWithSaveLayer`: 最高质量抗锯齿，但会创建额外图层，严重影响性能，仅必要时使用。
+- **clipper**: 通过继承`CustomClipper<Rect>`可实现动态裁剪(如动画驱动)。需重写`getClip`定义区域，并通过`shouldReclip`控制重绘时机。
