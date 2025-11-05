@@ -2,3 +2,166 @@
 title: FutureBuilder
 description: 专门用于处理异步操作的UI更新
 ---
+
+`FutureBuilder`是Flutter中的一个状态管理组件，专门用于处理异步操作(如网络请求、文件读写、数据库查询等)的UI更新。它通过监听一个Future对象的状态(未开始、进行中、完成、错误)，动态构建对应的界面，避免开发者手动管理异步状态和`setState`调用。
+
+### 使用场景
+- **网络数据加载**: 如从API获取用户列表后展示。
+- **本地文件读取**: 如读取配置后初始化界面。
+- **数据库查询**: 如加载缓存数据时显示占位界面。
+- **延迟初始化**: 如等待某些异步配置完成后渲染主界面。
+
+
+## 示例
+### 1. 基础数据加载(静态Future)
+```dart
+Future<String> mockNetworkData() async {
+  await Future.delayed(Duration(seconds: 2)); // 模拟网络延迟
+  return "加载完成的数据";
+}
+
+class Example1 extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<String>(
+      future: mockNetworkData(), // 传入 Future 对象
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return CircularProgressIndicator(); // 加载中显示进度条
+        }
+        if (snapshot.hasError) {
+          return Text("错误: ${snapshot.error}");
+        }
+        return Text("数据: ${snapshot.data}"); // 成功时显示数据
+      },
+    );
+  }
+}
+```
+
+### 2. 结合用户交互重新触发Future
+```dart
+class Example2 extends StatefulWidget {
+  @override
+  _Example2State createState() => _Example2State();
+}
+
+class _Example2State extends State<Example2> {
+  Future<String>? _future;
+
+  void _retry() {
+    setState(() {
+      _future = mockNetworkData(); // 重新触发 Future
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        ElevatedButton(onPressed: _retry, child: Text("重新加载")),
+        FutureBuilder<String>(
+          future: _future,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return CircularProgressIndicator();
+            }
+            if (snapshot.hasData) {
+              return Text(snapshot.data!);
+            }
+            return Text("点击按钮加载数据");
+          },
+        ),
+      ],
+    );
+  }
+}
+```
+
+### 3. 适配主题的异步配置加载
+```dart
+Future<ThemeData> loadTheme() async {
+  await Future.delayed(Duration(seconds: 1));
+  return ThemeData.dark(); // 模拟从配置加载主题
+}
+
+class Example3 extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<ThemeData>(
+      future: loadTheme(),
+      builder: (context, snapshot) {
+        if (snapshot.hasData) {
+          return Theme(
+            data: snapshot.data!,
+            child: Text("主题已应用", style: TextStyle(fontSize: 18)),
+          );
+        }
+        return Text("加载主题中...");
+      },
+    );
+  }
+}
+```
+
+## 注意点
+### 常见问题与规避
+1. 不必要的重建: 
+- 问题: 如果在`build`方法中直接创建`Future`(如`future: http.get(...)`)，每次重建都会重新触发异步请求。
+- 解决: 将`Future`定义在`StatefulWidget`的初始化或状态管理中(如`initState`)。
+
+2. 内存泄漏: 
+- 问题: 若`Future`未完成时组件被销毁，可能造成资源未释放。
+- 解决: 使用`CancelableOperation`或确保`Future`可安全取消。
+
+3. 状态覆盖: 
+- 问题: 当`Future`更新时，旧数据可能短暂显示。
+- 解决: 通过`initialData`设置初始值，或使用`snapshot.connectionState`精确控制UI。
+
+### 优化技巧
+- 关键状态判断顺序:
+建议按`connectionState`优先判断，再检查`hasError`和`hasData`，避免状态冲突。
+
+- 使用`initialData`:
+提供初始数据可避免界面闪烁，提升用户体验。
+
+- 错误处理细化:
+对`snapshot.error`进行分类处理（如网络错误、解析错误）。
+
+### 最佳实践
+- 将`FutureBuilder`与`RefreshIndicator`结合实现下拉刷新。
+- 在复杂场景中，考虑使用`StreamBuilder`或状态管理库(如`Provider`、`Bloc`)替代多层级`FutureBuilder`。
+
+
+## 构造函数
+```dart
+const FutureBuilder({
+  Key? key,
+  this.future,            // 要监听的 Future 对象
+  this.initialData,       // 初始数据，在 Future 完成前显示
+  required this.builder,  // 基于 AsyncSnapshot 构建UI的函数
+})
+```
+
+## 属性
+| 属性名        | 属性类型                  | 说明                                                                 |
+|---------------|---------------------------|----------------------------------------------------------------------|
+| `future`      | `Future<T>?`              | 监听的 Future 对象。为 null 时快照状态为 `ConnectionState.none`。     |
+| `initialData` | `T?`                      | 初始数据，用于在异步操作完成前显示默认内容。                         |
+| `builder`     | `Widget Function(BuildContext, AsyncSnapshot<T>)` | 根据异步状态构建UI的核心函数。         |
+
+
+### 关键属性解析
+1. `future`:
+- **性能影响**: 如果`Future`在组件重建时频繁更新(如在`build()`内创建)，会导致重复请求。务必将其置于状态管理或`initState`中。
+- **使用场景**: 适合一次性异步任务(如初始化配置)，如需持续监听数据流应改用`StreamBuilder`。
+
+2. `builder`:
+- 核心逻辑：该函数参数`AsyncSnapshot<T>`包含以下关键字段: 
+  - `connectionState`：枚举值(`none、waiting、active、done`)。
+  - `hasData/data`: 是否成功获取数据及具体数据值。
+  - `hasError/error`: 是否发生错误及错误信息。
+- 优化提示：在`builder`中避免繁重的计算，防止UI卡顿。
+
+3. `initialData`:
+- **用户体验**: 设置合理的初始数据(如空列表)可避免加载中的空白界面，尤其适用于列表类组件。
