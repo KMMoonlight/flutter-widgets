@@ -1,0 +1,113 @@
+---
+title: FractionalTranslation
+description: 在绘制其子组件之前应用变换的组件
+---
+
+`FractionalTranslation`是Flutter中的一个布局变换组件，主要用于对子组件进行**基于自身尺寸比例的偏移变换**。其核心逻辑是通过一个`translation`参数(类型为`Offset`)，按子组件宽高的百分比值平移子组件。
+例如，`Offset(0.5, 0.0)`会将子组件向右平移自身宽度的50%。与直接使用像素偏移的`Transform.translate`不同，`FractionalTranslation`的偏移量是响应式的，能自动适应子组件尺寸变化，适合需要动态调整偏移比例的场景。
+
+### 主要用途：
+- 实现子组件的百分比平移动画(如滑动菜单、拖拽效果)。
+- 在复杂布局中微调组件位置(如对齐图标与文本)。
+- 替代固定像素偏移，提升布局适配性。
+
+### 典型应用场景：
+- 自定义进度条指示器(根据进度百分比偏移thumb)。
+- 实现卡片的堆叠效果(通过偏移模拟层叠)。
+- 响应式UI中动态调整组件间距。
+
+
+## 示例
+### 1. 基础平移
+```dart
+FractionalTranslation(
+  translation: const Offset(0.2, -0.1), // 右移20%宽度，上移10%高度
+  child: const Icon(Icons.star, size: 50, color: Colors.amber),
+)
+```
+
+### 2. 交互式平移
+```dart
+class SlidingButton extends StatefulWidget {
+  @override
+  _SlidingButtonState createState() => _SlidingButtonState();
+}
+
+class _SlidingButtonState extends State<SlidingButton> {
+  double _slideProgress = 0.0; // 0.0 ~ 1.0
+
+  void _updateProgress(double value) => setState(() => _slideProgress = value);
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onPanUpdate: (details) => _updateProgress(
+          (_slideProgress + details.delta.dx / 200).clamp(0.0, 1.0)),
+      child: FractionalTranslation(
+        translation: Offset(_slideProgress, 0.0), // 水平滑动范围：0% ~ 100%宽度
+        child: Container(
+          width: 60,
+          height: 30,
+          color: Colors.blue,
+          child: const Center(child: Text('滑动')),
+        ),
+      ),
+    );
+  }
+}
+```
+
+### 3. 适配主题的偏移布局
+```dart
+FractionalTranslation(
+  translation: Offset(
+    // 在RTL（右到左）语言环境中反向偏移
+    TextDirection.rtl == Directionality.of(context) ? -0.1 : 0.1,
+    0.0,
+  ),
+  child: const Text('自适应文本偏移', style: TextStyle(fontSize: 16)),
+)
+```
+
+## 注意点
+1. **性能影响**: 
+- 频繁更新`translation`可能导致重绘(如动画中每帧更新)，建议对静态布局使用。
+- 大量嵌套`FractionalTranslation`时，考虑用`Transform`替代以减少布局计算。
+
+2. **布局兼容性**:
+- 偏移量可能超出父容器边界，需配合`ClipRect`裁剪溢出部分:
+```dart
+ClipRect(
+  child: FractionalTranslation(translation: Offset(1.5, 0), child: ...),
+)
+```
+
+3. **最佳实践**:
+- 优先使用`Alignment`或`Align`实现简单对齐，仅复杂偏移场景用`FractionalTranslation`。
+- 与`AnimatedFractionalTranslation`结合实现平滑动画。
+
+
+## 构造函数
+```dart
+const FractionalTranslation({
+  Key? key,
+  required Offset translation, // 必需参数：基于子组件尺寸的偏移比例
+  this.transformHitTests = true, // 点击测试区域是否随偏移变换
+  Widget? child,
+})
+```
+
+## 属性
+| 属性名               | 属性类型         | 说明                                                                 |
+|----------------------|------------------|----------------------------------------------------------------------|
+| `translation`        | `Offset`         | **核心属性**。偏移比例，如 `Offset(0.5, 0.0)` 表示右移50%宽度。         |
+| `transformHitTests`  | `bool`           | 默认为 `true`。若为 `false`，点击事件检测仍在原始位置（偏移仅视觉生效）。 |
+| `child`              | `Widget?`        | 被平移的子组件。                                                     |
+
+
+**关键属性解析**: 
+- `translation`:
+  - `Offset(dx, dy)`的`dx/dy`为小数比例(如 1.0 = 100% 自身宽/高)，负值表示反向偏移。
+  - 例如在100x100的组件上，`Offset(0.5, -0.5)`会将其移动到`(50, -50)`像素位置。
+- `transformHitTests`:
+  - 在交互组件(如按钮)中设置为true，确保点击区域与视觉位置一致。
