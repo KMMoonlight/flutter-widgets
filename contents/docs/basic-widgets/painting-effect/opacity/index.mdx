@@ -1,0 +1,145 @@
+---
+title: Opacity
+description: 一个可以设置子组件透明度的组件
+---
+
+`Opacity`是Flutter中用于控制子组件透明度的基础组件，通过调整不透明度值(opacity)来实现淡入淡出、隐藏或半透明效果。其核心逻辑
+是在渲染层对子组件应用一个alpha混合滤镜，直接修改视觉表现而不影响布局或交互逻辑(例如，即使完全透明，子组件仍可响应事件)。
+
+### 使用场景：
+- **淡入淡出动画**: 如页面切换时元素的渐隐效果。
+- **条件性隐藏**: 通过透明度动态控制组件可见性(例如加载状态提示)。
+- **视觉层次优化**: 降低非重点元素的透明度以突出核心内容。
+- **叠加效果**: 在半透明遮罩上显示对话框或菜单。
+
+
+## 示例
+### 1. 基础透明度控制
+```dart
+Opacity(
+  opacity: 0.5, // 50%透明度
+  child: Container(
+    width: 100,
+    height: 100,
+    color: Colors.blue,
+    child: const Center(child: Text('半透明方块')),
+  ),
+)
+```
+
+### 2. 交互式透明度切换
+```dart
+class DynamicOpacityExample extends StatefulWidget {
+  @override
+  _DynamicOpacityExampleState createState() => _DynamicOpacityExampleState();
+}
+
+class _DynamicOpacityExampleState extends State<DynamicOpacityExample> {
+  double _opacity = 1.0;
+
+  void _toggleOpacity() {
+    setState(() {
+      _opacity = _opacity == 1.0 ? 0.3 : 1.0; // 点击切换透明度
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Opacity(
+          opacity: _opacity,
+          child: Container(
+            width: 150,
+            height: 150,
+            color: Colors.green,
+            child: const Center(child: Text('点击按钮切换透明度')),
+          ),
+        ),
+        ElevatedButton(
+          onPressed: _toggleOpacity,
+          child: const Text('切换透明度'),
+        ),
+      ],
+    );
+  }
+}
+```
+
+### 3. 结合动画的渐隐效果
+```dart
+class AnimatedOpacityExample extends StatefulWidget {
+  @override
+  _AnimatedOpacityExampleState createState() => _AnimatedOpacityExampleState();
+}
+
+class _AnimatedOpacityExampleState extends State<AnimatedOpacityExample> {
+  double _opacity = 0.0;
+
+  @override
+  void initState() {
+    super.initState();
+    // 初始化后渐显组件
+    Future.delayed(const Duration(milliseconds: 500), () {
+      setState(() => _opacity = 1.0);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedOpacity(
+      duration: const Duration(seconds: 1),
+      opacity: _opacity,
+      child: Container(
+        width: 200,
+        height: 200,
+        decoration: BoxDecoration(
+          gradient: LinearGradient(colors: [Colors.purple, Colors.orange]),
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: const Center(
+          child: Text(
+            '欢迎使用Flutter',
+            style: TextStyle(color: Colors.white, fontSize: 16),
+          ),
+        ),
+      ),
+    );
+  }
+}
+```
+
+## 注意点
+- 性能影响: 
+`Opacity`会触发渲染层重绘(即使子组件未变化)，频繁动态修改透明度可能导致性能下降。对于动画场景，优先使用`AnimatedOpacity`或`FadeTransition`以优化效率。
+若仅需隐藏组件但保留布局空间，使用`Visibility`组件更高效。
+
+- 兼容性警告:
+在旧版本Flutter中，透明度为0的组件可能仍占用点击事件，需通过`ignoresPointerEvents`属性手动控制(现版本通常自动处理)。
+
+- 最佳实践: 
+  - 嵌套优化: 避免将`Opacity`包裹大型组件树，尽量仅应用于最小必要子树。
+  - 动画替代方案: 简单淡入效果可直接用`AnimatedOpacity`替代`setState`循环。
+  - 语义化隐藏: 完全透明时(opacity=0)，若需彻底禁用交互，应结合`AbsorbPointer`或`IgnorePointer`使用。
+
+
+## 构造函数
+```dart
+const Opacity({
+  Key? key,
+  required this.opacity, // 透明度值（0.0-1.0）
+  this.alwaysIncludeSemantics = false, // 是否始终包含语义信息
+  required Widget child, // 子组件
+})
+```
+
+## 属性
+| 属性名                 | 属性类型         | 说明                                                                 |
+|----------------------|------------------|----------------------------------------------------------------------|
+| `opacity`            | `double`         | 透明度值，0.0为完全透明，1.0为不透明                                |
+| `alwaysIncludeSemantics` | `bool`       | 控制是否在透明时保留语义信息（用于屏幕阅读器）                       |
+| `child`              | `Widget`         | 需要应用透明度效果的子组件                                           |
+
+**关键属性解析**:
+- `opacity`: 核心属性，直接决定视觉效果。需注意若频繁修改(如每帧动画)，应使用`AnimationController`优化性能而非直接`setState`。
+- `alwaysIncludeSemantics`: 特殊场景属性，通常用于无障碍需求。例如当透明度为0但需保证屏幕阅读器可读取内容时设置为true。
