@@ -132,6 +132,52 @@ export const Documents: Paths[] = [
         ]
       },
       {
+        title: "绘制和效果组件",
+        href: '/painting-effect',
+        items: [
+          {
+            title: "BackdropFilter",
+            href: '/backdrop-filter'
+          },
+          {
+            title: "ClipOval",
+            href: '/clip-oval'
+          },
+          {
+            title: "ClipPath",
+            href: '/clip-path'
+          },
+          {
+            title: "ClipRect",
+            href: '/clip-rect'
+          },
+          {
+            title: "CustomPaint",
+            href: '/custom-paint'
+          },
+          {
+            title: "DecoratedBox",
+            href: '/decorated-box'
+          },
+          {
+            title: "FractionalTranslation",
+            href: '/fractional-translation'
+          },
+          {
+            title: "Opacity",
+            href: '/opacity'
+          },
+          {
+            title: "RotatedBox",
+            href: '/rotated-box'
+          },
+          {
+            title: "Transform",
+            href: '/transform'
+          }
+        ]
+      },
+      {
         title: "布局组件",
         href: '/layout',
         items: [
