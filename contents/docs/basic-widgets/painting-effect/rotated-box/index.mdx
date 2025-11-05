@@ -1,0 +1,191 @@
+---
+title: RotatedBox
+description: 通过改变子组件的绘制方向来实现旋转效果
+---
+
+`RotatedBox`是Flutter中的一个布局组件，主要用于将子组件旋转指定的角度(以90度为增量)。它通过改变子组件的绘制方向来实现旋转效果，但不会改变子组件的布
+局约束(例如，旋转后子组件的宽度和高度仍基于原始方向计算)。与`Transform.rotate`不同，`RotatedBox`的旋转是离散的(仅支持90、180、270度)，且更轻量级，适用于简单的UI调整。
+
+- **主要用途**: 在保持布局稳定性的前提下，快速旋转子组件(如文本、图标或容器)，常用于创建卡片翻转、方向指示器或适配横竖屏布局。
+- **核心逻辑**: `RotatedBox`通过`quarterTurns`属性控制旋转次数(每1次对应90度)，旋转中心默认为子组件的中心点。它仅影响子组件的绘制，不改变其原始尺寸或父组件的布局行为。
+
+### 典型使用场景:
+- 旋转文本标签以适应狭窄空间(如侧边栏标题)。
+- 创建旋转的图标按钮(如刷新动画的替代方案)。
+- 在网格布局中调整图片方向。
+
+
+## 示例
+### 1. 基本旋转
+```dart
+import 'package:flutter/material.dart';
+
+void main() => runApp(const MyApp());
+
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: Scaffold(
+        appBar: AppBar(title: const Text('RotatedBox示例1')),
+        body: Center(
+          child: RotatedBox(
+            quarterTurns: 1, // 旋转90度（1 * 90°）
+            child: Container(
+              padding: const EdgeInsets.all(8),
+              color: Colors.blue,
+              child: const Text(
+                '垂直文本',
+                style: TextStyle(color: Colors.white),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+```
+
+### 2. 交互式旋转
+```dart
+import 'package:flutter/material.dart';
+
+void main() => runApp(const MyApp());
+
+class MyApp extends StatefulWidget {
+  const MyApp({super.key});
+
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  int _turns = 0; // 控制旋转次数
+
+  void _rotateBox() {
+    setState(() {
+      _turns = (_turns + 1) % 4; // 点击时循环旋转0°、90°、180°、270°
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: Scaffold(
+        appBar: AppBar(title: const Text('RotatedBox示例2')),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              RotatedBox(
+                quarterTurns: _turns,
+                child: Container(
+                  width: 100,
+                  height: 50,
+                  color: Colors.green,
+                  child: const Icon(Icons.arrow_upward, color: Colors.white),
+                ),
+              ),
+              const SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: _rotateBox,
+                child: const Text('旋转图标'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+```
+
+### 3. 适配主题
+```dart
+import 'package:flutter/material.dart';
+
+void main() => runApp(const MyApp());
+
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: Scaffold(
+        appBar: AppBar(title: const Text('RotatedBox示例3')),
+        body: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            children: [
+              RotatedBox(
+                quarterTurns: 1, // 图片旋转90度
+                child: Image.network(
+                  'https://via.placeholder.com/100x50', // 占位图（原始宽100、高50）
+                  width: 100,
+                  height: 50,
+                  fit: BoxFit.cover,
+                ),
+              ),
+              const SizedBox(width: 20),
+              const Expanded(
+                child: Text('左侧图片被旋转90度，但其占用空间仍基于原始尺寸。'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+```
+
+
+## 注意点
+使用`RotatedBox`时需注意以下问题，以避免常见错误并优化性能。
+
+- **常见问题**:
+  - **布局错位**: 旋转后子组件的实际占用空间可能不符合预期(例如，旋转90度后，原始宽高不会自动交换)。建议通过`SizedBox`或`ConstrainedBox`显式控制尺寸。
+  - **性能考虑**: `RotatedBox`比`Transform.rotate`更轻量，但频繁动态旋转(如示例2)可能触发重绘。在动画场景中，考虑使用`AnimatedRotation`或`Transform.rotate`结合`Matrix4`。
+  - **兼容性**: `RotatedBox`仅支持90度增量旋转。如需任意角度，必须换用`Transform.rotate`。
+
+- **优化技巧**:
+  - 为旋转组件添加边界约束(如`SizedBox`)，防止布局溢出。
+  - 在静态旋转中优先使用`RotatedBox`；动态旋转需评估性能影响。
+  - 避免嵌套多个`RotatedBox`，以减少布局计算深度。
+
+- 最佳实践：
+  - 旋转文本时，确保字体大小适配新方向(如垂直文本需调整间距)。
+  - 在横竖屏适配中，用`RotatedBox`替代媒体查询简化代码。
+
+
+## 构造函数
+```dart
+const RotatedBox({
+  super.key,
+  required this.quarterTurns, // 必需参数，控制旋转次数
+  super.child, // 可选的子组件
+})
+```
+
+
+## 属性
+| 属性名         | 属性类型     | 说明                                                                 |
+|----------------|--------------|----------------------------------------------------------------------|
+| `quarterTurns` | `int`        | 旋转次数（每1次对应90度）。默认值为0，支持动态更新。                |
+| `child`        | `Widget?`    | 被旋转的子组件。可为null，但旋转效果无效。                          |
+
+
+### 关键属性解释:
+- `quarterTurns`: 这是RotatedBox的核心属性，直接影响旋转行为。例如:
+  - 值为`1`时，子组件顺时针旋转90度。
+  - 值为`3`或`-1`时，逆时针旋转90度。
+
+注意：旋转后子组件的布局约束保持不变(如原始宽100、高50的组件，旋转90度后仍占用宽100、高50的空间，而非交换宽高)。这在复杂布局中需特别注意。
+
+- `child`: 与其他容器组件类似，`RotatedBox`允许嵌套任意子组件。但如果子组件本身有变换(如另一个`RotatedBox`)，可能导致渲染冲突。
+
+
