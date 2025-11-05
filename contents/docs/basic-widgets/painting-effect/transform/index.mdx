@@ -1,0 +1,122 @@
+---
+title: Transform
+description: 一个在绘制其子组件之前应用变换的组件
+---
+
+`Transform`是Flutter中非常常用的一个布局/绘制类组件，用来对子组件进行2D或3D变换（平移、旋转、缩放、斜切等）。它不会改变子组件的实际布局大小，只是“视觉上”进行变换。
+
+与`RotatedBox`这种在布局之前就已经进行旋转变换的组件不同，`Transform`只有在绘制前才会应用变换，这意味着在计算子组件占用多少空间的时候，并不会考虑该变换。
+
+## 示例
+```dart
+ColoredBox(
+  color: Colors.black,
+  child: Transform(
+    alignment: Alignment.topRight,
+    transform: Matrix4.skewY(0.3)..rotateZ(-math.pi / 12.0),
+    child: Container(
+      padding: const EdgeInsets.all(8.0),
+      color: const Color(0xFFE8581C),
+      child: const Text('Apartment for rent!'),
+    ),
+  ),
+)
+```
+
+这个例子展示了旋转并倾斜一个包含文本的橙色`Container`。因为按照右上角进行对齐，所以右上角保持在原来的位置。
+
+## 构造函数
+```dart
+//默认的构造函数
+Transform.new({
+  Key? key, 
+  required Matrix4 transform, 
+  Offset? origin, 
+  AlignmentGeometry? alignment, 
+  bool transformHitTests = true, 
+  FilterQuality? filterQuality, 
+  Widget? child
+})
+
+
+//一个简化构造函数，用于快速构建镜像反转变换
+Transform.flip({
+  Key? key, 
+  bool flipX = false, 
+  bool flipY = false, 
+  Offset? origin, 
+  bool transformHitTests = true, 
+  FilterQuality? filterQuality, 
+  Widget? child
+})
+
+
+//一个简化构造函数，用于快速构建旋转变换
+Transform.rotate({
+  Key? key, 
+  required double angle, 
+  Offset? origin,
+  AlignmentGeometry? alignment = Alignment.center, 
+  bool transformHitTests = true, 
+  FilterQuality? filterQuality, 
+  Widget? child
+})
+
+
+//一个简化构造函数，用于快速构建缩放变换
+Transform.scale({
+  Key? key, 
+  double? scale, 
+  double? scaleX, 
+  double? scaleY, 
+  Offset? origin, 
+  AlignmentGeometry? alignment = Alignment.center, 
+  bool transformHitTests = true, 
+  FilterQuality? filterQuality, 
+  Widget? child
+})
+
+
+//一个简化构造函数，用于快速构建平移变换
+Transform.translate({
+  Key? key, 
+  required Offset offset, 
+  bool transformHitTests = true, 
+  FilterQuality? filterQuality, 
+  Widget? child
+})
+```
+
+
+## 属性
+
+|属性名|属性类型|说明 |
+|----|------|-----|
+|alignment| AlignmentGeometry? | 变换参照原点|
+|child| Widget? | 子组件  |
+|filterQuality| FilterQuality? |  在经历变换后如何对像素进行重采样  |
+|origin | Offset? | 对变换参照点的微调 |
+|transform | Matrix4 |  用矩阵描述变换效果  |
+|transformHitTests | bool | 用于设置组件被变换后，点击/触摸事件是否也要跟随变换一起变换坐标 |
+
+
+### 额外说明
+**`alignment`和`origin`的区别:**
+- `alignment`是相对于子组件自身坐标系的对齐参照点
+- `origin`是相对于子组件自身坐标系的变换原点偏移量
+
+| 属性 | 作用 | 坐标系 | 默认值 | 示例值 |
+|------|------|--------|--------|--------|
+| `alignment` | 指定“**变换中心点**”在子组件内部的**相对位置** | 子组件自身，范围是 `(-1,-1)` 到 `(1,1)` | `Alignment.center` 即 `(0,0)` | `Alignment.topLeft` 即 `(-1,-1)` |
+| `origin` | 在 `alignment` 的基础上再额外**平移一个绝对偏移量** | 子组件自身，单位是**逻辑像素** | `Offset.zero` | `Offset(20, 10)` 表示向右 20、向下 10 |
+
+
+**`filterQuality`的作用:**
+`filterQuality`告诉Flutter在放大/缩小或旋转后，如何对像素进行重采样（resampling）——简单说就是“图像被拉伸、旋转后，边缘是否平滑”。
+
+| 枚举值 | 描述 |
+|--------|------|
+| `FilterQuality.none` | 不做任何插值，像素化锯齿明显，性能最好。 |
+| `FilterQuality.low` | 使用最近邻插值，锯齿比 `none` 略好，性能也高。 |
+| `FilterQuality.medium` | 使用双线性插值（bilinear），**常用默认值**，速度与质量折中。 |
+| `FilterQuality.high` | 使用双三次插值（bicubic），画质最好，边缘最平滑，性能开销最大。 |
