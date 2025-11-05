@@ -1,0 +1,46 @@
+---
+title: Padding
+description: 一个给子组件设置内边距的组件
+---
+
+将布局约束传递给子组件的时候，`Padding`组件会按照设置的`padding`值收缩约束，这样子组件会按照较小的尺寸进行布局。随后`Padding`将子组件的大小设置为自身的大小，并加上`padding`值进行膨胀，从而在子组件的周围创建出空白区域。
+
+## 示例
+```dart
+const Card(
+  child: Padding(
+    padding: EdgeInsets.all(16.0),
+    child: Text('Hello World!'),
+  ),
+)
+```
+
+![](https://flutter.github.io/assets-for-api-docs/assets/widgets/padding.png)
+
+这里例子展示了给`Hello World!`文本四周创建16大小的内边距。
+
+
+## 讨论
+为什么使用`Padding`组件而不是使用`Container`的`padding`属性：实际上二者并无区别，只要给`Container`设置了`padding`属性，那么`Container`内部会自动创建`Padding`小组件。
+
+`Container`内部的那些属性，`Container`本身并不会去实现它们，而是把若干更简单的组件组合成一个方便的包。比如`Container.padding`会让`Container`创建一个`Padding`组件，`Container.decoration`会让`Container`创建一个`DecoratedBox`组件。
+
+实际上，Flutter中大多数的组件都是由其他更简单的组件组合而成，组合而非继承才是构建组件的主要方式。
+
+
+
+## 构造函数
+```dart
+Padding.new({
+  Key? key, 
+  required EdgeInsetsGeometry padding, 
+  Widget? child
+})
+```
+
+
+## 属性
+| 属性名   | 属性类型   | 说明   |
+|---|----|----|
+| child |  Widget?  |  子组件  |
+| padding |  EdgeInsetsGeometry |  内边距值   |
