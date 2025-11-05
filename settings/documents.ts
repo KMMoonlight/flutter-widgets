@@ -74,6 +74,24 @@ export const Documents: Paths[] = [
         ]
       },
       {
+        title: "样式组件",
+        href: '/styling',
+        items: [
+          {
+            title: "MediaQuery",
+            href: '/media_query'
+          },
+          {
+            title: "Padding",
+            href: '/padding'
+          },
+          {
+            title: "Theme",
+            href: '/theme'
+          }
+        ]
+      },
+      {
         title: "文本组件",
         href: '/text',
         items: [
