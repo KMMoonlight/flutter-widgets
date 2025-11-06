@@ -1,0 +1,194 @@
+---
+title: DragTarget
+description: 用于接收拖拽数据的组件
+---
+
+`DragTarget`是Flutter中用于接收拖拽数据的组件，它充当一个“目标区域”，当用户将可拖拽组件(如`Draggable`)拖至该区域时，`DragTarget`可以处理拖拽数据的接收、验证和反馈。其核心逻辑包括：
+
+- **接收数据**: 通过`onAccept`回调获取拖拽数据。
+- **验证数据**: 使用`onWillAccept`回调判断数据是否有效。
+- **视觉反馈**: 根据拖拽状态(如悬停、接受)更新UI。
+
+### 典型使用场景：
+- 文件上传区域(接收拖拽的文件路径)。
+- 看板应用中的卡片拖放(如将任务拖到“完成”列)。
+- 自定义拖拽交互(如颜色选择器拖拽填充)。
+
+
+## 示例
+### 1. 基础文本拖拽接收
+```dart
+import 'package:flutter/material.dart';  
+
+void main() => runApp(const MyApp());  
+
+class MyApp extends StatelessWidget {  
+  const MyApp({super.key});  
+
+  @override  
+  Widget build(BuildContext context) {  
+    return MaterialApp(  
+      home: Scaffold(  
+        body: Center(  
+          child: Column(  
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,  
+            children: [  
+              // 可拖拽的文本  
+              Draggable<String>(  
+                data: "Hello Flutter",  
+                feedback: Container(  
+                  padding: const EdgeInsets.all(10),  
+                  color: Colors.blue.withOpacity(0.5),  
+                  child: const Text("拖拽中..."),  
+                ),  
+                child: const Text("拖拽我"),  
+              ),  
+              // 接收目标  
+              DragTarget<String>(  
+                onAccept: (data) => ScaffoldMessenger.of(context).showSnackBar(  
+                  SnackBar(content: Text("已接收: $data")),  
+                ),  
+                builder: (context, candidateData, rejectedData) =>  
+                  Container(  
+                    width: 200,  
+                    height: 100,  
+                    color: candidateData.isNotEmpty ? Colors.green : Colors.grey,  
+                    child: const Center(child: Text("拖放到这里")),  
+                  ),  
+              ),  
+            ],  
+          ),  
+        ),  
+      ),  
+    );  
+  }  
+}
+```
+
+
+### 2. 颜色拖拽填充
+```dart
+class ColorDragExample extends StatefulWidget {  
+  const ColorDragExample({super.key});  
+
+  @override  
+  State<ColorDragExample> createState() => _ColorDragExampleState();  
+}  
+
+class _ColorDragExampleState extends State<ColorDragExample> {  
+  Color _targetColor = Colors.grey;  
+
+  @override  
+  Widget build(BuildContext context) {  
+    return Scaffold(  
+      body: Center(  
+        child: Column(  
+          children: [  
+            Draggable<Color>(  
+              data: Colors.red,  
+              feedback: Container(width: 50, height: 50, color: Colors.red),  
+              child: Container(width: 50, height: 50, color: Colors.red),  
+            ),  
+            const SizedBox(height: 50),  
+            DragTarget<Color>(  
+              onWillAccept: (data) => data != null, // 仅接受非空颜色  
+              onAccept: (data) => setState(() => _targetColor = data),  
+              builder: (context, candidateData, rejectedData) =>  
+                Container(  
+                  width: 150,  
+                  height: 150,  
+                  color: _targetColor,  
+                  child: const Center(child: Text("目标区域")),  
+                ),  
+            ),  
+          ],  
+        ),  
+      ),  
+    );  
+  }  
+} 
+```
+
+### 3. 列表项排序
+```dart
+class ListSortExample extends StatefulWidget {  
+  const ListSortExample({super.key});  
+
+  @override  
+  State<ListSortExample> createState() => _ListSortExampleState();  
+}  
+
+class _ListSortExampleState extends State<ListSortExample> {  
+  final List<String> _items = ["A", "B", "C"];  
+  String? _draggedItem;  
+
+  void _handleAccept(String data) {  
+    setState(() {  
+      _items.remove(data);  
+      _items.add(data); // 将拖拽项移到末尾  
+    });  
+  }  
+
+  @override  
+  Widget build(BuildContext context) {  
+    return Scaffold(  
+      body: ReorderableListView(  
+        onReorder: (oldIndex, newIndex) {}, // 简化逻辑，实际需实现排序  
+        children: _items.map((item) =>  
+          ListTile(  
+            key: ValueKey(item),  
+            title: Draggable<String>(  
+              data: item,  
+              onDragStarted: () => _draggedItem = item,  
+              feedback: Container(  
+                color: Colors.white,  
+                child: Text("移动 $item"),  
+              ),  
+              child: Text(item),  
+            ),  
+          ),  
+        ).toList(),  
+      ),  
+    );  
+  }  
+} 
+```
+
+## 注意点
+### 常见问题与优化技巧
+1. 性能问题:
+- 避免在`builder`回调中执行耗时操作(如复杂计算)，因其在拖拽过程中会频繁调用。
+- 使用`const`构造函数或`Memoization`优化静态内容。
+2. 数据验证: 始终实现`onWillAccept`进行数据验证(如类型检查)，防止无效数据触发`onAccept`。
+3. 视觉反馈: 通过`candidateData`和`rejectedData`参数提供清晰的悬停状态(如改变颜色或尺寸)。
+4. 嵌套拖拽: 当多个`DragTarget`嵌套时，使用`HitTestBehavior`控制事件冒泡(如`HitTestBehavior.translucent`)。
+5. 跨平台适配: 在`Web`端测试拖拽交互，确保兼容性(某些浏览器可能限制拖拽`API`)。
+
+
+## 构造函数
+```dart
+DragTarget<T>({  
+  Key? key,  
+  required this.builder,  
+  this.onWillAccept,  
+  this.onAccept,  
+  this.onLeave,  
+  this.hitTestBehavior = HitTestBehavior.translucent,  
+})
+```
+
+
+## 属性
+| 属性名             | 属性类型                  | 说明                                                                 |  
+|--------------------|---------------------------|----------------------------------------------------------------------|  
+| `builder`          | `DragTargetBuilder<T>`     | 构建目标区域 UI，接收上下文、候选数据和拒绝数据。                    |  
+| `onWillAccept`     | `WillAcceptCallback<T>?`   | 验证拖拽数据是否有效，返回 `bool`。                                  |  
+| `onAccept`         | `AcceptCallback<T>?`       | 数据被接受时触发。                                                   |  
+| `onLeave`          | `DragTargetLeaveCallback<T>?` | 数据离开目标区域时触发。                                           |  
+| `hitTestBehavior`  | `HitTestBehavior`          | 控制命中测试行为，影响事件响应范围。                                 |
+
+
+### 关键属性详解
+- `builder`: 这是唯一必需属性，用于动态更新UI以反映拖拽状态(如悬停时高亮)。参数`candidateData`和`rejectedData`可辅助可视化反馈。
+- `onWillAccept`: 在数据释放前进行验证，例如仅接受特定类型的数据。若返回false，则不会触发`onAccept`。
+- `hitTestBehavior`: 默认为`translucent`，允许事件穿透到下层组件。在复杂布局中可改为`opaque`或`deferToChild`以精确控制事件范围。
