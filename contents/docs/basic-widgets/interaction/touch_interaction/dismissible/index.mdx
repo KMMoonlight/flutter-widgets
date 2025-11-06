@@ -1,0 +1,368 @@
+---
+title: Dismissible
+description: 用户通过滑动来删除或移除列表项的组件
+---
+`Dismissible`是一个手势交互组件，允许用户通过滑动操作来删除或移除列表项。它封装了滑动手势检测和动画效果，是构建可交互列表的常用组件。
+
+### 核心逻辑
+- **手势识别**: 检测水平或垂直滑动手势
+- **视觉反馈**: 滑动时显示背景内容，提供操作提示
+- **确认机制**: 支持滑动阈值确认和取消操作
+- **动画过渡**: 平滑的删除动画效果
+
+### 使用场景
+- 邮件列表中的删除邮件操作
+- 购物车中的移除商品功能
+- 待办事项列表的任务完成操作
+- 聊天界面的消息删除
+
+
+## 示例
+### 1. 基础列表项删除
+```dart
+import 'package:flutter/material.dart';
+
+class BasicDismissibleExample extends StatefulWidget {
+  @override
+  _BasicDismissibleExampleState createState() => _BasicDismissibleExampleState();
+}
+
+class _BasicDismissibleExampleState extends State<BasicDismissibleExample> {
+  final List<String> items = List.generate(5, (index) => '项目 ${index + 1}');
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('基础Dismissible示例')),
+      body: ListView.builder(
+        itemCount: items.length,
+        itemBuilder: (context, index) {
+          final item = items[index];
+          return Dismissible(
+            key: Key(item),
+            background: Container(
+              color: Colors.red,
+              alignment: Alignment.centerRight,
+              padding: EdgeInsets.only(right: 20),
+              child: Icon(Icons.delete, color: Colors.white),
+            ),
+            direction: DismissDirection.endToStart,
+            onDismissed: (direction) {
+              setState(() {
+                items.removeAt(index);
+              });
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('$item 已删除')),
+              );
+            },
+            child: ListTile(
+              title: Text(item),
+              leading: Icon(Icons.star),
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+```
+
+### 2. 双向滑动操作
+```dart
+import 'package:flutter/material.dart';
+
+class TwoWayDismissibleExample extends StatefulWidget {
+  @override
+  _TwoWayDismissibleExampleState createState() => _TwoWayDismissibleExampleState();
+}
+
+class _TwoWayDismissibleExampleState extends State<TwoWayDismissibleExample> {
+  final List<Map<String, dynamic>> tasks = [
+    {'id': '1', 'title': '完成Flutter项目', 'completed': false},
+    {'id': '2', 'title': '学习Dart语言', 'completed': false},
+    {'id': '3', 'title': '阅读技术文档', 'completed': true},
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('双向滑动操作')),
+      body: ListView.builder(
+        itemCount: tasks.length,
+        itemBuilder: (context, index) {
+          final task = tasks[index];
+          return Dismissible(
+            key: Key(task['id']),
+            background: _buildCompleteBackground(),
+            secondaryBackground: _buildDeleteBackground(),
+            confirmDismiss: (direction) async {
+              if (direction == DismissDirection.startToEnd) {
+                // 左滑完成任务
+                return await _showCompleteDialog(context);
+              } else {
+                // 右滑删除任务
+                return await _showDeleteDialog(context);
+              }
+            },
+            onDismissed: (direction) {
+              setState(() {
+                if (direction == DismissDirection.startToEnd) {
+                  task['completed'] = !task['completed'];
+                } else {
+                  tasks.removeAt(index);
+                }
+              });
+            },
+            child: Container(
+              color: task['completed'] ? Colors.green[50] : Colors.white,
+              child: ListTile(
+                title: Text(
+                  task['title'],
+                  style: TextStyle(
+                    decoration: task['completed'] 
+                      ? TextDecoration.lineThrough 
+                      : TextDecoration.none,
+                  ),
+                ),
+                trailing: task['completed'] 
+                  ? Icon(Icons.check_circle, color: Colors.green)
+                  : Icon(Icons.radio_button_unchecked),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildCompleteBackground() => Container(
+    color: Colors.green,
+    alignment: Alignment.centerLeft,
+    padding: EdgeInsets.only(left: 20),
+    child: Icon(Icons.check, color: Colors.white, size: 30),
+  );
+
+  Widget _buildDeleteBackground() => Container(
+    color: Colors.red,
+    alignment: Alignment.centerRight,
+    padding: EdgeInsets.only(right: 20),
+    child: Icon(Icons.delete, color: Colors.white, size: 30),
+  );
+
+  Future<bool> _showCompleteDialog(BuildContext context) async {
+    return await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('确认操作'),
+        content: Text('标记为已完成？'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: Text('取消'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: Text('确认'),
+          ),
+        ],
+      ),
+    ) ?? false;
+  }
+
+  Future<bool> _showDeleteDialog(BuildContext context) async {
+    return await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('删除确认'),
+        content: Text('确定要删除这个任务吗？'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: Text('取消'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: Text('删除'),
+          ),
+        ],
+      ),
+    ) ?? false;
+  }
+}
+```
+
+### 3. 自定义滑动反馈
+```dart
+import 'package:flutter/material.dart';
+
+class CustomDismissibleExample extends StatefulWidget {
+  @override
+  _CustomDismissibleExampleState createState() => _CustomDismissibleExampleState();
+}
+
+class _CustomDismissibleExampleState extends State<CustomDismissibleExample> {
+  final List<String> messages = [
+    '重要通知：系统维护',
+    '欢迎使用新功能',
+    '您的账户有更新',
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('自定义滑动反馈')),
+      body: ListView.builder(
+        itemCount: messages.length,
+        itemBuilder: (context, index) {
+          return Dismissible(
+            key: Key(messages[index]),
+            resizeDuration: Duration(milliseconds: 300),
+            dismissThresholds: {
+              DismissDirection.endToStart: 0.4,
+              DismissDirection.startToEnd: 0.4,
+            },
+            movementDuration: Duration(milliseconds: 500),
+            crossAxisEndOffset: 0.5,
+            background: _buildArchiveBackground(),
+            secondaryBackground: _buildMarkReadBackground(),
+            onDismissed: (direction) {
+              final message = messages[index];
+              setState(() {
+                messages.removeAt(index);
+              });
+              
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(direction == DismissDirection.startToEnd 
+                    ? '已归档: $message' 
+                    : '已标记已读: $message'),
+                  action: SnackBarAction(
+                    label: '撤销',
+                    onPressed: () {
+                      setState(() {
+                        messages.insert(index, message);
+                      });
+                    },
+                  ),
+                ),
+              );
+            },
+            child: Card(
+              child: ListTile(
+                title: Text(messages[index]),
+                subtitle: Text('昨天 14:30'),
+                leading: CircleAvatar(child: Icon(Icons.message)),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildArchiveBackground() => Container(
+    color: Colors.orange,
+    child: Row(
+      children: [
+        Padding(
+          padding: EdgeInsets.only(left: 20),
+          child: Icon(Icons.archive, color: Colors.white),
+        ),
+        SizedBox(width: 10),
+        Text('归档', style: TextStyle(color: Colors.white, fontSize: 16)),
+      ],
+    ),
+  );
+
+  Widget _buildMarkReadBackground() => Container(
+    color: Colors.blue,
+    child: Row(
+      mainAxisAlignment: MainAxisAlignment.end,
+      children: [
+        Text('标记已读', style: TextStyle(color: Colors.white, fontSize: 16)),
+        SizedBox(width: 10),
+        Padding(
+          padding: EdgeInsets.only(right: 20),
+          child: Icon(Icons.mark_email_read, color: Colors.white),
+        ),
+      ],
+    ),
+  );
+}
+```
+
+## 注意点
+### 常见问题
+1. **Key的重要性**: 必须为每个`Dismissible`提供唯一的key，否则可能导致错误的项目被删除
+2. **列表更新**: 删除操作后需要立即更新列表状态，否则会出现索引错误
+3. **性能考虑**: 大量列表项时，考虑使用`ListView.builder`进行懒加载
+
+### 优化技巧
+- 使用`confirmDismiss`进行二次确认，防止误操作
+- 合理设置`dismissThresholds`控制滑动灵敏度
+- 通过`resizeDuration`和`movementDuration`优化动画效果
+
+### 最佳实践
+1. 提供清晰的视觉反馈，让用户理解滑动操作的含义
+2. 支持撤销操作，避免数据丢失
+3. 针对不同方向设置不同的操作语义
+4. 在移动设备上测试手势操作的流畅性
+
+
+## 构造函数
+```dart
+Dismissible({
+  required Key key,
+  required Widget child,
+  Widget? background,
+  Widget? secondaryBackground,
+  ConfirmDismissCallback? confirmDismiss,
+  VoidCallback? onResize,
+  DismissDirectionCallback? onDismissed,
+  DismissDirection direction = DismissDirection.horizontal,
+  Duration resizeDuration = const Duration(milliseconds: 300),
+  Map<DismissDirection, double>? dismissThresholds,
+  Duration movementDuration = const Duration(milliseconds: 200),
+  double crossAxisEndOffset = 0.0,
+  DragStartBehavior dragStartBehavior = DragStartBehavior.start,
+  HitTestBehavior behavior = HitTestBehavior.deferToChild,
+})
+```
+
+
+## 属性
+| 属性名 | 属性类型 | 说明 |
+|--------|----------|------|
+| key | Key | 组件的唯一标识，必须提供 |
+| child | Widget | 要包装的可滑动内容组件 |
+| background | Widget? | 主滑动方向的背景内容 |
+| secondaryBackground | Widget? | 次滑动方向的背景内容 |
+| direction | DismissDirection | 允许的滑动方向，默认水平 |
+| resizeDuration | Duration | 组件调整大小动画时长 |
+| movementDuration | Duration | 滑动移动动画时长 |
+| dismissThresholds | `Map<DismissDirection, double>?` | 各方向的滑动阈值 |
+| crossAxisEndOffset | double | 滑动结束时的垂直偏移量 |
+| dragStartBehavior | DragStartBehavior | 拖拽开始行为设置 |
+| behavior | HitTestBehavior | 命中测试行为 |
+
+
+### 关键属性详解
+**background & secondaryBackground**
+- 用于提供滑动操作的视觉反馈
+- `background`对应`startToEnd`方向，`secondaryBackground`对应`endToStart`方向
+- 通常包含图标和文字提示操作含义
+
+**confirmDismiss**
+- 异步回调函数，返回bool值决定是否继续删除操作
+- 可用于显示确认对话框或进行业务逻辑验证
+- 返回true继续删除，false取消操作
+
+**dismissThresholds**
+- 控制滑动确认的敏感度
+- 值为0.0-1.0，表示滑动距离与组件宽度的比例
+- 可针对不同方向设置不同的阈值
+
+**movementDuration**
+- 控制滑动动画的速度
+- 较短的时长提供更灵敏的反馈
+- 较长的时长创造更平滑的过渡效果
