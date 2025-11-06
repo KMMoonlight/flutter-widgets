@@ -192,6 +192,72 @@ export const Documents: Paths[] = [
         ]
       },
       {
+        title: "交互组件",
+        href: '/interaction',
+        items: [
+          {
+            title: "触摸交互组件",
+            href: '/touch_interaction',
+            items: [
+              {
+                title: "AbsorbPointer",
+                href: '/absorb_pointer'
+              },
+              {
+                title: "Dismissible",
+                href: '/dismissible'
+              },
+              {
+                title: "DragTarget",
+                href: '/drag_target'
+              },
+              {
+                title: "Draggable",
+                href: '/draggable'
+              },
+              {
+                title: "DraggableScrollableSheet",
+                href: '/draggable_scrollable_sheet'
+              },
+              {
+                title: "GestureDetector",
+                href: '/gesture_detector'
+              },
+              {
+                title: "IgnorePointer",
+                href: '/ignore_pointer'
+              },
+              {
+                title: "InteractiveViewer",
+                href: '/interactive_viewer'
+              },
+              {
+                title: "LongPressDraggable",
+                href: '/long_press_draggable'
+              },
+              {
+                title: "Scrollable",
+                href: '/scrollable'
+              }
+            ]
+          },
+          {
+            title: "路由",
+            href: '/routing',
+            items: [
+              {
+                title: "Hero",
+                href: '/hero'
+              },
+              {
+                title: "Navigator",
+                href: '/navigator'
+              }
+            ]
+          }
+        ]
+      },
+      {
         title: "布局组件",
         href: '/layout',
         items: [
