@@ -2,3 +2,306 @@
 title: StreamBuilder
 description: 监听数据流并自动重建UI的组件
 ---
+
+`StreamBuilder`是Flutter中用于监听数据流(Stream)并自动重建UI的组件。它通过监听`Stream`对象，在数据发生变化时自动调用`builder`函数重新构建界面，实现响应式编程。
+
+### 核心逻辑：
+- 订阅指定的`Stream`对象
+- 监听数据流中的事件(数据、错误、完成)
+- 根据最新的快照(`AsyncSnapshot`)数据重建UI
+- 自动管理订阅生命周期，避免内存泄漏
+
+### 使用场景
+- 实时数据展示: 聊天消息、股票价格、实时监控数据
+- 网络请求状态管理: 加载中、成功、错误状态的UI展示
+- 用户输入响应: 搜索框实时搜索、表单验证
+- 数据库监听: `Firestore`实时数据库更新显示
+
+## 示例
+### 1. 基础计数器应用
+```dart
+import 'dart:async';
+import 'package:flutter/material.dart';
+
+class CounterExample extends StatefulWidget {
+  @override
+  _CounterExampleState createState() => _CounterExampleState();
+}
+
+class _CounterExampleState extends State<CounterExample> {
+  final StreamController<int> _controller = StreamController<int>();
+  int _counter = 0;
+
+  void _incrementCounter() {
+    _counter++;
+    _controller.sink.add(_counter);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('StreamBuilder 计数器')),
+      body: Center(
+        child: StreamBuilder<int>(
+          stream: _controller.stream,
+          initialData: 0,
+          builder: (context, snapshot) {
+            return Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text('点击次数:'),
+                Text(
+                  '${snapshot.data}',
+                  style: Theme.of(context).textTheme.headline4,
+                ),
+                if (snapshot.hasError)
+                  Text('错误: ${snapshot.error}'),
+              ],
+            );
+          },
+        ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _incrementCounter,
+        child: Icon(Icons.add),
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.close();
+    super.dispose();
+  }
+}
+```
+
+
+### 2. 网络请求状态管理
+```dart
+import 'dart:convert';
+import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+
+class NetworkExample extends StatelessWidget {
+  final Stream<String> _dataStream = () {
+    final controller = StreamController<String>();
+    
+    // 模拟网络请求
+    Future.delayed(Duration(seconds: 2), () async {
+      try {
+        final response = await http.get(Uri.parse('https://api.example.com/data'));
+        if (response.statusCode == 200) {
+          controller.sink.add(utf8.decode(response.bodyBytes));
+        } else {
+          controller.sink.addError('HTTP ${response.statusCode}');
+        }
+      } catch (e) {
+        controller.sink.addError('网络请求失败: $e');
+      } finally {
+        controller.close();
+      }
+    });
+    
+    return controller.stream;
+  }();
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('网络请求示例')),
+      body: StreamBuilder<String>(
+        stream: _dataStream,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Center(child: CircularProgressIndicator());
+          }
+          
+          if (snapshot.hasError) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.error, size: 64, color: Colors.red),
+                  SizedBox(height: 16),
+                  Text('错误: ${snapshot.error}'),
+                ],
+              ),
+            );
+          }
+          
+          if (snapshot.hasData) {
+            return Center(
+              child: Text('数据: ${snapshot.data}'),
+            );
+          }
+          
+          return Center(child: Text('无数据'));
+        },
+      ),
+    );
+  }
+}
+```
+
+### 3. 实时搜索功能
+```dart
+import 'dart:async';
+import 'package:flutter/material.dart';
+
+class SearchExample extends StatefulWidget {
+  @override
+  _SearchExampleState createState() => _SearchExampleState();
+}
+
+class _SearchExampleState extends State<SearchExample> {
+  final TextEditingController _searchController = TextEditingController();
+  final StreamController<List<String>> _resultsController = StreamController<List<String>>();
+  final List<String> _allItems = ['苹果', '香蕉', '橙子', '葡萄', '西瓜', '菠萝', '芒果'];
+
+  @override
+  void initState() {
+    super.initState();
+    _searchController.addListener(_onSearchChanged);
+  }
+
+  void _onSearchChanged() {
+    final query = _searchController.text.toLowerCase();
+    if (query.isEmpty) {
+      _resultsController.sink.add([]);
+      return;
+    }
+
+    final results = _allItems
+        .where((item) => item.toLowerCase().contains(query))
+        .toList();
+    _resultsController.sink.add(results);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('实时搜索示例')),
+      body: Column(
+        children: [
+          Padding(
+            padding: EdgeInsets.all(16),
+            child: TextField(
+              controller: _searchController,
+              decoration: InputDecoration(
+                labelText: '搜索水果',
+                prefixIcon: Icon(Icons.search),
+                border: OutlineInputBorder(),
+              ),
+            ),
+          ),
+          Expanded(
+            child: StreamBuilder<List<String>>(
+              stream: _resultsController.stream,
+              builder: (context, snapshot) {
+                if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                  return Center(child: Text(_searchController.text.isEmpty 
+                      ? '请输入搜索关键词' 
+                      : '未找到相关结果'));
+                }
+
+                return ListView.builder(
+                  itemCount: snapshot.data!.length,
+                  itemBuilder: (context, index) {
+                    return ListTile(
+                      title: Text(snapshot.data![index]),
+                      leading: Icon(Icons.fruit),
+                    );
+                  },
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    _resultsController.close();
+    super.dispose();
+  }
+}
+```
+
+
+## 注意点
+### 常见问题
+1. **内存泄漏风险**: 忘记关闭`StreamController`可能导致内存泄漏
+2. **不必要的重建**: `Stream`频繁发射数据会导致UI频繁重建，影响性能
+3. **错误处理不完善**: 未正确处理错误状态可能导致应用崩溃
+4. **初始状态处理**: 忽略`initialData`可能导致空数据异常
+
+
+### 优化技巧
+1. **使用`rxdart`进行流操作**: 利用`debounce`、`distinct`等操作符优化性能
+```dart
+stream: _searchController.textChanges
+    .debounceTime(Duration(milliseconds: 300))
+    .distinct(),
+```
+
+2. **合理使用`initialData`**: 提供合适的初始数据避免空值检查
+```dart
+initialData: LoadingState.loading,
+```
+
+3. **条件重建**: 在`builder`中使用条件判断避免不必要的重建
+```dart
+builder: (context, snapshot) {
+  if (snapshot.connectionState == ConnectionState.waiting && 
+      !snapshot.hasData) {
+    return LoadingWidget(); // 只在真正需要时显示加载
+  }
+  // ... 其他逻辑
+}
+```
+
+### 最佳实践
+1. 始终在`dispose`中关闭`StreamController`
+2. 使用`AsyncSnapshot`的`connectionState`进行精确的状态管理
+3. 为关键操作添加错误边界处理
+4. 考虑使用`StreamBuilder`的`key`属性控制重建行为
+
+
+## 构造函数
+```dart
+const StreamBuilder<T>({
+  Key? key,
+  T? initialData,
+  required Stream<T> stream,
+  required AsyncWidgetBuilder<T> builder,
+})
+```
+
+## 属性
+| 属性名 | 属性类型 | 说明 |
+|--------|----------|------|
+| key | Key? | 组件标识键，用于控制组件重建 |
+| initialData | T? | 初始数据，在流开始前使用 |
+| stream | `Stream<T>` | 要监听的数据流 |
+| builder | `AsyncWidgetBuilder<T>` | 构建函数，接收上下文和快照 |
+
+
+### 关键属性详解
+**stream(Stream)**
+- **作用**: 指定要监听的数据源
+- **重要性**: 核心属性，决定`StreamBuilder`的行为
+- **使用要点**: 确保`Stream`正确管理生命周期，避免内存泄漏
+
+**builder(AsyncWidgetBuilder)**
+- 作用: 根据数据快照构建UI
+- 参数: 接收`BuildContext`和`AsyncSnapshot`
+- 最佳实践: 根据`snapshot.connectionState`和`snapshot.hasData/hasError`进行条件渲染
+
+**initialData(T?)**
+- 作用: 提供初始数据，避免空值检查
+- 使用场景: 适合在数据加载前显示有意义的初始状态
+- 注意事项: 如果`Stream`立即发射数据，`initialData`可能不会被使用
