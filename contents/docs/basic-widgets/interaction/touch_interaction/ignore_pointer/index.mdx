@@ -1,0 +1,214 @@
+---
+title: IgnorePointer
+description: 阻止子组件接收指针事件(如点击、拖动、长按等)的组件
+---
+
+`IgnorePointer`是Flutter中的一个功能性Widget，其主要用途是阻止子组件接收指针事件(如点击、拖动、长按等)。该组件通过将自身及其子树设置为“忽略”所有指针输入，实现UI层的交互屏蔽。
+核心逻辑基于Flutter的事件处理机制：当`IgnorePointer`被激活时，它会拦截并丢弃传递给子树的指针事件，而不会影响其他部分的UI渲染或布局。这在需要临时禁用交互或实现覆盖层时非常有用。
+
+### 使用场景
+- 临时禁用UI区域: 例如，在加载数据时禁用整个页面或部分按钮，防止用户误操作。
+- 实现模态对话框或遮罩层: 在弹出对话框时，使用`IgnorePointer`屏蔽背景内容的交互，确保用户只能与对话框交互。
+- 条件性交互控制: 根据应用状态(如权限验证、网络状态)动态启用或禁用特定组件的指针事件。
+
+
+## 示例
+### 1. 禁用按钮点击
+```dart
+import 'package:flutter/material.dart';
+
+void main() => runApp(MyApp());
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: Scaffold(
+        appBar: AppBar(title: Text('IgnorePointer 基础示例')),
+        body: Center(
+          child: IgnorePointer(
+            ignoring: true, // 设置为 true 以忽略指针事件
+            child: ElevatedButton(
+              onPressed: () {
+                // 由于 IgnorePointer，此回调不会触发
+                print('按钮被点击');
+              },
+              child: Text('禁用按钮'),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+```
+
+### 2. 根据状态动态禁用
+```dart
+import 'package:flutter/material.dart';
+
+class ConditionalIgnoreExample extends StatefulWidget {
+  @override
+  _ConditionalIgnoreExampleState createState() => _ConditionalIgnoreExampleState();
+}
+
+class _ConditionalIgnoreExampleState extends State<ConditionalIgnoreExample> {
+  bool isLoading = false;
+
+  void toggleLoading() {
+    setState(() {
+      isLoading = !isLoading;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('条件性禁用示例')),
+      body: Stack(
+        children: [
+          // 主要内容区域
+          IgnorePointer(
+            ignoring: isLoading, // 根据 isLoading 状态动态禁用
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                ElevatedButton(
+                  onPressed: toggleLoading,
+                  child: Text(isLoading ? '停止加载' : '开始加载'),
+                ),
+                Text('可交互内容'),
+              ],
+            ),
+          ),
+          // 加载指示器（仅在加载时显示）
+          if (isLoading)
+            Center(
+              child: CircularProgressIndicator(),
+            ),
+        ],
+      ),
+    );
+  }
+}
+```
+
+
+### 3. 模拟模态对话框
+```dart
+import 'package:flutter/material.dart';
+
+class ModalDialogExample extends StatefulWidget {
+  @override
+  _ModalDialogExampleState createState() => _ModalDialogExampleState();
+}
+
+class _ModalDialogExampleState extends State<ModalDialogExample> {
+  bool showDialog = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('模态对话框示例')),
+      body: Stack(
+        children: [
+          // 背景内容
+          Column(
+            children: [
+              ElevatedButton(
+                onPressed: () => setState(() => showDialog = true),
+                child: Text('打开对话框'),
+              ),
+              Text('背景内容（可点击其他区域）'),
+            ],
+          ),
+          // 使用 IgnorePointer 屏蔽背景交互
+          if (showDialog)
+            IgnorePointer(
+              ignoring: false, // 对话框本身可交互，但背景被屏蔽
+              child: Stack(
+                children: [
+                  // 半透明遮罩层
+                  Container(
+                    color: Colors.black54,
+                    width: double.infinity,
+                    height: double.infinity,
+                  ),
+                  // 对话框内容
+                  Center(
+                    child: Container(
+                      padding: EdgeInsets.all(20),
+                      color: Colors.white,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text('这是一个对话框'),
+                          ElevatedButton(
+                            onPressed: () => setState(() => showDialog = false),
+                            child: Text('关闭'),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+```
+
+
+## 注意点
+### 常见问题
+1. 性能影响: `IgnorePointer`本身是轻量级组件，但过度使用(如在滚动列表中对每个子项应用)可能导致不必要的布局计算。建议在子树较大时，将`IgnorePointer`置于高层级而非嵌套过深。
+2. 事件冒泡阻止: `IgnorePointer`会完全阻止子树接收指针事件，包括事件冒泡。如果父组件依赖子组件的事件(如`GestureDetector`)，需确保`IgnorePointer`不会意外中断事件流。
+3. 与`AbsorbPointer`的区别: `IgnorePointer`仅忽略事件，而`AbsorbPointer`会吸收事件(阻止事件传递给其他组件)。根据需求选择：若需事件穿透到下层组件，用`IgnorePointer`；若需完全拦截事件，用`AbsorbPointer`。
+
+### 优化技巧
+- 结合`Opacity`或`AbsorbPointer`: 对于视觉禁用效果，可联合使用`Opacity`(设置透明度)或`AbsorbPointer`实现更完整的禁用状态。
+- 动态控制：通过状态管理(如`Provider`或`Bloc`)动态更新`ignoring`属性，避免频繁重建子树。
+
+### 最佳实践
+- 在模态场景中，将`IgnorePointer`与`Stack`结合使用，确保背景交互被正确屏蔽。
+- 测试不同平台(如`iOS/Android`)的交互一致性，特别是手势相关事件。
+
+
+## 构造函数
+```dart
+IgnorePointer({
+  Key? key,
+  bool ignoring = true, // 核心参数：是否忽略指针事件，默认为 true
+  Widget? child, // 子组件，可为空
+})
+```
+
+## 属性
+| 属性名       | 属性类型         | 说明                                                                 |
+|--------------|------------------|----------------------------------------------------------------------|
+| `ignoring`   | `bool`           | 控制是否忽略指针事件。默认为 `true`，即禁用交互。                    |
+| `child`      | `Widget?`        | 子组件树。如果为 `null`，则 IgnorePointer 不渲染任何可见内容。        |
+
+
+### 关键属性解释
+- **ignoring**: 这是`IgnorePointer`的核心属性，直接影响组件的交互行为。当设置为true时，所有指针事件(如`onTap`、`onDrag`)都不会传递给子组件。此属性通常与状态绑定，实现动态交互控制。例如，在数据加载期间，将其设置为true可防止用户操作。
+- **child**: 虽然是一个通用属性，但在`IgnorePointer`中需注意：如果`child`为null，组件不会占用布局空间，但事件屏蔽仍然生效(适用于覆盖层场景)。确保子组件不会因`IgnorePointer`的布局行为产生意外偏移。
+
+
+## 和`AbsorbPointer`的区别
+- **IgnorePointer**: 仅忽略自身及子树的指针事件，但事件会继续向下传递给其他可能接收事件的组件(如底层的兄弟组件或父组件)。
+- **AbsorbPointer**: 吸收并拦截指针事件，不仅忽略子树事件，还阻止事件向下传递，确保其他组件无法接收到该事件。
+
+简单来说：
+- `IgnorePointer`是“透明”的屏蔽——事件会穿透它。
+- `AbsorbPointer`是“不透明”的屏蔽——事件被它完全吸收。
+
+| 对比维度         | IgnorePointer                          | AbsorbPointer                          |
+|------------------|----------------------------------------|----------------------------------------|
+| **事件传递行为** | 事件会穿透组件，继续传递给底层组件     | 事件被完全吸收，不会传递给任何底层组件 |
+| **使用场景**     | 禁用部分UI但允许背景交互（如模态遮罩） | 完全拦截事件（如弹窗内的独占交互）     |
+| **性能影响**     | 较轻量，仅影响子树                     | 类似，但可能中断事件流需谨慎使用       |
+| **默认状态**     | `ignoring: true`（默认忽略事件）       | `absorbing: true`（默认吸收事件）      |
