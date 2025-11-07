@@ -1,0 +1,285 @@
+---
+title: Draggable
+description: 实现拖拽功能的交互式组件
+---
+
+`Draggable`是Flutter中用于实现拖拽功能的交互式组件，允许用户通过手势拖动UI元素。它基于Flutter的拖拽系统，提供完整的拖拽生命周期管理，包括拖拽开始、进行中和结束的回调处理。
+
+**核心逻辑**: `Draggable`组件将子组件包装为可拖拽元素，当用户长按或拖动时，会创建一个浮动的反馈组件，并触发相应的拖拽事件。它与`DragTarget`组件配合使用，可以实现完整的拖放功能。
+
+### 使用场景
+- 文件管理应用: 拖拽文件进行排序或移动
+- 游戏界面: 拖拽游戏元素(如棋子、卡片)
+- 设计工具: 拖拽控件进行布局设计
+- 列表重排序: 通过拖拽调整列表项顺序
+- 多媒体应用: 拖拽控制播放进度或音量
+
+
+## 示例
+### 1. 基础拖拽功能
+```dart
+import 'package:flutter/material.dart';
+
+class BasicDraggableExample extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('基础拖拽示例')),
+      body: Center(
+        child: Draggable<String>(
+          data: '拖拽数据',
+          child: Container(
+            width: 100,
+            height: 100,
+            color: Colors.blue,
+            child: const Icon(Icons.drag_handle, color: Colors.white),
+          ),
+          feedback: Container(
+            width: 100,
+            height: 100,
+            color: Colors.blue.withOpacity(0.7),
+            child: const Icon(Icons.drag_handle, color: Colors.white),
+          ),
+          childWhenDragging: Container(
+            width: 100,
+            height: 100,
+            color: Colors.grey,
+          ),
+        ),
+      ),
+    );
+  }
+}
+```
+
+### 2. 拖拽与目标区域交互
+```dart
+import 'package:flutter/material.dart';
+
+class DragAndDropExample extends StatefulWidget {
+  @override
+  _DragAndDropExampleState createState() => _DragAndDropExampleState();
+}
+
+class _DragAndDropExampleState extends State<DragAndDropExample> {
+  String _droppedData = '拖拽元素到这里';
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('拖拽投放示例')),
+      body: Column(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: [
+          Draggable<String>(
+            data: '成功拖拽的数据',
+            child: Container(
+              width: 120,
+              height: 120,
+              color: Colors.green,
+              child: Center(child: Text('拖拽我', style: TextStyle(color: Colors.white))),
+            ),
+            feedback: Container(
+              width: 120,
+              height: 120,
+              color: Colors.green.withOpacity(0.7),
+              child: Center(child: Text('拖拽中...', style: TextStyle(color: Colors.white))),
+            ),
+          ),
+          DragTarget<String>(
+            onAccept: (data) {
+              setState(() {
+                _droppedData = '已接收: $data';
+              });
+            },
+            builder: (context, candidateData, rejectedData) {
+              return Container(
+                width: 200,
+                height: 200,
+                color: candidateData.isNotEmpty ? Colors.orange : Colors.grey,
+                child: Center(child: Text(_droppedData)),
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+}
+```
+
+
+### 3. 自定义拖拽行为
+```dart
+import 'package:flutter/material.dart';
+
+class CustomDraggableExample extends StatefulWidget {
+  @override
+  _CustomDraggableExampleState createState() => _CustomDraggableExampleState();
+}
+
+class _CustomDraggableExampleState extends State<CustomDraggableExample> {
+  int _dragCount = 0;
+  bool _isDragging = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('自定义拖拽示例')),
+      body: Theme(
+        data: Theme.of(context).copyWith(
+          iconTheme: IconThemeData(color: Colors.purple),
+        ),
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Text('拖拽次数: $_dragCount', style: TextStyle(fontSize: 18)),
+            ),
+            Expanded(
+              child: Center(
+                child: Draggable<int>(
+                  data: 1,
+                  onDragStarted: () {
+                    setState(() {
+                      _isDragging = true;
+                    });
+                  },
+                  onDragEnd: (details) {
+                    setState(() {
+                      _isDragging = false;
+                      _dragCount++;
+                    });
+                  },
+                  onDragCompleted: () {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('拖拽完成!')),
+                    );
+                  },
+                  child: AnimatedContainer(
+                    duration: Duration(milliseconds: 300),
+                    width: _isDragging ? 110 : 100,
+                    height: _isDragging ? 110 : 100,
+                    decoration: BoxDecoration(
+                      color: _isDragging ? Colors.deepPurple : Colors.purple,
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: _isDragging
+                          ? [BoxShadow(blurRadius: 10, color: Colors.purple.withOpacity(0.5))]
+                          : [],
+                    ),
+                    child: const Icon(Icons.touch_app, size: 40),
+                  ),
+                  feedback: Material(
+                    child: Container(
+                      width: 100,
+                      height: 100,
+                      decoration: BoxDecoration(
+                        color: Colors.deepPurple.withOpacity(0.8),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: const Icon(Icons.touch_app, size: 40, color: Colors.white),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+```
+
+
+## 注意点
+### 常见问题
+1. 性能瓶颈: 过度复杂的反馈组件可能导致拖拽时卡顿
+2. 手势冲突: 与`PageView`、`ListView`等滚动组件可能产生手势冲突
+3. 边界限制: 拖拽元素可能超出屏幕边界，需要额外处理
+4. 多指操作: 默认不支持多指同时拖拽不同元素
+
+### 优化技巧
+- 使用简单的反馈组件减少渲染开销
+- 对拖拽元素进行命中测试优化(hitTestSize)
+- 在拖拽开始时释放不必要的资源
+- 使用`Transform`代替重新构建反馈组件
+
+### 最佳实践
+```dart
+// 良好的性能实践
+Draggable(
+  feedback: Transform.scale( // 使用 Transform 优化性能
+    scale: 1.1,
+    child: Opacity(
+      opacity: 0.8,
+      child: widget.child,
+    ),
+  ),
+  hitTestBehavior: HitTestBehavior.opaque, // 优化命中测试
+  maxSimultaneousDrags: 1, // 限制同时拖拽数量
+)
+```
+
+## 构造函数
+```dart
+Draggable<T>({
+  Key? key,
+  required Widget child,
+  required Widget feedback,
+  T? data,
+  Widget? childWhenDragging,
+  Axis? affinity,
+  Widget? ignoringFeedbackSemantics,
+  DragAnchorStrategy dragAnchorStrategy = childDragAnchorStrategy,
+  Offset feedbackOffset = Offset.zero,
+  int? maxSimultaneousDrags,
+  DraggableFeedback feedbackBuilder,
+  HitTestBehavior hitTestBehavior = HitTestBehavior.deferToChild,
+  Duration? dragStartBehavior = DragStartBehavior.start,
+  this.onDragStarted,
+  this.onDragUpdate,
+  this.onDraggableCanceled,
+  this.onDragEnd,
+  this.onDragCompleted,
+})
+```
+
+
+## 属性
+| 属性名 | 属性类型 | 说明 |
+|--------|----------|------|
+| child | Widget | 正常状态下显示的子组件 |
+| feedback | Widget | 拖拽过程中显示的反馈组件 |
+| data | T | 拖拽操作传递的数据 |
+| childWhenDragging | Widget | 拖拽时在原位置显示的组件 |
+| affinity | Axis | 拖拽方向偏好（水平/垂直） |
+| feedbackOffset | Offset | 反馈组件的偏移量 |
+| maxSimultaneousDrags | int | 最大同时拖拽数量 |
+| hitTestBehavior | HitTestBehavior | 命中测试行为 |
+| onDragStarted | VoidCallback | 拖拽开始回调 |
+| onDragUpdate | DragUpdateCallback | 拖拽更新回调 |
+| onDragEnd | DragEndCallback | 拖拽结束回调 |
+| onDragCompleted | VoidCallback | 拖拽完成回调 |
+
+
+### 关键属性详解
+#### feedback属性
+- 重要性: 高-直接影响用户体验
+- 性能影响: 复杂的反馈组件会导致拖拽卡顿
+- 最佳实践: 使用透明度变换或简单的视觉反馈
+
+#### data属性
+- 核心功能: 用于在`Draggable`和`DragTarget`之间传递数据
+- 类型安全: 支持泛型，确保类型安全的数据传递
+- 使用场景: 标识拖拽元素的身份或携带业务数据
+
+#### maxSimultaneousDrags属性
+- 默认值: null(无限制)
+- 性能优化: 限制为1可避免多指操作冲突
+- 应用场景: 在需要严格单指操作的游戏或工具中使用
+
+#### hitTestBehavior属性
+- 默认值: `HitTestBehavior.deferToChild`
+- 优化选项: 使用`HitTestBehavior.opaque`提高响应性能
+- 注意事项: 过度使用可能影响其他手势识别
