@@ -1,0 +1,211 @@
+---
+title: DraggableScrollableSheet
+description: 允许通过拖拽动态调整组件大小和位置的同时，支持内部内容的滚动
+---
+
+`DraggableScrollableSheet`是Flutter中一个灵活的交互式组件，允许用户通过拖拽手势动态调整其大小和位置，同时支持内部内容的滚动。它通常用作可折叠或可伸缩的面板(如底部抽屉、可调整的对话框)，结合了拖拽控制和滚动行为，提供流畅的用户体验。
+
+- 主要用途: 创建可拖拽调整大小的滚动面板，例如地图应用中的详情卡片、聊天界面的可伸缩输入栏或设置面板。
+- 核心逻辑: 组件通过手势识别监听用户的拖拽操作，动态调整自身高度(从最小到最大范围)，并同步处理内部滚动视图(如`ListView`、`GridView`)的滚动事件，确保拖拽和滚动无缝衔接。
+
+### 典型使用场景：
+- 底部弹出的可伸缩面板(如显示商品详情)。
+- 可调整大小的浮动窗口(如视频播放器的控制栏)。
+- 交互式表单或列表的折叠容器。
+
+## 示例
+### 1. 基础底部抽屉面板
+```dart
+import 'package:flutter/material.dart';
+
+class BasicDraggableSheet extends StatelessWidget {
+  const BasicDraggableSheet({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('基础示例')),
+      body: DraggableScrollableSheet(
+        initialChildSize: 0.3, // 初始高度占屏幕30%
+        minChildSize: 0.2,     // 最小高度占20%
+        maxChildSize: 0.8,    // 最大高度占80%
+        builder: (context, scrollController) {
+          return Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+              boxShadow: [BoxShadow(blurRadius: 10, color: Colors.black26)],
+            ),
+            child: ListView.builder(
+              controller: scrollController, // 绑定滚动控制器
+              itemCount: 20,
+              itemBuilder: (context, index) => ListTile(title: Text('项目 $index')),
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+```
+
+
+### 2. 带交互按钮的可伸缩面板
+```dart
+class InteractiveSheet extends StatefulWidget {
+  const InteractiveSheet({super.key});
+
+  @override
+  State<InteractiveSheet> createState() => _InteractiveSheetState();
+}
+
+class _InteractiveSheetState extends State<InteractiveSheet> {
+  final DraggableScrollableController _sheetController = DraggableScrollableController();
+
+  void _expandSheet() {
+    _sheetController.animateTo(0.8, duration: const Duration(milliseconds: 300), curve: Curves.easeOut);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Stack(
+        children: [
+          // 主页面内容
+          const Center(child: Text('背景页面')),
+          // 可拖拽面板
+          DraggableScrollableSheet(
+            controller: _sheetController,
+            initialChildSize: 0.3,
+            minChildSize: 0.1,
+            maxChildSize: 1.0, // 全屏
+            builder: (context, scrollController) {
+              return Container(
+                color: Colors.blue[100],
+                child: Column(
+                  children: [
+                    // 顶部操作栏
+                    Container(
+                      height: 50,
+                      child: Row(
+                        children: [
+                          IconButton(onPressed: _expandSheet, icon: const Icon(Icons.expand)),
+                          const Text('拖拽或点击展开'),
+                        ],
+                      ),
+                    ),
+                    // 滚动内容
+                    Expanded(
+                      child: ListView(
+                        controller: scrollController,
+                        children: List.generate(10, (index) => ListTile(title: Text('可交互项目 $index'))),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+}
+```
+
+### 3. 适配暗色主题的浮动面板
+```dart
+class ThemedSheet extends StatelessWidget {
+  const ThemedSheet({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: DraggableScrollableSheet(
+        initialChildSize: 0.4,
+        minChildSize: 0.2,
+        maxChildSize: 0.6,
+        builder: (context, scrollController) {
+          return Container(
+            decoration: BoxDecoration(
+              color: Theme.of(context).cardColor,
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+            ),
+            child: Column(
+              children: [
+                // 拖拽指示条
+                Container(
+                  margin: const EdgeInsets.all(8),
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).dividerColor,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+                Expanded(
+                  child: ListView.builder(
+                    controller: scrollController,
+                    itemCount: 15,
+                    itemBuilder: (context, index) => SwitchListTile(
+                      title: Text('主题选项 $index'),
+                      value: index.isEven,
+                      onChanged: (value) {},
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+```
+
+
+## 注意点
+### 常见问题：
+- 滚动冲突: 如果内部滚动视图(如`ListView`)未绑定`scrollController`，可能导致拖拽和滚动行为冲突。务必通过builder参数传递控制器。
+- 性能瓶颈: 面板内包含大量动态内容(如长列表)时，需使用`ListView.builder`或`GridView.builder`避免内存溢出。
+- 边界限制: 设置`minChildSize`和`maxChildSize`时，需确保`minChildSize ≤ initialChildSize ≤ maxChildSize`，否则会抛出异常。
+
+### 优化技巧：
+- 使用`DraggableScrollableController`动态控制面板大小(如示例2)，实现程序化展开/收起。
+- 为面板添加圆角或阴影(如示例1)提升视觉层次，避免突兀的裁剪。
+- 在面板顶部添加拖拽指示条(如示例3)，明确交互提示。
+
+### 最佳实践：
+- 初始大小(`initialChildSize`)建议设为0.3-0.5，平衡可见性与操作空间。
+- 避免嵌套多个可滚动组件，若需复杂布局，优先使用`CustomScrollView`与`Sliver`组件。
+- 测试时需覆盖拖拽边界情况(如快速滑动到极限位置)，确保动画流畅。
+
+## 构造函数
+```dart
+const DraggableScrollableSheet({
+  Key? key,
+  required this.builder,           // 必需：构建面板内容的回调函数
+  this.initialChildSize = 0.5,     // 初始高度比例（默认50%）
+  this.minChildSize = 0.25,        // 最小高度比例（默认25%）
+  this.maxChildSize = 1.0,         // 最大高度比例（默认100%）
+  this.expand = true,              // 是否填充父组件约束
+  this.controller,                 // 可选：控制面板大小的控制器
+})
+```
+
+## 属性
+| 属性名             | 属性类型                         | 说明                                                                 |
+|--------------------|----------------------------------|----------------------------------------------------------------------|
+| `builder`          | `DraggableScrollableSheetBuilder` | 必需的回调函数，返回面板内容组件，接收上下文和滚动控制器作为参数。     |
+| `initialChildSize` | `double`                         | 初始高度占父组件高度的比例（默认0.5）。                              |
+| `minChildSize`     | `double`                         | 拖拽后最小高度比例（默认0.25），需≤initialChildSize。                |
+| `maxChildSize`     | `double`                         | 拖拽后最大高度比例（默认1.0），需≥initialChildSize。                 |
+| `expand`           | `bool`                           | 是否扩展以填充父组件的约束（默认true）。                            |
+| `controller`       | `DraggableScrollableController?` | 可选控制器，用于动态调整面板大小或监听状态变化。                     |
+
+
+**关键属性解析**:
+- `builder`: 最核心属性，必须在此回调中构建滚动内容并绑定`scrollController`(如`ListView(controller: scrollController)`)，否则滚动功能失效。
+- `minChildSize`与`maxChildSize`: 这两个属性决定了面板的灵活性范围。若设置过窄(如min=0.1, max=0.2)，会限制用户操作空间；建议根据内容需求合理设定。
+- `controller`: 通过`DraggableScrollableController`可编程控制面板行为(如示例2中的`animateTo`方法)，适用于需要与外部组件联动的场景。
