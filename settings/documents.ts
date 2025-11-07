@@ -462,10 +462,5 @@ export const Documents: Paths[] = [
         ]
       }
     ],
-  },
-  {
-    title: "组件一览",
-    href: "/widget-list",
-    items: []
   }
 ]
