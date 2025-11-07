@@ -1,0 +1,126 @@
+---
+title: GestureDetector
+description: 检测用户手势交互的核心组件
+---
+
+`GestureDetector`是Flutter中用于检测用户手势交互的核心组件，它本身不显示任何视觉元素，而是作为手势事件的监听器包裹其他子组件。其核心逻辑是通过识别触摸操作(如点击、拖动、缩放等)触发对应的回调函数，实现交互逻辑的响应。该组件是构建触摸交互功能的基础工具，适用于按钮、拖拽元素、手势控制等场景。
+
+### 使用场景
+- 按钮替代: 通过`onTap`实现自定义按钮的点击效果(如无背景的文本按钮)。
+- 拖拽操作: 监听`onPanUpdate`实现元素拖拽移动(如图片平移)。
+- 复杂手势: 结合`onScaleUpdate`处理缩放/旋转手势(如地图缩放)。
+- 长按触发: 使用`onLongPress`实现长按菜单或预览功能。
+
+
+## 示例
+### 1. 基础点击交互
+```dart
+GestureDetector(
+  onTap: () {
+    print('按钮被点击！'); // 执行点击逻辑
+  },
+  child: Container(
+    padding: EdgeInsets.all(12),
+    decoration: BoxDecoration(color: Colors.blue),
+    child: Text('点击我', style: TextStyle(color: Colors.white)),
+  ),
+)
+```
+
+### 2. 拖拽移动元素
+```dart
+class DraggableBox extends StatefulWidget {
+  @override
+  _DraggableBoxState createState() => _DraggableBoxState();
+}
+
+class _DraggableBoxState extends State<DraggableBox> {
+  double _left = 0, _top = 0; // 记录位置偏移量
+
+  @override
+  Widget build(BuildContext context) {
+    return Positioned(
+      left: _left,
+      top: _top,
+      child: GestureDetector(
+        onPanUpdate: (details) {
+          setState(() {
+            _left += details.delta.dx; // 更新水平位置
+            _top += details.delta.dy;  // 更新垂直位置
+          });
+        },
+        child: Container(width: 100, height: 100, color: Colors.red),
+      ),
+    );
+  }
+}
+```
+
+### 3. 缩放与点击共存
+```dart
+double _scale = 1.0; // 缩放比例
+
+GestureDetector(
+  onTap: () => print('图片被点击'),
+  onScaleUpdate: (ScaleUpdateDetails details) {
+    setState(() {
+      _scale = details.scale.clamp(0.5, 3.0); // 限制缩放范围
+    });
+  },
+  child: Transform.scale(
+    scale: _scale,
+    child: Image.network('https://example.com/image.jpg'),
+  ),
+)
+```
+
+
+## 注意点
+### 常见问题与优化技巧
+1. 事件冲突:
+- 问题: 当父子组件均包含`GestureDetector`时，可能发生事件冒泡冲突(如子组件点击触发父组件事件)。
+- 解决: 使用`Behavior.deferToChild`或通过`HitTestBehavior`控制事件响应范围。
+2. 性能优化:
+- 避免在回调中执行耗时操作(如网络请求)，否则会导致手势响应延迟。
+- 对频繁触发的回调(如`onPanUpdate`)使用防抖或节流逻辑。
+3. 手势优先级: 垂直拖拽(`onVerticalDragUpdate`)和水平拖拽(`onHorizontalDragUpdate`)可能互相排斥，需通过`RawGestureDetector`自定义手势识别器。
+4. 无障碍支持: 为视觉障碍用户添加语义标签: `Semantics(label: '可点击按钮', child: GestureDetector(...))`。
+
+
+## 构造函数
+```dart
+GestureDetector({
+  Key? key,
+  Widget? child, // 被子组件（必选）
+  GestureTapCallback? onTap, // 单击回调
+  GestureLongPressCallback? onLongPress, // 长按回调
+  GestureDragUpdateCallback? onPanUpdate, // 拖拽更新
+  HitTestBehavior? behavior, // 事件测试行为（如 HitTestBehavior.opaque）
+  // 其他手势回调：onDoubleTap、onScaleStart 等
+})
+```
+
+## 属性
+| 属性名               | 属性类型                  | 说明                                                                 |
+|----------------------|---------------------------|----------------------------------------------------------------------|
+| `onTap`              | `GestureTapCallback?`      | 单击手势触发回调（短按后释放）                                       |
+| `onDoubleTap`        | `GestureTapCallback?`      | 双击手势触发回调                                                     |
+| `onLongPress`        | `GestureLongPressCallback?`| 长按手势触发回调（默认持续500ms）                                    |
+| `onPanUpdate`        | `GestureDragUpdateCallback?`| 拖拽过程中持续触发的回调（返回移动偏移量）                           |
+| `onScaleUpdate`      | `GestureScaleUpdateCallback?`| 缩放手势触发回调（返回缩放比例和焦点）                              |
+| `behavior`           | `HitTestBehavior?`         | 控制手势检测的响应区域（默认`HitTestBehavior.deferToChild`）         |
+| `excludeFromSemantics`| `bool`                    | 是否从语义树中排除（默认为`false`，用于无障碍功能）                  |
+
+
+### 关键属性详解
+1. **onPanUpdate**: 
+- 适用于拖拽交互场景，回调参数`DragUpdateDetails`包含`delta`(位移量)和`globalPosition`(全局坐标)。
+- 性能影响: 频繁触发需避免重复构建组件，建议与`StatefulWidget`结合使用。
+
+2. **behavior**:
+- 可选值: `deferToChild`(仅子组件区域响应)、`opaque`(不透明区域均响应)、`translucent`(透明区域也可响应)。
+- 典型用例: 当子组件较小但需要扩大点击区域时，设为`opaque`。
+
+3. **onScaleUpdate**:
+- 用于处理缩放/旋转手势，回调参数`ScaleUpdateDetails`提供`scale`(缩放倍数)、`rotation`(旋转角度)和`focalPoint`(焦点位置)。
+- 注意: 需与`Transform`组件结合实现视觉变换效果。
