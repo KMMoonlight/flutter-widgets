@@ -1,0 +1,260 @@
+---
+title: InteractiveViewer
+description: 用于实现平移、缩放和旋转等手势操作的组件
+---
+
+`InteractiveViewer`是Flutter中一个功能强大的交互式视图组件，主要用于实现平移、缩放和旋转等手势操作。它通过封装`TransformationController`和手势识别器，为子组件提供丰富的交互体验，特别适合用于地图、图片浏览、图表缩放等场景。
+
+**核心逻辑**: `InteractiveViewer`通过维护一个变换矩阵来管理视图的变换状态，支持多点触控手势，能够平滑处理用户的交互操作。
+
+### 使用场景
+- 图片查看器: 支持双指缩放、平移查看大图
+- 地图应用: 实现地图的缩放和平移导航
+- 图表数据可视化: 允许用户缩放查看详细数据点
+- 设计工具: CAD图纸、UI设计稿的预览和编辑
+- 教育应用: 解剖图、电路图等教学材料的交互查看
+
+## 示例
+### 1. 基础图片查看器
+```dart
+import 'package:flutter/material.dart';
+
+class BasicImageViewer extends StatelessWidget {
+  const BasicImageViewer({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('基础图片查看器')),
+      body: InteractiveViewer(
+        boundaryMargin: const EdgeInsets.all(20.0),
+        minScale: 0.1,
+        maxScale: 4.0,
+        child: Image.network(
+          'https://picsum.photos/1200/800',
+          fit: BoxFit.cover,
+        ),
+      ),
+    );
+  }
+}
+```
+
+
+### 2. 带有约束的图表查看器
+```dart
+import 'package:flutter/material.dart';
+
+class ConstrainedChartViewer extends StatefulWidget {
+  const ConstrainedChartViewer({super.key});
+
+  @override
+  State<ConstrainedChartViewer> createState() => _ConstrainedChartViewerState();
+}
+
+class _ConstrainedChartViewerState extends State<ConstrainedChartViewer> {
+  final TransformationController _transformationController = TransformationController();
+
+  void _resetView() {
+    _transformationController.value = Matrix4.identity();
+    setState(() {});
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('图表查看器'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: _resetView,
+          ),
+        ],
+      ),
+      body: InteractiveViewer(
+        constrained: false, // 允许超出边界
+        transformationController: _transformationController,
+        minScale: 0.5,
+        maxScale: 8.0,
+        child: Container(
+          width: 800,
+          height: 600,
+          color: Colors.grey[200],
+          child: CustomPaint(
+            painter: _ChartPainter(),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ChartPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    // 简化的图表绘制逻辑
+    final paint = Paint()..color = Colors.blue;
+    for (int i = 0; i < 50; i++) {
+      canvas.drawCircle(
+        Offset(i * 20.0, size.height / 2 + sin(i * 0.5) * 50),
+        5.0,
+        paint,
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+```
+
+### 3. 交互式网格布局
+```dart
+import 'package:flutter/material.dart';
+
+class InteractiveGrid extends StatelessWidget {
+  const InteractiveGrid({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('交互式网格')),
+      body: InteractiveViewer(
+        alignPanAxis: true, // 对齐平移轴
+        panEnabled: true,
+        scaleEnabled: true,
+        child: GridView.builder(
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 5,
+            crossAxisSpacing: 10,
+            mainAxisSpacing: 10,
+          ),
+          itemCount: 50,
+          itemBuilder: (context, index) => Container(
+            color: Colors.primaries[index % Colors.primaries.length],
+            child: Center(
+              child: Text(
+                'Item $index',
+                style: const TextStyle(color: Colors.white),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+```
+
+## 注意点
+### 常见问题
+- 性能问题: 当子组件过于复杂时，频繁的重绘可能导致性能下降
+- 边界计算: `constrained`参数设置不当可能导致视图异常滚动
+- 手势冲突: 与父组件的`GestureDetector`可能产生手势识别冲突
+- 缩放限制: `minScale`和`maxScale`设置不合理会影响用户体验
+
+### 优化技巧
+- 对于复杂子组件，考虑使用`RepaintBoundary`进行重绘隔离
+- 合理设置`boundaryMargin`以避免视图过度偏移
+- 使用`transformationController`保存和恢复视图状态
+- 对于静态内容，启用`cacheExtent`提升渲染性能
+
+### 最佳实践
+```dart
+// 正确的状态管理示例
+class OptimizedInteractiveViewer extends StatefulWidget {
+  const OptimizedInteractiveViewer({super.key});
+
+  @override
+  State<OptimizedInteractiveViewer> createState() => _OptimizedInteractiveViewerState();
+}
+
+class _OptimizedInteractiveViewerState extends State<OptimizedInteractiveViewer> {
+  final TransformationController _controller = TransformationController();
+  final FocusNode _focusNode = FocusNode();
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    _focusNode.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return InteractiveViewer(
+      transformationController: _controller,
+      focusNode: _focusNode,
+      boundaryMargin: const EdgeInsets.all(20),
+      minScale: 0.1,
+      maxScale: 5.0,
+      onInteractionUpdate: (details) {
+        // 实时监听交互更新
+        debugPrint('Scale: ${details.scale}');
+      },
+      child: RepaintBoundary( // 性能优化
+        child: YourComplexChildWidget(),
+      ),
+    );
+  }
+}
+```
+
+## 构造函数
+```dart
+InteractiveViewer({
+  Key? key,
+  this.alignPanAxis = false,
+  this.boundaryMargin = EdgeInsets.zero,
+  this.constrained = true,
+  this.maxScale = 2.5,
+  this.minScale = 0.8,
+  this.interactionEndFrictionCoefficient = 0.0000135,
+  this.panEnabled = true,
+  this.scaleEnabled = true,
+  this.scaleFactor = 200.0,
+  this.transformationController,
+  this.onInteractionStart,
+  this.onInteractionUpdate,
+  this.onInteractionEnd,
+  this.child,
+})
+```
+
+## 属性
+```dart
+| 属性名 | 属性类型 | 说明 |
+|--------|----------|------|
+| alignPanAxis | bool | 是否将平移对齐到主轴方向，默认为 false |
+| boundaryMargin | EdgeInsets | 边界边距，控制视图可移动的范围 |
+| constrained | bool | 是否约束子组件在边界内，默认为 true |
+| maxScale | double | 最大缩放比例，默认为 2.5 |
+| minScale | double | 最小缩放比例，默认为 0.8 |
+| panEnabled | bool | 是否启用平移功能，默认为 true |
+| scaleEnabled | bool | 是否启用缩放功能，默认为 true |
+| scaleFactor | double | 缩放因子，影响缩放灵敏度 |
+| transformationController | TransformationController | 变换控制器，用于管理变换状态 |
+| child | Widget | 要显示的子组件 |
+```
+
+### 关键属性详解
+#### boundaryMargin：
+- 这是最重要的布局属性之一，决定了`InteractiveViewer`的可移动范围
+- 设置为EdgeInsets.all(20)表示在所有方向都有20像素的边距
+- 合理设置可以防止视图过度偏移，提升用户体验
+
+#### constrained：
+- 当设置为false时，允许视图完全移出边界
+- 适用于需要无限平移的场景，如大型画布
+- 但需要注意性能影响和导航问题
+
+#### transformationController：
+- 用于程序化控制视图的变换状态
+- 可以保存、恢复和动画化变换矩阵
+- 是实现"回到初始位置"等功能的必备工具
+
+#### scaleFactor：
+- 控制缩放操作的灵敏度
+- 值越大，缩放操作越敏感
+- 需要根据具体应用场景调整到合适的值
