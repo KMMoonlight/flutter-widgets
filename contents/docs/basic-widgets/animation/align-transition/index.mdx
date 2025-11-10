@@ -1,0 +1,213 @@
+---
+title: AlignTransition
+description: 通过控制子组件对齐方式实现平滑位置过渡动画效果
+---
+
+`AlignTransition`是Flutter中的动画布局组件，继承自`AnimatedWidget`。其核心功能是通过动画控制器(`AnimationController`)动态控制子组件的对齐方式(`Alignment`)，实现平滑的位置过渡
+效果。该组件将`Alignment`属性的变化与动画帧绑定，适用于需要动态调整组件位置的交互场景。
+
+### 使用场景
+- 页面切换时的元素位移动画(如按钮从角落移动到中心)。
+- 拖拽交互中的弹性复位效果(如松手后元素动画归位)。
+- 响应式布局中根据状态动态调整组件对齐方式(如菜单展开/收起)。
+
+
+## 示例
+### 基础位移动画
+```dart
+import 'package:flutter/material.dart';
+
+class BasicAlignTransition extends StatefulWidget {
+  @override
+  _BasicAlignTransitionState createState() => _BasicAlignTransitionState();
+}
+
+class _BasicAlignTransitionState extends State<BasicAlignTransition> with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<Alignment> _alignmentAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: const Duration(seconds: 1),
+      vsync: this,
+    );
+    _alignmentAnimation = AlignmentTween(
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+    ).animate(_controller);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Center(
+        child: AlignTransition(
+          alignment: _alignmentAnimation,
+          child: Container(
+            width: 100,
+            height: 100,
+            color: Colors.blue,
+          ),
+        ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => _controller.forward(),
+        child: Icon(Icons.play_arrow),
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+}
+```
+
+### 交互式对齐控制
+```dart
+class InteractiveAlignTransition extends StatefulWidget {
+  @override
+  _InteractiveAlignTransitionState createState() => _InteractiveAlignTransitionState();
+}
+
+class _InteractiveAlignTransitionState extends State<InteractiveAlignTransition> {
+  double _alignmentX = 0.0; // 范围[-1.0, 1.0]
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Column(
+        children: [
+          Expanded(
+            child: AlignTransition(
+              alignment: AlwaysStoppedAnimation(Alignment(_alignmentX, 0)),
+              child: Container(
+                width: 80,
+                height: 80,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(colors: [Colors.red, Colors.yellow]),
+                ),
+              ),
+            ),
+          ),
+          Slider(
+            value: _alignmentX,
+            min: -1.0,
+            max: 1.0,
+            onChanged: (value) => setState(() => _alignmentX = value),
+          ),
+        ],
+      ),
+    );
+  }
+}
+```
+
+### 复合动画
+```dart
+class CompositeAnimationExample extends StatefulWidget {
+  @override
+  _CompositeAnimationExampleState createState() => _CompositeAnimationExampleState();
+}
+
+class _CompositeAnimationExampleState extends State<CompositeAnimationExample> with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<Alignment> _alignAnimation;
+  late Animation<double> _scaleAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: const Duration(milliseconds: 800),
+      vsync: this,
+    )..repeat(reverse: true); // 循环动画
+
+    _alignAnimation = AlignmentTween(
+      begin: Alignment.centerLeft,
+      end: Alignment.centerRight,
+    ).animate(_controller);
+
+    _scaleAnimation = Tween<double>(begin: 0.5, end: 1.5).animate(_controller);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Center(
+        child: AlignTransition(
+          alignment: _alignAnimation,
+          child: ScaleTransition(
+            scale: _scaleAnimation,
+            child: Container(
+              width: 100,
+              height: 100,
+              decoration: BoxDecoration(
+                color: Colors.green,
+                shape: BoxShape.circle,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+}
+```
+
+
+## 注意点
+### 常见问题与解决方案
+1. **性能瓶颈**: 
+- 问题: 频繁触发对齐动画可能导致帧率下降。
+- 优化: 使用`AnimationController`时确保在页面销毁时调用`dispose()`，避免内存泄漏。对于连续动画(如拖拽)，考虑使用`AlwaysStoppedAnimation`替代持续运行的控制器。
+
+2. **子组件溢出**: 
+- 问题: 当对齐位置超出父容器边界时，子组件可能被裁剪。
+- 解决: 使用`Clip.none`属性禁用裁剪，或通过`FractionalTranslation`辅助控制位移范围。
+
+3. **动画曲线不自然**:
+- 技巧: 通过`CurvedAnimation`包装动画控制器，添加弹性曲线(如`Curves.elasticOut`)使位移动画更生动。
+
+### 最佳实践
+- 优先将`AlignTransition`与`AnimationController`组合使用，而非直接操作`Alignment`属性。
+- 在状态管理框架(如`Provider`)中，将动画控制器与业务逻辑解耦。
+- 测试极端对齐值(如`Alignment(10, 10)`)确保布局稳定性。
+
+
+## 构造函数
+```dart
+const AlignTransition({
+  Key? key,
+  required Animation<Alignment> alignment, // 必需参数：对齐动画对象
+  Widget? child, // 可选参数：动画作用的子组件
+})
+```
+
+
+## 属性
+| 属性名        | 属性类型               | 说明                                                                 |
+|---------------|------------------------|----------------------------------------------------------------------|
+| `key`         | `Key?`                 | 组件标识键，用于Widget树更新优化。                                  |
+| `alignment`   | `Animation<Alignment>` | **核心属性**：控制子组件对齐位置的动画对象，需与`AlignmentTween`绑定。 |
+| `child`       | `Widget?`              | 受动画控制的子组件，通常为容器或基础组件。                          |
+
+
+### 关键属性详解
+1. **alignment**: 
+- 必须是通过`AnimationController`驱动的动画对象，例如`AlignmentTween(begin: Alignment.topLeft, end: Alignment.bottomRight).animate(controller)`。
+- 支持动态计算对齐值，例如通过`Alignment.lerp()`实现插值动画。
+
+2. **child**:
+- 若子组件本身包含布局约束(如`SizedBox`)，需确保其尺寸与对齐动画协调，避免布局冲突。
+- 可为空(null)，此时组件仅作为动画占位符。
