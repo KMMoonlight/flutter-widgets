@@ -1,0 +1,240 @@
+---
+title: Hero
+description: 实现页面间共享元素动画过渡的核心组件
+---
+
+`Hero`是Flutter中用于实现页面间共享元素动画过渡的核心组件。它通过在两个页面(路由)之间创建视觉连接，为共享的UI元素提供平滑的飞行动画效果，显著提升用户体验和界面连贯性。
+
+**核心逻辑**: 当导航到新页面时，`Hero`组件会识别具有相同标签(tag)的元素，并自动计算起始位置和结束位置，生成从旧页面到新页面的平滑过渡动画。
+
+### 使用场景
+- **图片预览**: 从缩略图列表点击后放大到全屏查看
+- **详情页面**: 从列表项点击后展开显示完整内容
+- **卡片扩展**: 从小卡片过渡到大卡片视图
+- **共享元素转换**: 在两个页面间保持视觉连续性
+
+
+## 示例
+### 基础图片过渡
+```dart
+// 第一个页面 - 缩略图列表
+class FirstPage extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('图片列表')),
+      body: ListView.builder(
+        itemCount: 5,
+        itemBuilder: (context, index) {
+          return GestureDetector(
+            onTap: () {
+              Navigator.push(context, MaterialPageRoute(
+                builder: (context) => SecondPage(imageIndex: index),
+              ));
+            },
+            child: Hero(
+              tag: 'image_$index', // 唯一标签
+              child: Image.network(
+                'https://picsum.photos/200/200?image=$index',
+                width: 100,
+                height: 100,
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+
+// 第二个页面 - 全屏图片
+class SecondPage extends StatelessWidget {
+  final int imageIndex;
+  
+  SecondPage({required this.imageIndex});
+  
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.black,
+      body: GestureDetector(
+        onTap: () => Navigator.pop(context),
+        child: Center(
+          child: Hero(
+            tag: 'image_$imageIndex', // 与第一个页面相同的标签
+            child: Image.network(
+              'https://picsum.photos/400/400?image=$imageIndex',
+              width: MediaQuery.of(context).size.width,
+              height: MediaQuery.of(context).size.height,
+              fit: BoxFit.contain,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+```
+
+### 复杂Widget过渡
+```dart
+// 卡片列表到详情页的过渡
+class CardListPage extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('产品列表')),
+      body: ListView.builder(
+        itemCount: 3,
+        itemBuilder: (context, index) {
+          return GestureDetector(
+            onTap: () {
+              Navigator.push(context, MaterialPageRoute(
+                builder: (context) => ProductDetailPage(productId: index),
+              ));
+            },
+            child: Hero(
+              tag: 'product_card_$index',
+              child: Card(
+                margin: EdgeInsets.all(8),
+                child: ListTile(
+                  leading: Icon(Icons.shopping_bag, size: 40),
+                  title: Text('产品 $index'),
+                  subtitle: Text('点击查看详情'),
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+
+class ProductDetailPage extends StatelessWidget {
+  final int productId;
+  
+  ProductDetailPage({required this.productId});
+  
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('产品详情')),
+      body: Column(
+        children: [
+          Hero(
+            tag: 'product_card_$productId',
+            child: Card(
+              margin: EdgeInsets.all(16),
+              child: ListTile(
+                leading: Icon(Icons.shopping_bag, size: 60),
+                title: Text('产品 $productId', style: TextStyle(fontSize: 24)),
+                subtitle: Text('详细描述信息...'),
+              ),
+            ),
+          ),
+          Expanded(
+            child: Padding(
+              padding: EdgeInsets.all(16),
+              child: Text('这里是产品的完整描述内容...'),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+```
+
+### 自定义飞行过渡
+```dart
+// 自定义 Hero 飞行过渡效果
+class CustomHero extends StatelessWidget {
+  final String tag;
+  final Widget child;
+  
+  CustomHero({required this.tag, required this.child});
+  
+  @override
+  Widget build(BuildContext context) {
+    return Hero(
+      tag: tag,
+      flightShuttleBuilder: (flightContext, animation, flightDirection, 
+          fromHeroContext, toHeroContext) {
+        // 自定义飞行过程中的 Widget
+        return AnimatedBuilder(
+          animation: animation,
+          builder: (context, child) {
+            return Opacity(
+              opacity: animation.value,
+              child: Transform.scale(
+                scale: Tween<double>(begin: 0.5, end: 1.0).animate(
+                  CurvedAnimation(parent: animation, curve: Curves.easeInOut)
+                ).value,
+                child: child,
+              ),
+            );
+          },
+          child: child,
+        );
+      },
+      child: child,
+    );
+  }
+}
+```
+
+## 注意点
+### 常见问题
+- 标签冲突: 确保每个`Hero`的`tag`在页面范围内唯一，否则会导致动画异常
+- 形状不匹配: 起始和目标`Hero`的形状差异过大可能导致动画不自然
+- 性能问题: 过度使用`Hero`动画可能影响页面切换性能
+
+### 优化技巧
+- 为`Hero`设置明确的尺寸约束，避免布局计算开销
+- 对于复杂`Widget`，考虑使用`Placeholder`或简化版本进行过渡
+- 使用`Material`包装非`Material`组件以确保正确的裁剪效果
+
+### 最佳实践
+- 标签命名规范：使用有意义的、唯一的标签名称
+- 性能监控：在性能敏感的场景中测试`Hero`动画效果
+- 用户体验：确保动画时长合理，避免过长的过渡时间
+
+
+## 构造函数
+```dart
+Hero({
+  Key? key,
+  required Object tag,                    // 必需参数：唯一标识标签
+  CreateRectTween? createRectTween,      // 可选：自定义矩形补间动画
+  HeroFlightShuttleBuilder? flightShuttleBuilder, // 可选：自定义飞行构件
+  HeroPlaceholderBuilder? placeholderBuilder,     // 可选：占位符构建器
+  bool transitionOnUserGestures = false, // 可选：是否支持手势过渡
+  required Widget child,                 // 必需参数：子组件
+})
+```
+
+## 属性
+| 属性名 | 属性类型 | 说明 |
+|--------|----------|------|
+| tag | Object | **必需**。Hero 的唯一标识符，用于匹配两个页面中的对应元素 |
+| child | Widget | **必需**。要执行飞行动画的子组件 |
+| createRectTween | CreateRectTween? | 可选。自定义矩形位置变化的补间动画 |
+| flightShuttleBuilder | HeroFlightShuttleBuilder? | 可选。自定义飞行过程中显示的 Widget |
+| placeholderBuilder | HeroPlaceholderBuilder? | 可选。当目标 Hero 不可用时构建占位符 |
+| transitionOnUserGestures | bool | 可选。是否支持通过手势触发过渡动画 |
+
+### 关键属性详解
+**tag属性**
+- 重要性: 核心属性，必须确保唯一性
+- 使用要点: 通常使用字符串或包含唯一标识的对象
+- 性能影响: 标签冲突会导致严重的运行时错误
+
+**flightShuttleBuilder属性**
+- 高级功能: 允许完全控制飞行过程中的`Widget`表现
+- 使用场景: 需要自定义动画效果或特殊过渡行为时
+- 性能考虑: 复杂的自定义构建器可能影响动画流畅度
+
+**transitionOnUserGestures属性**
+- 交互增强: 启用后支持通过手势导航触发`Hero`动画
+- 兼容性: 需要与支持手势导航的路由系统配合使用
