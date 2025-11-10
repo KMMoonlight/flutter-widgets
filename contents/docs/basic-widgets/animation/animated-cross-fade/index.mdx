@@ -1,0 +1,186 @@
+---
+title: AnimatedCrossFade
+description: 用于在两个子组件之间平滑切换时淡入淡出和大小变化的动画效果
+---
+
+`AnimatedCrossFade`是Flutter中的一个动画过渡组件，用于在两个子组件之间平滑切换时添加淡入淡出和大小变化的动画效果。其核心
+逻辑基于`crossFadeState`属性控制当前显示的子组件，并通过动画参数(如持续时间、曲线)实现过渡。主要用途包括: 
+- 状态切换场景: 如加载状态与内容显示的切换(例如，加载中动画切换到数据列表)。
+- 交互反馈: 按钮点击后从“提交”变为“完成”的视觉过渡。
+- 布局适应: 在不同屏幕尺寸下动态调整组件布局时的平滑动画。
+
+
+## 示例
+### 基础切换示例
+```dart
+import 'package:flutter/material.dart';
+
+class BasicCrossFade extends StatefulWidget {
+  @override
+  _BasicCrossFadeState createState() => _BasicCrossFadeState();
+}
+
+class _BasicCrossFadeState extends State<BasicCrossFade> {
+  bool _isLoading = true;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        AnimatedCrossFade(
+          duration: Duration(seconds: 1),
+          firstChild: Container(
+            width: 200,
+            height: 100,
+            color: Colors.blue,
+            child: Center(child: Text('加载中...')),
+          ),
+          secondChild: Container(
+            width: 200,
+            height: 100,
+            color: Colors.green,
+            child: Center(child: Text('加载完成!')),
+          ),
+          crossFadeState: _isLoading 
+              ? CrossFadeState.showFirst 
+              : CrossFadeState.showSecond,
+        ),
+        ElevatedButton(
+          onPressed: () => setState(() => _isLoading = !_isLoading),
+          child: Text('切换状态'),
+        ),
+      ],
+    );
+  }
+}
+```
+
+### 交互式切换
+```dart
+class InteractiveCrossFade extends StatefulWidget {
+  @override
+  _InteractiveCrossFadeState createState() => _InteractiveCrossFadeState();
+}
+
+class _InteractiveCrossFadeState extends State<InteractiveCrossFade> {
+  bool _showFirst = true;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Center(
+        child: AnimatedCrossFade(
+          duration: Duration(seconds: 2),
+          firstCurve: Curves.easeInOut,
+          secondCurve: Curves.bounceOut,
+          sizeCurve: Curves.elasticOut,
+          firstChild: FlutterLogo(size: 100),
+          secondChild: FlutterLogo(size: 200),
+          crossFadeState: _showFirst 
+              ? CrossFadeState.showFirst 
+              : CrossFadeState.showSecond,
+        ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => setState(() => _showFirst = !_showFirst),
+        child: Icon(Icons.swap_horiz),
+      ),
+    );
+  }
+}
+```
+
+
+### 主题适配
+```dart
+class ThemeCrossFade extends StatefulWidget {
+  @override
+  _ThemeCrossFadeState createState() => _ThemeCrossFadeState();
+}
+
+class _ThemeCrossFadeState extends State<ThemeCrossFade> {
+  bool _isDarkMode = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      theme: _isDarkMode ? ThemeData.dark() : ThemeData.light(),
+      home: Scaffold(
+        appBar: AppBar(title: Text('主题切换示例')),
+        body: AnimatedCrossFade(
+          duration: Duration(milliseconds: 500),
+          firstChild: Container(
+            color: Colors.white,
+            child: Center(child: Text('亮色主题', style: TextStyle(color: Colors.black))),
+          ),
+          secondChild: Container(
+            color: Colors.black,
+            child: Center(child: Text('暗色主题', style: TextStyle(color: Colors.white))),
+          ),
+          crossFadeState: _isDarkMode 
+              ? CrossFadeState.showSecond 
+              : CrossFadeState.showFirst,
+        ),
+        floatingActionButton: FloatingActionButton(
+          onPressed: () => setState(() => _isDarkMode = !_isDarkMode),
+          child: Icon(Icons.brightness_6),
+        ),
+      ),
+    );
+  }
+}
+```
+
+
+## 注意点
+### 常见问题: 
+- 性能瓶颈: 如果子组件树过于复杂(如包含大量图片或动画)，可能影响过渡流畅性。建议对静态内容使用`RepaintBoundary`进行优化。
+- 尺寸突变: 当两个子组件大小差异较大时，默认的`sizeCurve`可能导致动画突兀。可通过自定义曲线(如`Curves.linear`)平滑处理。
+- 兼容性警告: 在Flutter旧版本(<2.0)中，`alignment`属性默认值可能不同，需显式设置以避免布局错位。
+
+### 优化技巧: 
+- 使用`const`构造函数定义子组件，减少重建开销。
+- 为`duration`设置合理值(通常200-500ms)，避免用户等待过久。
+- 通过`layoutBuilder`属性自定义布局逻辑，适应特殊容器约束。
+
+### 最佳实践: 
+- 始终确保两个子组件具有明确的尺寸约束(如通过`SizedBox`包裹)，防止动画抖动。
+- 在`crossFadeState`切换时，避免同时触发其他重绘操作(如网络请求)，以保持动画稳定。
+
+
+## 构造函数
+```dart
+const AnimatedCrossFade({
+  Key? key,
+  required this.firstChild,
+  required this.secondChild,
+  required this.crossFadeState,
+  required this.duration,
+  this.reverseDuration,
+  this.firstCurve = Curves.linear,
+  this.secondCurve = Curves.linear,
+  this.sizeCurve = Curves.linear,
+  this.alignment = Alignment.topCenter,
+  this.layoutBuilder = defaultLayoutBuilder,
+})
+```
+
+## 属性
+| 属性名          | 属性类型               | 说明                                                                 |
+|------------------|------------------------|----------------------------------------------------------------------|
+| firstChild       | Widget                 | 第一个要显示的子组件，通常对应 `crossFadeState.showFirst` 状态。       |
+| secondChild      | Widget                 | 第二个要显示的子组件，通常对应 `crossFadeState.showSecond` 状态。      |
+| crossFadeState   | CrossFadeState         | 控制当前显示的子组件，切换时触发动画。                               |
+| duration         | Duration               | 动画的持续时间，影响过渡平滑度。                                     |
+| reverseDuration  | Duration?              | 反向动画的持续时间，为空时复用 `duration`。                          |
+| firstCurve       | Curve                  | 第一个子组件的淡入淡出动画曲线。                                     |
+| secondCurve      | Curve                  | 第二个子组件的淡入淡出动画曲线。                                     |
+| sizeCurve        | Curve                  | 子组件大小变化时的动画曲线。                                         |
+| alignment        | AlignmentGeometry      | 子组件在容器中的对齐方式，默认为顶部居中。                           |
+| layoutBuilder    | AnimatedCrossFadeBuilder | 自定义布局逻辑，用于非标准约束场景。                                 |
+
+
+### 关键属性解释: 
+- `crossFadeState`: 这是组件的核心控制属性，其变化直接驱动动画。开发者需通过`setState`更新此值以触发过渡。
+- `duration`: 动画时长直接影响用户体验。较短的时长(如300ms)适合快速交互，而较长的时长(如1s)适合强调式过渡。
+- `sizeCurve`: 当两个子组件尺寸不同时，此属性控制大小变化的动画节奏。例如，使用`Curves.elasticOut`可添加弹性效果，增强视觉吸引力。
