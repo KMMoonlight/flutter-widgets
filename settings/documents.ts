@@ -74,6 +74,120 @@ export const Documents: Paths[] = [
         ]
       },
       {
+        title: "动画组件",
+        href: '/animation',
+        items: [
+          {
+            title: "AlignTransition",
+            href: '/align-transition'
+          },
+          {
+            title: "AnimatedAlign",
+            href: '/animated-align'
+          },
+          {
+            title: "AnimatedBuilder",
+            href: '/animated-builder'
+          },
+          {
+            title: "AnimatedContainer",
+            href: '/animated-container'
+          },
+          {
+            title: "AnimatedCrossFade",
+            href: '/animated-cross-fade'
+          },
+          {
+            title: "AnimatedDefaultTextStyle",
+            href: '/animated-default-text-style'
+          },
+          {
+            title: "AnimatedList",
+            href: '/animated-list'
+          },
+          {
+            title: "AnimatedListState",
+            href: '/animated-list-state'
+          },
+          {
+            title: "AnimatedModalBarrier",
+            href: '/animated-modal-barrier'
+          },
+          {
+            title: "AnimatedOpacity",
+            href: '/animated-opacity'
+          },
+          {
+            title: "AnimatedPhysicalModel",
+            href: '/animated-physical-model'
+          },
+          {
+            title: "AnimatedPositioned",
+            href: '/animated-positioned'
+          },
+          {
+            title: "AnimatedSize",
+            href: '/animated-size'
+          },
+          {
+            title: "AnimatedWidget",
+            href: '/animated-widget'
+          },
+          {
+            title: "ImplicitlyAnimatedWidget",
+            href: '/implicitly-animated-widget'
+          },
+          {
+            title: "DecoratedBoxTransition",
+            href: '/decorated-box-transition'
+          },
+          {
+            title: "DefaultTextStyleTransition",
+            href: '/default-text-style-transition'
+          },
+          {
+            title: "FadeTransition",
+            href: '/fade-transition'
+          },
+          {
+            title: "Hero",
+            href: '/hero'
+          },
+          {
+            title: "MatrixTransition",
+            href: '/matrix-transition'
+          },
+          {
+            title: "PositionedTransition",
+            href: '/positioned-transition'
+          },
+          {
+            title: "RelativePositionedTransition",
+            href: '/relative-positioned-transition'
+          },
+          {
+            title: "RotationTransition",
+            href: '/rotation-transition'
+          },
+          {
+            title: "ScaleTransition",
+            href: '/scale-transition'
+          },
+          {
+            title: "SizeTransition",
+            href: '/size-transition'
+          },
+          {
+            title: "SlideTransition",
+            href: '/slide-transition'
+          },
+          {
+            title: "SliverFadeTransition",
+            href: '/sliver-fade-transition'
+          }
+        ]
+      },
+      {
         title: "样式组件",
         href: '/styling',
         items: [
