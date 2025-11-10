@@ -258,6 +258,68 @@ export const Documents: Paths[] = [
         ]
       },
       {
+        title: "滚动组件",
+        href: '/scrolling',
+        items: [
+          {
+            title: "CarouselView",
+            href: '/carousel-view'
+          },
+          {
+            title: "CustomScrollView",
+            href: '/custom-scroll-view'
+          },
+          {
+            title: "DraggableScrollableSheet",
+            href: '/draggable-scrollable-sheet'
+          },
+          {
+            title: "GridView",
+            href: '/grid-view'
+          },
+          {
+            title: "ListView",
+            href: '/list-view'
+          },
+          {
+            title: "NestedScrollView",
+            href: '/nested-scroll-view'
+          },
+          {
+            title: "NotificationListener",
+            href: '/notification-listener'
+          },
+          {
+            title: "PageView",
+            href: '/page-view'
+          },
+          {
+            title: "RefreshIndicator",
+            href: '/refresh-indicator'
+          },
+          {
+            title: "ReorderableListView",
+            href: '/reorderable-list-view'
+          },
+          {
+            title: "ScrollConfiguration",
+            href: '/scroll-configuration'
+          },
+          {
+            title: "Scrollable",
+            href: '/scrollable'
+          },
+          {
+            title: "Scrollbar",
+            href: '/scrollbar'
+          },
+          {
+            title: "SingleChildScrollView",
+            href: '/single-child-scroll-view'
+          }
+        ]
+      },
+      {
         title: "布局组件",
         href: '/layout',
         items: [
