@@ -1,0 +1,519 @@
+---
+title: ListView
+description: 一个可以滚动的组件列表，按照线性排列
+---
+
+`ListView`是最常用的滚动组件，它会按照指定的滚动方向一个接一个的排列它的子组件，而在另一个方向上子组件需要填充满`ListView`的大小。它支持懒加载(只渲染可见区域)，因此即使列表有成千上万条数据，也不会一次性全部构建，性能开销很小。
+
+### 核心特点
+1. **方向可选**: `Axis.vertical`(默认)或`Axis.horizontal`
+2. **懒加载**: 仅构建可视区域内的子项
+3. **多种构造器**: 针对不同场景(固定数量、无限列表、分隔线等)
+4. **可组合**: 配合`RefreshIndicator`、`ScrollController`、`AutomaticKeepAliveClientMixin`等实现下拉刷新、上拉加载更多、缓存等功能
+
+
+## 构造函数
+1. 默认构造函数，接收一个显式的`List<Widget>`子组件列表，这适用于子组件数量比较少的列表，`ListView`会将子组件列表中的所有子组件全部渲染出来，而不是仅仅渲染可见区域的子组件
+```dart
+ListView.new({
+  Key? key, 
+  Axis scrollDirection = Axis.vertical, 
+  bool reverse = false, 
+  ScrollController? controller, 
+  bool? primary, 
+  ScrollPhysics? physics, 
+  bool shrinkWrap = false, 
+  EdgeInsetsGeometry? padding, 
+  double? itemExtent, 
+  ItemExtentBuilder? itemExtentBuilder, 
+  Widget? prototypeItem, 
+  bool addAutomaticKeepAlives = true, 
+  bool addRepaintBoundaries = true, 
+  bool addSemanticIndexes = true, 
+  double? cacheExtent, 
+  List<Widget> children = const <Widget>[], 
+  int? semanticChildCount, 
+  DragStartBehavior dragStartBehavior = DragStartBehavior.start, 
+  ScrollViewKeyboardDismissBehavior? keyboardDismissBehavior, 
+  String? restorationId, 
+  Clip clipBehavior = Clip.hardEdge, 
+  HitTestBehavior hitTestBehavior = HitTestBehavior.opaque
+})
+```
+
+2. `ListView.builder`构造函数接收一个`IndexedWidgetBuilder`，将会根据该builder来创建子组件，此构造函数适用于具有大量(或无限)子项的列表视图，因为builder仅对实际可见的子项调用
+```dart
+ListView.builder({
+  Key? key, 
+  Axis scrollDirection = Axis.vertical, 
+  bool reverse = false, 
+  ScrollController? controller, 
+  bool? primary, 
+  ScrollPhysics? physics, 
+  bool shrinkWrap = false, 
+  EdgeInsetsGeometry? padding, 
+  double? itemExtent, 
+  ItemExtentBuilder? itemExtentBuilder, 
+  Widget? prototypeItem, 
+  required NullableIndexedWidgetBuilder itemBuilder, 
+  ChildIndexGetter? findChildIndexCallback, 
+  int? itemCount, 
+  bool addAutomaticKeepAlives = true, 
+  bool addRepaintBoundaries = true, 
+  bool addSemanticIndexes = true, 
+  double? cacheExtent, 
+  int? semanticChildCount, 
+  DragStartBehavior dragStartBehavior = DragStartBehavior.start, 
+  ScrollViewKeyboardDismissBehavior? keyboardDismissBehavior, 
+  String? restorationId, 
+  Clip clipBehavior = Clip.hardEdge, 
+  HitTestBehavior hitTestBehavior = HitTestBehavior.opaque
+})
+```
+
+3. `ListView.custom`构造函数接收一个`SliverChildDelegate`，可自定义子项模型的其他方面。例如`SliverChildDelegate`可以控制用于估算实际不可见子项尺寸的算法
+```dart
+ListView.custom({
+  Key? key, 
+  Axis scrollDirection = Axis.vertical, 
+  bool reverse = false, 
+  ScrollController? controller, 
+  bool? primary, 
+  ScrollPhysics? physics, 
+  bool shrinkWrap = false, 
+  EdgeInsetsGeometry? padding, 
+  double? itemExtent, 
+  Widget? prototypeItem, 
+  ItemExtentBuilder? itemExtentBuilder, 
+  required SliverChildDelegate childrenDelegate, 
+  double? cacheExtent, 
+  int? semanticChildCount, 
+  DragStartBehavior dragStartBehavior = DragStartBehavior.start, 
+  ScrollViewKeyboardDismissBehavior? keyboardDismissBehavior, 
+  String? restorationId, 
+  Clip clipBehavior = Clip.hardEdge, 
+  HitTestBehavior hitTestBehavior = HitTestBehavior.opaque
+})
+```
+
+
+4. `ListView.separated`构造函数接收两个`IndexedWidgetBuilder`，`itemBulder`按需构建子组件，`separatorBuilder`按需构建子组件之间的分隔线
+```dart
+ListView.separated({
+  Key? key, 
+  Axis scrollDirection = Axis.vertical, 
+  bool reverse = false, 
+  ScrollController? controller, 
+  bool? primary, 
+  ScrollPhysics? physics, 
+  bool shrinkWrap = false, 
+  EdgeInsetsGeometry? padding, 
+  required NullableIndexedWidgetBuilder itemBuilder, 
+  ChildIndexGetter? findChildIndexCallback, 
+  required IndexedWidgetBuilder separatorBuilder, 
+  required int itemCount, 
+  bool addAutomaticKeepAlives = true, 
+  bool addRepaintBoundaries = true, 
+  bool addSemanticIndexes = true, 
+  double? cacheExtent, 
+  DragStartBehavior dragStartBehavior = DragStartBehavior.start, 
+  ScrollViewKeyboardDismissBehavior? keyboardDismissBehavior, 
+  String? restorationId, 
+  Clip clipBehavior = Clip.hardEdge, 
+  HitTestBehavior hitTestBehavior = HitTestBehavior.opaque
+})
+```
+
+
+| 构造器  |  适用场景  |  关键参数   |
+|---|---|----|
+| ListView() |  少量固定子项(\<=10) |  children:\<Widget\>[] |
+| ListView.builder() |  长列表/无限列表   |  itemCount、itemBuilder |
+| ListView.custom() |  完全自定义子项布局  |  childrenDelegate   |
+| ListView.separated() | 需要分隔线 | separatorBuilder |
+
+
+## 示例代码
+1. 固定子项列表
+```dart
+ListView(
+  padding: EdgeInsets.all(8),
+  children: const [
+    ListTile(title: Text('Item 1')),
+    ListTile(title: Text('Item 2')),
+    ListTile(title: Text('Item 3')),
+    ListTile(title: Text('Item 4'))
+  ]
+)
+```
+
+2. 动态列表(推荐)
+```dart
+ListView.builder(
+  itemCount: 1000,
+  itemBuilder: (context, index) {
+    return ListTile(
+      title: Text('Item $index'),
+      onTap: () => print('Clicked $index')
+    );
+  }
+)
+```
+
+3. 带分隔线的列表
+```dart
+ListView.separated(
+  itemCount: 20,
+  itemBuilder: (context, index) => ListTile(title: Text('Item $index')),
+  separatorBuilder: (context, index) => Divider(height: 1, color: Colors.grey),
+)
+```
+
+
+4. 自定义`ChildrenDelegate`实现完全控制子组件的展示
+```dart
+static const colors = [
+  Colors.red, Colors.orange, Colors.yellow,
+  Colors.green, Colors.blue, Colors.indigo, Colors.purple,
+];
+
+ListView.custom(
+  childrenDelegate: SliverChildBuilderDelegate(
+    (BuildContext context, int index) {
+      final Color = colors[index % colors.length]
+      return GestureDetector(
+        onTap: () => Fluttertoast.showToast(msg: 'Clicked $index', toastLength: Toast.LENGTH_SHORT),
+        child: Container(
+          height: 80,
+          alignment: Alignment.center,
+          color: color,
+          child: Text(
+            'Item $index',
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 18,
+              fontWeight: FontWeight.bold
+            )
+          )
+        )
+      );
+    },
+    childCount: 100
+  ),
+  padding: const EdgeInsets.symmetric(vertical: 8),
+  physics: const BouncingScrollPhysics(),
+  cacheExtent: 200, //预加载区域
+)
+```
+
+
+## 子组件的生命周期
+### 创建
+在布局列表时，可见子组件的`Element`、`State`和`RenderObject`会根据现有`Widget`(例如使用默认构造函数时)或延迟提供的`Widget`(例如使用`ListView.builder`构造函数时)进行惰性创建。
+
+### 销毁
+当某个子组件滚动出视图范围时，其关联的`Element`子树、`State`和`RenderObject`会被销毁。当该位置的子项重新滚动会视图中时，会再次惰性地重新创建新的`Element`子树、`State`和`RenderObject`。
+
+### 解决状态丢失
+为了解决当子组件滚动进出视图区域时保留自身状态，有两种方式可以方便完成，一种是使用`KeepAlive`组件包裹想要保留状态的子组件，另一种是使用`AutomaticKeepAlive`由子组件来控制是否保留状态
+- `KeepAlive`: 当使用`KeepAlive`后，`KeepAlive`将成为需要保留的列表子项`Widget`子树的根`Widget`。`KeepAlive`将会将其子树顶部的`RenderObject`标记为需要保留。当关联顶部`RenderObject`滚动出视图时，列表会将该子组件的`RenderObject(及其关联的Element和State)`保留在缓存列表中，而不是销毁它们。当重新滚动回视图时，该`RenderObject`会按原样重绘。此方法仅在`addAutomaticKeepAlives`和`addRepaintBoundaries`均为false时有效，因为这些参数会导致`ListView`为每个子`Widget`子树额外包裹其他的`Widget`。
+```dart
+import 'package:flutter/material.dart';
+
+void main() => runApp(const MyApp());
+
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'KeepAlive Demo',
+      theme: ThemeData(useMaterial3: true),
+      home: const KeepAlivePage(),
+    );
+  }
+}
+
+class KeepAlivePage extends StatelessWidget {
+  const KeepAlivePage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('KeepAlive 组件示例')),
+      body: ListView.builder(
+        itemCount: 30,
+        itemBuilder: (context, index) {
+          // 只对 3 的倍数索引保持状态
+          final bool shouldKeep = index % 3 == 0;
+
+          // 手动包 KeepAlive
+          return KeepAlive(
+            keepAlive: shouldKeep,
+            child: StatefulTile(index: index),
+          );
+        },
+      ),
+    );
+  }
+}
+
+/// 内部有动画的示例子项
+class StatefulTile extends StatefulWidget {
+  final int index;
+  const StatefulTile({super.key, required this.index});
+
+  @override
+  State<StatefulTile> createState() => _StatefulTileState();
+}
+
+class _StatefulTileState extends State<StatefulTile>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: const Duration(seconds: 2),
+      vsync: this,
+    )..repeat();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 80,
+      margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+      color: Colors.primaries[widget.index % Colors.primaries.length],
+      child: Center(
+        child: RotationTransition(
+          turns: _controller,
+          child: Text(
+            'Tile ${widget.index}',
+            style: const TextStyle(color: Colors.white, fontSize: 18),
+          ),
+        ),
+      ),
+    );
+  }
+}
+```
+
+
+- `AutomaticKeepAlive`: 允许子组件控制是否实际保留状态，当`addAutomaticKeepAlives`为true时默认插入`AutomaticKeepAlive Widget`，然后让子组件实现`AutomaticKeepAliveClientMixin`来达到目的。
+```dart
+import 'package:flutter/material.dart';
+
+void main() => runApp(const MyApp());
+
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: Scaffold(
+        appBar: AppBar(title: const Text('addAutomaticKeepAlives 示例')),
+        body: ListView.builder(
+          itemCount: 50,
+          // 默认就是 true，这里显式写出来
+          addAutomaticKeepAlives: true,
+          itemBuilder: (_, index) => KeepAliveItem(index: index),
+        ),
+      ),
+    );
+  }
+}
+
+/// 子项：混入 AutomaticKeepAliveClientMixin
+class KeepAliveItem extends StatefulWidget {
+  final int index;
+  const KeepAliveItem(this.index, {super.key});
+
+  @override
+  State<KeepAliveItem> createState() => _KeepAliveItemState();
+}
+
+class _KeepAliveItemState extends State<KeepAliveItem>
+    with AutomaticKeepAliveClientMixin {
+  final TextEditingController _ctrl = TextEditingController();
+
+  @override
+  bool get wantKeepAlive => true; // 声明需要保活
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    super.build(context); // 必须调用
+    return Container(
+      height: 80,
+      margin: const EdgeInsets.all(8),
+      color: Colors.primaries[widget.index % Colors.primaries.length],
+      alignment: Alignment.center,
+      child: TextField(
+        controller: _ctrl,
+        decoration: InputDecoration(
+          hintText: '输入内容 ${widget.index}',
+          border: InputBorder.none,
+          contentPadding: const EdgeInsets.symmetric(horizontal: 12),
+        ),
+      ),
+    );
+  }
+}
+```
+
+比较
+| 特性  | 手动包裹KeepAlive | addAutomaticKeepAlives: true + AutomaticKeepAliveClientMixin |
+|---|----|----|
+| 控制方  |  父级(keepAlive)开关   |  子组件自己(wantKeepAlive) |
+| 侵入性 |   无需修改子项   |  子项必须混入Mixin |
+| 粒度  |  父级统一决定   |  每个子项可以独立决定 |
+| 默认行为 |  需要手动包  |  ListView.builder 默认为 true   |
+
+
+
+## 性能优化
+### 使用`itemExtent`
+当所有子项在主轴上的尺寸是固定且已知的情况下，使用`itemExtent`可以省去一次布局测量，提升滚动流畅度。
+```dart
+ListView.builder(
+  itemCount: 1000,
+  itemExtent: 72,          // 每个子项高 72
+  itemBuilder: (_, i) => ListTile(
+    title: Text('Item $i'),
+  ),
+)
+```
+
+> 注意点：只有当子项高度/宽度完全一致时可以使用，如果子项大小差距很大或者大部分相同偶有差异的情况下，不建议使用。
+
+
+### 使用`prototypeItem`
+`prototypeItem`介于完全测量和完全固定之间:
+- 只给出一个原型模板子项，通过测量这个子项来拿到主轴尺寸
+- 其余子项全部复用该尺寸，不再逐条测量
+- 因此允许子项内容不同，但是主轴尺寸必须一致
+
+```dart
+ListView.builder(
+  itemCount: 1000,
+  prototypeItem: const ListTile(
+    title: Text(''),   // 只用来测量一次高度
+  ),
+  itemBuilder: (_, i) => ListTile(
+    leading: const Icon(Icons.person),
+    title: Text('User $i'),
+    subtitle: Text('Subtitle $i'),
+  ),
+)
+```
+
+和`itemExtent`对比
+| 维度 | prototypeItem | itemExtent |
+|---|---|---|
+| 是否需要手动写死数值 |  不需要 |  需要 |
+| 子项内容是否可不同 |  可以 |  可以 |
+| 子项尺寸是否必须严格一致 |  必须一致 |  必须一致 |
+| 性能 | ≈ itemExtent | 最优 |
+| 可读性 | 稍差（多一个样板） | 简洁 |
+
+> 一句话总结：
+> 
+> “如果子项高度/宽度固定但不想手写数值 → 用 prototypeItem；
+> 
+> 如果愿意手写数值 → 用 itemExtent 更直观。”
+
+
+## 属性
+|属性名  |属性类型    | 说明   |
+|----|-----|----|
+| cacheExtent  |  double? |  视口两端对于视口进行扩展的区域，超出该区域才被视为离开或者进入可视区域 |
+| childrenDelegate | SliverChildDelegate |  用于创建子项的委托对象  |
+| clipBehavior |  Clip | 根据配置进行裁切  |
+| controller |  ScrollController? |  用于实时控制和监听滚动位置、跳转到指定offset的对象 |
+| itemExtent | double?  | 用于精确指定子组件在主轴方向上的尺寸来优化性能  |
+| itemExtentBuilder |  ItemExtentBuilder | 可以精确控制第n个子组件在主轴方向上的尺寸来优化性能  |
+| physics | ScrollPhysics? |  控制滚动行为  |
+| prototypeItem | Widget? | 使用一个原型组件来测量子组件在主轴上的尺寸，以此来优化性能 |
+| reverse | bool  | 反向滚动  |
+| scrollBehavior |  ScrollBehavior? | 决定所有ListView在没有显式指定时的滚动条、回弹、鼠标滚轮、拖拽设备等行为  |
+| scrollDirection | Axis |  滚动方向 |
+| shrinkWrap | bool |  让ListView的高度缩小到只包住自己所有子组件的总高度，而不是占满父级剩余空间  |
+
+
+
+### `itemExtentBuilder`示例
+```dart
+ListView.builder(
+  itemCount: 100,
+  itemExtentBuilder: (index, _) {
+    // 奇数行高 60，偶数行高 120
+    return index.isOdd ? 60 : 120;
+  },
+  itemBuilder: (context, index) {
+    return Container(
+      height: index.isOdd ? 60 : 120, // 实际 widget 也要对应
+      color: index.isEven ? Colors.blue : Colors.green,
+      child: Text('Item $index'),
+    );
+  },
+)
+```
+
+
+### `physics`属性举例
+| 类 | 效果 | 典型场景 |
+|---|---|---|
+| `AlwaysScrollableScrollPhysics()` | 永远可滚，即使内容不足 | 下拉刷新 |
+| `NeverScrollableScrollPhysics()` | 完全禁止滚动 | 嵌套在另一个可滚动组件里 |
+| `BouncingScrollPhysics()` | iOS 风格，边界弹性回弹 | iOS 设备 |
+| `ClampingScrollPhysics()` | Android 风格，边界“卡住” | Android 设备 |
+| `PageScrollPhysics()` | 整页滚动（配合 PageView） | 轮播图 |
+| `FixedExtentScrollPhysics()` | 固定 item 高度，滚轮效果 | CupertinoPicker |
+
+
+
+### `shrinkWrap`属性举例
+| 场景 | 默认 (`shrinkWrap=false`) | `shrinkWrap=true` |
+|---|---|---|
+| 父级给的是 **无限高**（`Column`、`SingleChildScrollView`…） | 直接抛异常：`hasSize` | 正常渲染，高度 = 子项总高 |
+| 父级给的是 **固定高** | ListView 占满整个高 | ListView 只占用“刚好”高度 |
+| 性能 | 只绘制可见子项，**快** | 必须一次性测量所有子项，**慢** |
+
+必须打开的场景：
+- `ListView`放在无界高度的父组件里：Column、Row、ListView、SingleChildScrollView、Stack… 否则会报 “BoxConstraints forces an infinite height”。
+```dart
+Column(
+  children: [
+    ListView(          // 会报错
+      children: [...],
+    ),
+  ],
+)
+
+// 解决
+Column(
+  children: [
+    ListView(
+      shrinkWrap: true,   // 告诉 ListView：别占满，有多高算多高
+      physics: const NeverScrollableScrollPhysics(), // 通常一起关滚动
+      children: [...],
+    ),
+  ],
+)
+```
+- 需要测量实际内容高度做动画、对齐、计算尺寸时。
