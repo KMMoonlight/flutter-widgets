@@ -1,0 +1,286 @@
+---
+title: GridView
+description: 一个可滚动的网格组件
+---
+
+`GridView`是一个可滚动的网格布局组件，用于在二维空间中以行列形式排列子组件。它是Flutter中常用的布局组件之一，特别适合需要展示大量数据的场景，比如照片墙、商品列表等。支持以下主要特性：
+- **灵活的网格配置**：可以通过设置每行的列数，间距等来控制网格的外观。
+- **滚动支持**：默认支持垂直或水平滚动。
+- **多种构造方式**：提供多种构造器，适应不同场景的需求。
+
+最常用的网格布局是`GridView.count`它在横轴上创建固定数量的图块；以及`GridView.extent`它创建的图块在横轴上具有最大尺寸。自定义的`SliverGridDelegate`可以生成任意的二维子项排列，包括不对齐或重叠的排列。
+
+若要创建包含大量(或无限)子项的网格，可以使用`GridView.builder`构造函数，并为其`gridDelegate`参数指定`SliverGridDelegateWithFixedCrossAxisCount`或`SliverGridDelegateWithMaxCrossAxisExtent`。
+
+若要使用自定义的`SliverChildDelegate`，可以使用`GridView.custom`。
+
+## 示例
+### 示例1
+```dart
+GridView.count(
+  crossAxisCount: 2, // 每行 2 列
+  mainAxisSpacing: 8.0, // 垂直间距
+  crossAxisSpacing: 8.0, // 水平间距
+  childAspectRatio: 1.0, // 宽高比 1:1
+  children: List.generate(
+    10,
+    (index) => Container(
+      color: Colors.blue[100 * (index % 9 + 1)],
+      child: Center(child: Text('Item $index')),
+    ),
+  ),
+)
+```
+
+![](/images/flutter_grid_view_01.png)
+
+这个例子中通过`crossAxisCount`设置每行的列数，`mainAxisSpacing`设置垂直间距，`crossAxisSpacing`设置水平间距，`childAspectRatio`设置宽高比。
+
+
+### 示例2
+```dart
+GridView.builder(
+  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+    crossAxisCount: 3, // 每行 3 列
+    mainAxisSpacing: 10.0,
+    crossAxisSpacing: 10.0,
+    childAspectRatio: 0.7,
+  ),
+  itemCount: 20,
+  itemBuilder: (context, index) {
+    return Container(
+      color: Colors.green[100 * (index % 9 + 1)],
+      child: Center(child: Text('Item $index')),
+    );
+  },
+)
+```
+
+![](/images/flutter_grid_view_02.png)
+
+这个例子中通过`gridDelegate`设置了`GridView`的item的构造方法，这样就可以通过设置`itemCount`来动态创建`GridView`列表，而不用提前把完整的组件列表创建出来。
+
+
+### 示例3
+```dart
+GridView.extent(
+  maxCrossAxisExtent: 150.0, // 每个格子的最大宽度
+  mainAxisSpacing: 10.0,
+  crossAxisSpacing: 10.0,
+  children: List.generate(
+    10,
+    (index) => Container(
+      color: Colors.red[100 * (index % 9 + 1)],
+      child: Center(child: Text('Item $index')),
+    ),
+  ),
+)
+```
+
+![](/images/flutter_grid_view_03.gif)
+
+`GridView.extent`通过设置item的最大宽度`maxCrossAxisExtent`来自动计算列数，适合响应式布局。
+
+
+### 示例4
+```dart
+GridView.custom(
+  padding: EdgeInsets.all(16.0),
+  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+    crossAxisCount: 2, // 每行 2 列
+    mainAxisSpacing: 12.0, // 垂直间距
+    crossAxisSpacing: 12.0, // 水平间距
+    childAspectRatio: 1.5, // 宽高比 3:2
+  ),
+  childrenDelegate: SliverChildBuilderDelegate(
+    (context, index) {
+      return Container(
+        decoration: BoxDecoration(
+          color: Colors.blue[100 * (index % 9 + 1)],
+          borderRadius: BorderRadius.circular(8.0),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withOpacity(0.3),
+              blurRadius: 4.0,
+              offset: Offset(2, 2),
+            ),
+          ],
+        ),
+        child: Center(
+          child: Text(
+            'Item $index',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 18.0,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+      );
+    },
+    childCount: 10, // 总共 10 个格子
+  ),
+)
+```
+
+![](/images/flutter_grid_view_04.png)
+
+`GridView.custom`提供最大灵活性，允许自定义网格布局和子组件生成逻辑：
+- `gridDelegate` 自定义网格布局委托
+- `childrenDelegate` 自定义子组件生成逻辑，通常使用`SliverChildBuilderDelegate`或者`SliverChildListDelegate`
+
+
+## 构造函数
+```dart
+// 默认构造函数
+GridView.new({
+  Key? key, 
+  Axis scrollDirection = Axis.vertical, 
+  bool reverse = false, 
+  ScrollController? controller, 
+  bool? primary, 
+  ScrollPhysics? physics, 
+  bool shrinkWrap = false, 
+  EdgeInsetsGeometry? padding, 
+  required SliverGridDelegate gridDelegate, 
+  bool addAutomaticKeepAlives = true, 
+  bool addRepaintBoundaries = true, 
+  bool addSemanticIndexes = true, 
+  double? cacheExtent, 
+  List<Widget> children = const <Widget>[], 
+  int? semanticChildCount, 
+  DragStartBehavior dragStartBehavior = DragStartBehavior.start, 
+  Clip clipBehavior = Clip.hardEdge, 
+  ScrollViewKeyboardDismissBehavior? keyboardDismissBehavior, 
+  String? restorationId, 
+  HitTestBehavior hitTestBehavior = HitTestBehavior.opaque
+})
+
+
+//通过itemBuilder来构造子组件
+GridView.builder({
+  Key? key, 
+  Axis scrollDirection = Axis.vertical, 
+  bool reverse = false, 
+  ScrollController? controller, 
+  bool? primary, 
+  ScrollPhysics? physics, 
+  bool shrinkWrap = false, 
+  EdgeInsetsGeometry? padding, 
+  required SliverGridDelegate gridDelegate, 
+  required NullableIndexedWidgetBuilder itemBuilder, 
+  ChildIndexGetter? findChildIndexCallback, 
+  int? itemCount, 
+  bool addAutomaticKeepAlives = true, 
+  bool addRepaintBoundaries = true, 
+  bool addSemanticIndexes = true, 
+  double? cacheExtent, 
+  int? semanticChildCount, 
+  DragStartBehavior dragStartBehavior = DragStartBehavior.start, 
+  ScrollViewKeyboardDismissBehavior? keyboardDismissBehavior, 
+  String? restorationId, 
+  Clip clipBehavior = Clip.hardEdge, 
+  HitTestBehavior hitTestBehavior = HitTestBehavior.opaque
+})
+
+
+//通过crossAxisCount设置网格列数，传入子组件列表进行渲染
+GridView.count({
+  Key? key, 
+  Axis scrollDirection = Axis.vertical, 
+  bool reverse = false, 
+  ScrollController? controller, 
+  bool? primary, 
+  ScrollPhysics? physics, 
+  bool shrinkWrap = false, 
+  EdgeInsetsGeometry? padding, 
+  required int crossAxisCount, 
+  double mainAxisSpacing = 0.0, 
+  double crossAxisSpacing = 0.0, 
+  double childAspectRatio = 1.0, 
+  bool addAutomaticKeepAlives = true, 
+  bool addRepaintBoundaries = true, 
+  bool addSemanticIndexes = true, 
+  double? cacheExtent, 
+  List<Widget> children = const <Widget>[], 
+  int? semanticChildCount, 
+  DragStartBehavior dragStartBehavior = DragStartBehavior.start, 
+  ScrollViewKeyboardDismissBehavior? keyboardDismissBehavior, 
+  String? restorationId, 
+  Clip clipBehavior = Clip.hardEdge, 
+  HitTestBehavior hitTestBehavior = HitTestBehavior.opaque
+})
+
+//设置子组件的最大宽度，自动适应展示列数
+GridView.extent({
+  Key? key, 
+  Axis scrollDirection = Axis.vertical, 
+  bool reverse = false, 
+  ScrollController? controller, 
+  bool? primary, 
+  ScrollPhysics? physics, 
+  bool shrinkWrap = false, 
+  EdgeInsetsGeometry? padding, 
+  required double maxCrossAxisExtent, 
+  double mainAxisSpacing = 0.0, 
+  double crossAxisSpacing = 0.0, 
+  double childAspectRatio = 1.0, 
+  bool addAutomaticKeepAlives = true, 
+  bool addRepaintBoundaries = true, 
+  bool addSemanticIndexes = true, 
+  double? cacheExtent, 
+  List<Widget> children = const <Widget>[], 
+  int? semanticChildCount, 
+  DragStartBehavior dragStartBehavior = DragStartBehavior.start, 
+  ScrollViewKeyboardDismissBehavior? keyboardDismissBehavior, 
+  String? restorationId, 
+  Clip clipBehavior = Clip.hardEdge, 
+  HitTestBehavior hitTestBehavior = HitTestBehavior.opaque
+})
+
+
+//通过`SliverGridDelegate`和`SliverChildDelegate`来自定义`GridView`展示形式
+GridView.custom({
+  Key? key, 
+  Axis scrollDirection = Axis.vertical, 
+  bool reverse = false, 
+  ScrollController? controller, 
+  bool? primary, 
+  ScrollPhysics? physics, 
+  bool shrinkWrap = false, 
+  EdgeInsetsGeometry? padding, 
+  required SliverGridDelegate gridDelegate, 
+  required SliverChildDelegate childrenDelegate, 
+  double? cacheExtent, 
+  int? semanticChildCount, 
+  DragStartBehavior dragStartBehavior = DragStartBehavior.start, 
+  ScrollViewKeyboardDismissBehavior? keyboardDismissBehavior, 
+  String? restorationId, 
+  Clip clipBehavior = Clip.hardEdge, 
+  HitTestBehavior hitTestBehavior = HitTestBehavior.opaque
+})
+```
+
+## 属性
+| 属性名  |  属性类型  |  说明   |
+|--------|----------|---------|
+| cacheExtent |  double?  | 指定滚动视图在视口之外的额外缓存区域大小，在这个区域内的子组件会被提前构建或保留在内存中，以优化滚动性能和用户体验 |
+| childrenDelegate | SliverChildDelegate | 自定义子组件生成逻辑 |
+| controller | ScrollController?  |  `controller`属性用于关联一个`ScrollController`，以控制和监听`GridView`的滚动行为  |
+| dragStartBehavior | DragStartBehavior |  用于控制可滚动组件如何处理拖拽手势的起始点  |
+| gridDelegate | SliverGridDelegate |  自定义网格布局委托 |
+| padding | EdgeInsetsGeometry? |  内边距  |
+| physics | ScrollPhysics? |  用于定义滚动视图的物理行为，控制用户拖拽、滑动或惯性滚动时的动态效果   |
+| primary | bool? |  指定当前`GridView`是否是其父级可滚动组件的主要滚动视图  |
+| restorationId | String? | 用于保存和恢复可滚动内容的滚动偏移量的恢复ID |
+| reverse | bool | 滚动视图是否沿着阅读方向滚动  |
+| scrollBehavior | ScrollBehavior? | 指定`GridView`的滚动交互行为，控制如何处理用户输入以及滚动相关的视觉效果 |
+| scrollDirection | Axis | 滚动方向 |
+| shrinkWrap | bool |  决定`GridView`是否根据其内容的实际大小“收缩”到最小尺寸，而不是扩展到填充父容器的可用空间  |
+
+
+
+额外说明
+**primary**的具体作用：
+- primary: true，`GridView`会被视为主要滚动视图，自动关联父级`Scaffold`或`Navigator`的默认`ScrollController`，这意味着它会响应应用程序的默认滚动行为。
+- primary: false，`GridView`不被视为主要滚动视图，需要显式指定`ScrollController`或依赖父级可滚动组件的控制器。
