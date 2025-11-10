@@ -1,0 +1,284 @@
+---
+title: AnimatedContainer
+description: 自动在属性变化时生成平滑过渡动画的容器组件
+---
+
+`AnimatedContainer`是Flutter中一个功能强大的动画容器组件，它能够自动在属性变化时生成平滑的过渡动画。该组件继承自`Container`，但增加了自动动画功能，当宽度、高度、颜色、边距等属性发生变化时，会自动创建补间动画。
+
+**核心逻辑**: 通过监听属性值的变化，在属性更新时自动计算中间状态，使用隐式动画实现平滑过渡效果。
+
+### 使用场景
+- 布局变化动画: 容器大小、位置变化的过渡效果
+- 主题切换动画: 颜色、背景、边框样式的平滑切换
+- 交互反馈动画: 点击、悬停等交互时的视觉反馈
+- 状态指示动画: 加载状态、完成状态的可视化表示
+
+
+
+## 示例
+### 基础大小和颜色动画
+```dart
+import 'package:flutter/material.dart';
+
+class BasicAnimatedContainer extends StatefulWidget {
+  @override
+  _BasicAnimatedContainerState createState() => _BasicAnimatedContainerState();
+}
+
+class _BasicAnimatedContainerState extends State<BasicAnimatedContainer> {
+  bool _expanded = false;
+  
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          _expanded = !_expanded;
+        });
+      },
+      child: AnimatedContainer(
+        duration: Duration(milliseconds: 500),
+        width: _expanded ? 200 : 100,
+        height: _expanded ? 200 : 100,
+        color: _expanded ? Colors.blue : Colors.red,
+        curve: Curves.easeInOut,
+        child: Center(
+          child: Text(
+            _expanded ? '展开' : '收缩',
+            style: TextStyle(color: Colors.white),
+          ),
+        ),
+      ),
+    );
+  }
+}
+```
+
+
+### 复杂形状和边框动画
+```dart
+import 'package:flutter/material.dart';
+
+class ShapeAnimatedContainer extends StatefulWidget {
+  @override
+  _ShapeAnimatedContainerState createState() => _ShapeAnimatedContainerState();
+}
+
+class _ShapeAnimatedContainerState extends State<ShapeAnimatedContainer> {
+  bool _isCircle = false;
+  
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        AnimatedContainer(
+          duration: Duration(milliseconds: 600),
+          width: 150,
+          height: 150,
+          decoration: BoxDecoration(
+            color: _isCircle ? Colors.green : Colors.orange,
+            borderRadius: _isCircle 
+                ? BorderRadius.circular(75) 
+                : BorderRadius.circular(20),
+            border: Border.all(
+              color: _isCircle ? Colors.black : Colors.purple,
+              width: _isCircle ? 3 : 1,
+            ),
+          ),
+          padding: _isCircle 
+              ? EdgeInsets.all(10) 
+              : EdgeInsets.all(30),
+          child: Icon(
+            _isCircle ? Icons.check : Icons.star,
+            color: Colors.white,
+            size: 40,
+          ),
+        ),
+        SizedBox(height: 20),
+        ElevatedButton(
+          onPressed: () {
+            setState(() {
+              _isCircle = !_isCircle;
+            });
+          },
+          child: Text(_isCircle ? '变为方形' : '变为圆形'),
+        ),
+      ],
+    );
+  }
+}
+```
+
+### 主题适配和响应式动画
+```dart
+import 'package:flutter/material.dart';
+
+class ThemeAnimatedContainer extends StatefulWidget {
+  @override
+  _ThemeAnimatedContainerState createState() => _ThemeAnimatedContainerState();
+}
+
+class _ThemeAnimatedContainerState extends State<ThemeAnimatedContainer> {
+  bool _darkMode = false;
+  
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: _darkMode ? Colors.grey[900] : Colors.grey[100],
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            AnimatedContainer(
+              duration: Duration(milliseconds: 800),
+              width: 300,
+              height: 150,
+              margin: EdgeInsets.all(20),
+              padding: EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: _darkMode ? Colors.blueGrey : Colors.white,
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: _darkMode 
+                        ? Colors.black54 
+                        : Colors.grey.withOpacity(0.5),
+                    blurRadius: 10,
+                    offset: Offset(0, 5),
+                  ),
+                ],
+              ),
+              child: Column(
+                children: [
+                  Icon(
+                    Icons.lightbulb,
+                    color: _darkMode ? Colors.yellow : Colors.orange,
+                    size: 40,
+                  ),
+                  SizedBox(height: 10),
+                  Text(
+                    _darkMode ? '深色模式' : '浅色模式',
+                    style: TextStyle(
+                      color: _darkMode ? Colors.white : Colors.black,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            SizedBox(height: 30),
+            Switch(
+              value: _darkMode,
+              onChanged: (value) {
+                setState(() {
+                  _darkMode = value;
+                });
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+```
+
+
+## 注意点
+### 常见问题
+- 性能问题: 频繁的属性变化可能导致性能下降，特别是在低端设备上
+- 动画冲突: 多个属性同时动画时可能出现不协调的效果
+- 内存泄漏: 长时间运行的动画可能占用大量内存
+- 布局闪烁: 在动画过程中可能出现布局计算问题
+
+### 优化技巧
+- 为`duration`设置合理的动画时长(通常 200-800ms)
+- 使用合适的`curve`来优化动画效果
+- 避免在动画过程中进行复杂的计算
+- 考虑使用`AnimatedContainer`的`onEnd`回调进行状态清理
+
+### 最佳实践
+- 优先使用隐式动画而非显式动画，简化代码结构
+- 合理设置动画的边界条件，防止布局溢出
+- 在主题切换等场景中，确保动画的连贯性
+- 测试不同设备上的动画性能表现
+
+
+## 构造函数
+```dart
+AnimatedContainer({
+  Key? key,
+  this.alignment,
+  this.padding,
+  Color? color,
+  Decoration? decoration,
+  this.foregroundDecoration,
+  double? width,
+  double? height,
+  BoxConstraints? constraints,
+  this.margin,
+  this.transform,
+  this.transformAlignment,
+  this.child,
+  this.clipBehavior = Clip.none,
+  required this.duration,
+  this.curve = Curves.linear,
+  this.onEnd,
+})
+```
+
+
+## 属性
+| 属性名 | 属性类型 | 说明 |
+|--------|----------|------|
+| duration | Duration | 动画持续时间（必需） |
+| curve | Curve | 动画曲线，控制动画速度变化 |
+| onEnd | VoidCallback? | 动画结束回调函数 |
+| alignment | AlignmentGeometry? | 子组件对齐方式 |
+| padding | EdgeInsetsGeometry? | 内边距 |
+| color | Color? | 背景颜色 |
+| decoration | Decoration? | 装饰效果 |
+| foregroundDecoration | Decoration? | 前景装饰 |
+| width | double? | 容器宽度 |
+| height | double? | 容器高度 |
+| constraints | BoxConstraints? | 布局约束 |
+| margin | EdgeInsetsGeometry? | 外边距 |
+| transform | Matrix4? | 变换矩阵 |
+| transformAlignment | AlignmentGeometry? | 变换对齐点 |
+| child | Widget? | 子组件 |
+| clipBehavior | Clip | 裁剪行为 |
+
+
+### 关键属性详解
+#### `duration`(必需)
+- 重要性: 控制动画的播放时长，直接影响用户体验
+- 推荐值: 通常设置为200-800毫秒
+- 性能影响: 过长的`duration`可能导致性能问题，过短则动画效果不明显
+
+#### `curve`
+**作用**: 定义动画的加速度曲线，使动画更自然
+
+**常用选项**: 
+- `Curves.easeInOut`: 缓入缓出(最常用)
+- `Curves.linear`: 匀速运动
+- `Curves.bounceOut`: 弹跳效果
+- `Curves.elasticOut`: 弹性效果
+
+#### `onEnd`
+- 用途: 动画结束后执行清理操作或状态更新
+- 应用场景: 链式动画、状态同步、资源释放
+
+
+#### 最佳实践组合
+```dart
+AnimatedContainer(
+  duration: Duration(milliseconds: 500),
+  curve: Curves.easeInOut,
+  onEnd: () {
+    // 动画结束后的处理逻辑
+  },
+  // 其他属性...
+)
+```
