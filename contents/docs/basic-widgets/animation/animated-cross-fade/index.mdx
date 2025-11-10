@@ -136,7 +136,7 @@ class _ThemeCrossFadeState extends State<ThemeCrossFade> {
 ### 常见问题: 
 - 性能瓶颈: 如果子组件树过于复杂(如包含大量图片或动画)，可能影响过渡流畅性。建议对静态内容使用`RepaintBoundary`进行优化。
 - 尺寸突变: 当两个子组件大小差异较大时，默认的`sizeCurve`可能导致动画突兀。可通过自定义曲线(如`Curves.linear`)平滑处理。
-- 兼容性警告: 在Flutter旧版本(<2.0)中，`alignment`属性默认值可能不同，需显式设置以避免布局错位。
+- 兼容性警告: 在Flutter旧版本(\<2.0)中，`alignment`属性默认值可能不同，需显式设置以避免布局错位。
 
 ### 优化技巧: 
 - 使用`const`构造函数定义子组件，减少重建开销。
