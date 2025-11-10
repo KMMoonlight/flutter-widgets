@@ -1,0 +1,305 @@
+---
+title: AnimatedAlign
+description: 动画对齐容器组件，可以平滑改变子组件的位置对齐方式
+---
+`AnimatedAlign`是一个动画对齐容器组件，能够在指定的时间内平滑地改变子组件的位置对齐方式。它是`Align`组件的动画版本，通过自动处理过渡动画来提升用户体验。
+
+**核心逻辑**: 当`alignment`属性发生变化时，`AnimatedAlign`会自动在旧对齐位置和新对齐位置之间创建补间动画，无需手动管理动画控制器。
+
+### 使用场景
+- 需要动态调整组件位置并带有平滑过渡效果的界面
+- 创建交互式布局变换(如点击按钮后移动元素)
+- 实现页面切换时的元素位置动画
+- 构建响应式布局中的动画对齐效果
+
+
+## 示例
+### 基础位置切换
+```dart
+import 'package:flutter/material.dart';
+
+class BasicAnimatedAlignExample extends StatefulWidget {
+  @override
+  _BasicAnimatedAlignExampleState createState() => _BasicAnimatedAlignExampleState();
+}
+
+class _BasicAnimatedAlignExampleState extends State<BasicAnimatedAlignExample> {
+  AlignmentGeometry _alignment = Alignment.topLeft;
+
+  void _toggleAlignment() {
+    setState(() {
+      _alignment = _alignment == Alignment.topLeft 
+          ? Alignment.bottomRight 
+          : Alignment.topLeft;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('基础AnimatedAlign示例')),
+      body: Column(
+        children: [
+          Expanded(
+            child: AnimatedAlign(
+              alignment: _alignment,
+              duration: Duration(seconds: 1),
+              curve: Curves.easeInOut,
+              child: Container(
+                width: 100,
+                height: 100,
+                color: Colors.blue,
+                child: Icon(Icons.star, color: Colors.white),
+              ),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: _toggleAlignment,
+            child: Text('切换位置'),
+          ),
+        ],
+      ),
+    );
+  }
+}
+```
+
+
+### 复杂交互式布局
+```dart
+import 'package:flutter/material.dart';
+
+class InteractiveAnimatedAlignExample extends StatefulWidget {
+  @override
+  _InteractiveAnimatedAlignExampleState createState() => _InteractiveAnimatedAlignExampleState();
+}
+
+class _InteractiveAnimatedAlignExampleState extends State<InteractiveAnimatedAlignExample> {
+  AlignmentGeometry _alignment = Alignment.center;
+  double _containerSize = 100.0;
+
+  void _handleTap(TapDownDetails details) {
+    final RenderBox box = context.findRenderObject() as RenderBox;
+    final Offset localOffset = box.globalToLocal(details.globalPosition);
+    
+    setState(() {
+      _alignment = Alignment(
+        (localOffset.dx / box.size.width) * 2 - 1,
+        (localOffset.dy / box.size.height) * 2 - 1,
+      );
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('交互式AnimatedAlign')),
+      body: GestureDetector(
+        onTapDown: _handleTap,
+        child: Container(
+          width: double.infinity,
+          height: 400,
+          color: Colors.grey[200],
+          child: AnimatedAlign(
+            alignment: _alignment,
+            duration: Duration(milliseconds: 500),
+            curve: Curves.bounceOut,
+            child: AnimatedContainer(
+              duration: Duration(milliseconds: 300),
+              width: _containerSize,
+              height: _containerSize,
+              decoration: BoxDecoration(
+                color: Colors.deepOrange,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Icon(Icons.favorite, color: Colors.white, size: 40),
+            ),
+          ),
+        ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          setState(() {
+            _containerSize = _containerSize == 100.0 ? 150.0 : 100.0;
+          });
+        },
+        child: Icon(Icons.resize),
+      ),
+    );
+  }
+}
+```
+
+
+### 主题适配和响应式设计
+```dart
+import 'package:flutter/material.dart';
+
+class ResponsiveAnimatedAlignExample extends StatefulWidget {
+  @override
+  _ResponsiveAnimatedAlignExampleState createState() => _ResponsiveAnimatedAlignExampleState();
+}
+
+class _ResponsiveAnimatedAlignExampleState extends State<ResponsiveAnimatedAlignExample> {
+  int _currentIndex = 0;
+  final List<Alignment> _alignments = [
+    Alignment.topLeft,
+    Alignment.topCenter,
+    Alignment.topRight,
+    Alignment.centerLeft,
+    Alignment.center,
+    Alignment.centerRight,
+    Alignment.bottomLeft,
+    Alignment.bottomCenter,
+    Alignment.bottomRight,
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    final bool isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('响应式AnimatedAlign'),
+        backgroundColor: isDarkMode ? Colors.deepPurple : Colors.blue,
+      ),
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          final bool isLargeScreen = constraints.maxWidth > 600;
+          
+          return Column(
+            children: [
+              Expanded(
+                child: AnimatedAlign(
+                  alignment: _alignments[_currentIndex],
+                  duration: Duration(milliseconds: 800),
+                  curve: isLargeScreen ? Curves.elasticOut : Curves.ease,
+                  child: Container(
+                    width: isLargeScreen ? 120 : 80,
+                    height: isLargeScreen ? 120 : 80,
+                    decoration: BoxDecoration(
+                      color: isDarkMode ? Colors.amber : Colors.green,
+                      shape: isLargeScreen ? BoxShape.circle : BoxShape.rectangle,
+                      borderRadius: isLargeScreen ? null : BorderRadius.circular(15),
+                    ),
+                    child: Icon(
+                      Icons.bolt,
+                      color: Colors.white,
+                      size: isLargeScreen ? 50 : 30,
+                    ),
+                  ),
+                ),
+              ),
+              Container(
+                height: 80,
+                child: GridView.builder(
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 3,
+                  ),
+                  itemCount: _alignments.length,
+                  itemBuilder: (context, index) {
+                    return ElevatedButton(
+                      onPressed: () {
+                        setState(() {
+                          _currentIndex = index;
+                        });
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: _currentIndex == index 
+                            ? (isDarkMode ? Colors.deepPurple : Colors.blue)
+                            : Colors.grey,
+                      ),
+                      child: Text('${index + 1}'),
+                    );
+                  },
+                ),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+}
+```
+
+## 注意点
+### 常见问题
+性能考虑: 避免在短时间内频繁改变`alignment`属性，这可能导致动画卡顿
+嵌套限制: `AnimatedAlign`应该作为容器使用，避免过度嵌套影响性能
+边界检查: 确保对齐位置在父容器范围内，避免子组件部分显示
+
+### 优化技巧
+- 为不同的屏幕尺寸设置合适的动画时长
+- 结合`AnimatedContainer`实现更复杂的动画效果
+- 使用合适的曲线函数(`Curves`)来匹配应用的整体动画风格
+
+### 最佳实践
+- 在状态管理中使用`setState()`来触发对齐变化
+- 为动画设置合理的持续时间(通常200-1000ms)
+- 考虑用户交互的响应性，避免过长的动画延迟
+
+
+
+## 构造函数
+```dart
+const AnimatedAlign({
+  Key? key,
+  required this.alignment,
+  this.child,
+  this.heightFactor,
+  this.widthFactor,
+  required this.duration,
+  this.curve = Curves.linear,
+  this.onEnd,
+})
+```
+
+
+## 属性
+| 属性名 | 属性类型 | 说明 |
+|--------|----------|------|
+| alignment | AlignmentGeometry | 子组件的对齐方式，如 Alignment.center |
+| child | Widget? | 要对齐的子组件 |
+| heightFactor | double? | 容器高度与子组件高度的比例因子 |
+| widthFactor | double? | 容器宽度与子组件宽度的比例因子 |
+| duration | Duration | 动画过渡的持续时间 |
+| curve | Curve | 动画的时间曲线，控制动画速度变化 |
+| onEnd | VoidCallback? | 动画结束时调用的回调函数 |
+
+### 关键属性详解
+**alignment(核心属性)**
+- 重要性: 必需属性，决定动画的起始和结束位置
+- 性能影响: 每次变化都会触发重建和动画，应谨慎使用
+- 常用选项: `Alignment.topLeft`、`Alignment.center`、`Alignment.bottomRight`等
+
+**duration(动画控制)**
+- 最佳实践: 根据移动距离设置合适的时长(短距离200-500ms，长距离500-1000ms)
+- 用户体验: 过短的动画可能难以察觉，过长的动画会让用户等待
+
+**curve(动画效果)**
+- 推荐值: `Curves.easeInOut`(默认平滑)、`Curves.bounceOut`(弹跳效果)
+- 设计考虑: 选择与应用整体动画风格一致的曲线函数
+
+
+## 与`AlignTransition`的区别
+### AnimatedAlign
+**本质**: 隐式动画组件(`Implicitly Animated Widget`)
+- 自动管理动画控制器和状态
+- 通过`setState()`触发动画
+- 适合简单的对齐动画需求
+
+### AlignTransition
+**本质**: 显式动画组件(`Explicit Animation Widget`)
+- 需要手动管理`AnimationController`
+- 使用`Animation`对象驱动动画
+- 适合复杂的动画控制和组合
+
+
+| 特性 | AnimatedAlign | AlignTransition |
+|------|---------------|-----------------|
+| **动画控制** | 自动管理 | 手动控制`AnimationController` |
+| **动画状态** | 简单的开始/结束 | 可暂停、反转、循环播放 |
+| **动画组合** | 有限制 | 可与其他动画同步 |
+| **代码复杂度** | 简单 | 相对复杂 |
+| **内存管理** | 自动处理 | 需要手动`dispose()` |
