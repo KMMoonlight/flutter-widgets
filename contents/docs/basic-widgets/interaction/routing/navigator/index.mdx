@@ -1,0 +1,128 @@
+---
+title: Navigator
+description: 管理路由栈的核心组件
+---
+
+`Navigator`是Flutter中用于管理应用页面堆栈(路由栈)的核心组件，它遵循“栈”数据结构(先进后出)，负责页面的跳转、返回和生命周期控制。每个Flutter应用默认包含一个根`Navigator`，可通过`MaterialApp`或`CupertinoApp`自动创建。其核心逻辑是
+维护一个路由列表(`Route`对象)，通过`push()`添加新页面、`pop()`移除当前页面，实现导航功能。
+
+### 使用场景:
+- 多页面应用: 如从主页跳转到详情页，再返回主页。
+- 用户流程引导: 例如登录成功后跳转到主界面。
+- 模态对话框管理: 弹窗或底部菜单作为临时路由入栈。
+- 深层链接处理: 通过`URL`直接打开特定页面。
+
+## 示例
+### 基础页面跳转
+```dart
+// 主页点击按钮跳转
+ElevatedButton(
+  onPressed: () {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => DetailPage()), // 跳转到详情页
+    );
+  },
+  child: Text("前往详情页"),
+);
+
+// 详情页中返回主页
+ElevatedButton(
+  onPressed: () {
+    Navigator.pop(context); // 退出当前页
+  },
+  child: Text("返回"),
+);
+```
+
+### 命名路由配置
+```dart
+// 在 MaterialApp 中配置路由表
+MaterialApp(
+  initialRoute: '/',
+  routes: {
+    '/': (context) => HomePage(),
+    '/detail': (context) => DetailPage(),
+    '/settings': (context) => SettingsPage(),
+  },
+);
+
+// 跳转时使用路由名称
+Navigator.pushNamed(context, '/detail'); // 通过名称跳转
+```
+
+### 带参数传递与返回值交互
+```dart
+// 跳转时传递参数并等待返回值
+final result = await Navigator.push(
+  context,
+  MaterialPageRoute(
+    builder: (context) => SelectionPage(initialValue: '默认值'),
+  ),
+);
+print("用户选择的结果: $result");
+
+// SelectionPage 中返回数据
+ElevatedButton(
+  onPressed: () {
+    Navigator.pop(context, '用户确认的值'); // 返回数据
+  },
+  child: Text("确认"),
+);
+```
+
+## 注意点
+### 常见问题：
+- 上下文(`Context`)错误: 确保`Navigator.push`使用的`context`属于当前组件树，否则可能无法找到正确的`Navigator`。
+- 路由重复: 未正确调用`pop()`可能导致同一页面多次入栈，引发界面重叠。
+- 内存泄漏: 页面中若持有大量数据，需在`dispose()`中手动释放资源。
+
+### 优化技巧：
+- 使用`Navigator.pushReplacement()`替换当前页，避免栈过度增长。
+- 对于`Tab`栏等无需栈管理的场景，考虑使用`PageView`或`IndexedStack`替代。
+- 通过`RouteObserver`监听页面生命周期，优化数据加载时机。
+
+### 最佳实践：
+- 在大型应用中优先使用命名路由，便于统一管理和维护。
+- 通过`onGenerateRoute`实现动态路由逻辑(如权限验证)。
+- 测试时使用`Navigator.canPop()`检查当前页是否可返回。
+
+
+## 构造函数
+```dart
+//默认构造函数
+Navigator({
+  Key? key,
+  required List<Route> routes, // 初始路由列表
+  String? initialRoute, // 初始路由名称
+  RouteFactory? onGenerateRoute, // 动态路由生成器
+  RouteFactory? onUnknownRoute, // 未知路由处理
+})
+
+
+//常用初始化方式
+MaterialApp(
+  onGenerateRoute: (settings) {
+    if (settings.name == '/detail') {
+      return MaterialPageRoute(builder: (_) => DetailPage());
+    }
+    return null; // 交由默认逻辑处理
+  },
+);
+```
+
+## 属性
+| 属性名              | 属性类型               | 说明                                                                 |
+|---------------------|------------------------|----------------------------------------------------------------------|
+| `key`               | `Key?`                 | 组件唯一标识符，用于更新控制。                                       |
+| `routes`            | `Map<String, WidgetBuilder>` | 命名路由映射表，需在 `MaterialApp` 中配置。                          |
+| `initialRoute`      | `String?`              | 应用启动时加载的首个路由名称。                                       |
+| `onGenerateRoute`   | `RouteFactory?`        | 动态生成路由的回调函数，适用于参数化路由。                           |
+| `onUnknownRoute`    | `RouteFactory?`        | 当路由名称未在 `routes` 中定义时的降级处理。                         |
+| `observers`         | `List<NavigatorObserver>` | 路由变化监听器列表，用于埋点或日志记录。                             |
+
+
+### 关键属性解析：
+- `onGenerateRoute`: 允许根据传入的`RouteSettings`动态创建路由，适合需要验证权限或传递复杂参数的场景(如商品详情页需商品ID)。
+- `observers`: 通过添加`NavigatorObserver`可监听路由的推进(`push`)、弹出(`pop`)等事件，常用于统计页面停留时长或清理全局状态。
+- `routes`: 命名路由表提升代码可读性，但需注意路由名称需以/开头，避免与系统路径冲突。
