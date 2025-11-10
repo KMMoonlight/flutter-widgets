@@ -1,0 +1,115 @@
+---
+title: NotificationListener
+description: 用于拦截和监听子树中传递的Notification对象
+---
+
+`NotificationListener`是Flutter中一个功能型Widget，用于监听和拦截子树中传递的`Notification`(通知)对象。其核心逻辑基于Flutter的`Notification`冒泡机制: 当子树中的某个`Widget`(如`ScrollView`)触发通知时，该通知会从子节点向父节点
+逐级传递，而`NotificationListener`可以捕获并处理这些通知，实现自定义响应(如日志记录、状态更新或阻止冒泡)。
+
+### 主要用途: 
+- 监听滚动事件(如`ScrollNotification`)，用于实现滚动动画、懒加载或自定义交互。
+- 拦截自定义通知，用于组件间通信(替代`Provider`等状态管理工具)。
+- 分析UI性能（如帧率监控）。
+
+### 典型使用场景：
+- 列表滚动时隐藏/显示顶部栏。
+- 监听键盘弹出通知(如`SizeChangedLayoutNotification`)。
+- 自定义业务逻辑通知(如用户行为追踪)。
+
+
+## 示例
+### 监听滚动事件
+```dart
+NotificationListener<ScrollNotification>(
+  onNotification: (ScrollNotification notification) {
+    // 判断滚动事件类型
+    if (notification is ScrollStartNotification) {
+      print('滚动开始');
+    } else if (notification is ScrollUpdateNotification) {
+      print('滚动位置: ${notification.metrics.pixels}');
+    } else if (notification is ScrollEndNotification) {
+      print('滚动结束');
+    }
+    return false; // 允许通知继续向上冒泡
+  },
+  child: ListView.builder(
+    itemCount: 50,
+    itemBuilder: (context, index) => ListTile(title: Text('项目 $index')),
+  ),
+)
+```
+
+### 拦截通知(阻止冒泡)
+```dart
+NotificationListener<MyCustomNotification>(
+  onNotification: (MyCustomNotification notification) {
+    print('拦截自定义通知: ${notification.message}');
+    return true; // 返回true阻止通知继续传递
+  },
+  child: ElevatedButton(
+    onPressed: () {
+      // 触发自定义通知
+      MyCustomNotification('按钮点击').dispatch(context);
+    },
+    child: Text('发送通知'),
+  ),
+)
+
+// 自定义通知类
+class MyCustomNotification extends Notification {
+  final String message;
+  MyCustomNotification(this.message);
+}
+```
+
+
+### 性能监控(帧率检测)
+```dart
+NotificationListener<LayoutChangedNotification>(
+  onNotification: (notification) {
+    // 记录布局变化时间（可用于性能分析）
+    debugPrint('布局已更新: ${DateTime.now()}');
+    return false;
+  },
+  child: const Text('动态内容区域'),
+)
+```
+
+
+## 注意点
+### 常见问题：
+- 性能影响: 频繁触发的通知（如滚动更新）可能增加UI线程负担，需避免复杂计算。
+- 冒泡中断: 若`onNotification`返回true，会阻止父组件接收通知，可能破坏其他功能。
+- 通知类型匹配: 泛型参数需与实际通知类型一致，否则无法捕获(如`NotificationListener<ScrollNotification>`只能监听`ScrollNotification`)。
+
+### 优化技巧：
+- 在`onNotification`中使用is关键字精确判断通知子类型(如`if (notification is UserScrollNotification)`)。
+- 对于高频通知(如滚动)，通过`notification.metrics.pixels`的阈值判断减少处理次数。
+
+### 最佳实践：
+- 优先使用Flutter内置通知(如`ScrollNotification`)而非自定义通知，以减少冗余代码。
+- 在`Dispose`时移除监听，避免内存泄漏(但`NotificationListener`会自动管理生命周期)。
+
+
+## 构造函数
+```dart
+const NotificationListener<T extends Notification>({
+  Key? key,
+  required this.onNotification, // 通知回调函数
+  required this.child, // 子Widget树
+})
+```
+
+
+## 属性
+| 属性名          | 类型                                 | 说明                                                                 |
+|-----------------|-------------------------------------|----------------------------------------------------------------------|
+| `onNotification` | `bool Function(T notification)`     | 通知处理回调，返回`bool`控制冒泡行为。                               |
+| `child`         | `Widget`                            | 被监听的子树组件。                                                   |
+
+
+### 关键属性详解：
+- `onNotification`: 核心回调函数，参数T需继承自`Notification`类。通过返回true可完全拦截通知，适用于独占处理场景(如阻止默认滚动行为)。
+- `child`: 需确保目标通知是从该子树中触发(例如监听`ScrollView`时，child必须包含`Scrollable`组件)。
+
+> ps: 通过泛型T指定通知类型(如`NotificationListener<ScrollNotification>`)，可精确过滤无关通知，提升性能。
