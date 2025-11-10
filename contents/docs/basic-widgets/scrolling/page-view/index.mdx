@@ -1,0 +1,271 @@
+---
+title: PageView
+description: 用于创建可以水平或者垂直滚动的页面视图的组件
+---
+
+`PageView`是Flutter中用于创建可水平或垂直滑动的页面视图的核心组件。它基于`Scrollable`实现，支持页面之间的平滑切换，常用于实现引导页、图片浏览器、Tab页面切换等场景。
+
+### 核心逻辑: 
+- 通过`Viewport`和`Sliver`机制管理页面布局
+- 使用`PageController`控制页面滚动和跳转
+- 支持物理滚动效果和自定义滚动行为
+- 基于懒加载机制优化内存使用
+
+### 使用场景
+- 应用引导页: 新用户首次打开应用时的功能介绍页面
+- 图片浏览器: 支持左右滑动查看多张图片的相册功能
+- Tab页面容器: 配合`TabBar`实现顶部导航的页面切换
+- 水平列表: 需要水平滚动的内容展示（如商品列表）
+- 阅读器翻页: 电子书或文档的翻页效果
+
+
+## 示例
+### 基础页面切换
+```dart
+import 'package:flutter/material.dart';
+
+class BasicPageViewExample extends StatelessWidget {
+  final List<Color> pageColors = [
+    Colors.red,
+    Colors.blue,
+    Colors.green,
+    Colors.orange,
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('基础 PageView')),
+      body: PageView(
+        children: pageColors.map((color) {
+          return Container(
+            color: color,
+            child: Center(
+              child: Text(
+                '页面 ${pageColors.indexOf(color) + 1}',
+                style: TextStyle(fontSize: 24, color: Colors.white),
+              ),
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
+}
+```
+
+### 带控制器和指示器
+```dart
+class ControlledPageViewExample extends StatefulWidget {
+  @override
+  _ControlledPageViewExampleState createState() => _ControlledPageViewExampleState();
+}
+
+class _ControlledPageViewExampleState extends State<ControlledPageViewExample> {
+  final PageController _pageController = PageController();
+  int _currentPage = 0;
+
+  final List<Widget> _pages = [
+    _buildPage('首页', Colors.red),
+    _buildPage('发现', Colors.blue),
+    _buildPage('消息', Colors.green),
+    _buildPage('我的', Colors.orange),
+  ];
+
+  static Widget _buildPage(String title, Color color) {
+    return Container(
+      color: color,
+      child: Center(
+        child: Text(
+          title,
+          style: TextStyle(fontSize: 32, color: Colors.white),
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('可控 PageView')),
+      body: Column(
+        children: [
+          Expanded(
+            child: PageView(
+              controller: _pageController,
+              onPageChanged: (int page) {
+                setState(() {
+                  _currentPage = page;
+                });
+              },
+              children: _pages,
+            ),
+          ),
+          Container(
+            padding: EdgeInsets.all(16),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                ElevatedButton(
+                  onPressed: _currentPage > 0
+                      ? () => _pageController.previousPage(
+                            duration: Duration(milliseconds: 300),
+                            curve: Curves.easeInOut,
+                          )
+                      : null,
+                  child: Text('上一页'),
+                ),
+                Text('当前页: ${_currentPage + 1}/${_pages.length}'),
+                ElevatedButton(
+                  onPressed: _currentPage < _pages.length - 1
+                      ? () => _pageController.nextPage(
+                            duration: Duration(milliseconds: 300),
+                            curve: Curves.easeInOut,
+                          )
+                      : null,
+                  child: Text('下一页'),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+```
+
+### 无限循环和自定义滚动
+```dart
+class InfinitePageViewExample extends StatefulWidget {
+  @override
+  _InfinitePageViewExampleState createState() => _InfinitePageViewExampleState();
+}
+
+class _InfinitePageViewExampleState extends State<InfinitePageViewExample> {
+  final PageController _pageController = PageController(viewportFraction: 0.8);
+  final List<String> _images = [
+    'https://picsum.photos/400/300?image=1',
+    'https://picsum.photos/400/300?image=2',
+    'https://picsum.photos/400/300?image=3',
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('无限轮播 PageView')),
+      body: PageView.builder(
+        controller: _pageController,
+        itemCount: _images.length * 100, // 模拟无限循环
+        itemBuilder: (context, index) {
+          final actualIndex = index % _images.length;
+          return Padding(
+            padding: EdgeInsets.all(16),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(16),
+              child: Image.network(
+                _images[actualIndex],
+                fit: BoxFit.cover,
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+```
+
+
+## 注意点
+### 常见问题
+- 1. 性能问题: 页面过多时可能导致内存占用过高
+  - 解决方案: 使用`PageView.builder`实现懒加载
+  - 避免在页面中加载大量图片或复杂动画
+- 2. 页面预加载: 默认会预加载相邻页面
+  - 可通过`PageController(viewportFraction)`控制预加载范围
+  - 使用`PageView.builder`时注意索引计算
+- 3. 滚动冲突: 页面内部包含可滚动组件时可能产生冲突
+  - 使用`physics: NeverScrollableScrollPhysics()`禁用内部滚动
+  - 或使用`NotificationListener`处理滚动事件
+
+### 优化技巧
+- 对于图片页面，使用`cached_network_image`缓存图片
+- 复杂页面使用`AutomaticKeepAliveClientMixin`保持状态
+- 合理设置`cacheExtent`控制预渲染区域
+
+### 最佳实践
+- 始终为`PageView`提供明确的尺寸约束
+- 使用`PageController`进行精确的页面控制
+- 考虑添加页面指示器提升用户体验
+- 在`dispose()`方法中释放`PageController`
+
+
+## 构造函数
+```dart
+PageView({
+  Key? key,
+  Axis scrollDirection = Axis.horizontal, // 滚动方向
+  bool reverse = false, // 是否反向滚动
+  PageController? controller, // 页面控制器
+  ScrollPhysics? physics, // 滚动物理效果
+  bool pageSnapping = true, // 是否页面吸附
+  void Function(int)? onPageChanged, // 页面改变回调
+  List<Widget> children = const <Widget>[], // 子页面列表
+  DragStartBehavior dragStartBehavior = DragStartBehavior.start, // 拖拽行为
+  bool allowImplicitScrolling = false, // 是否允许隐式滚动
+  String? restorationId, // 恢复ID
+  Clip clipBehavior = Clip.hardEdge, // 裁剪行为
+  ScrollBehavior? scrollBehavior, // 滚动行为
+})
+
+//使用builder构造函数
+PageView.builder({
+  // ... 其他参数与 PageView 相同
+  required IndexedWidgetBuilder itemBuilder, // 页面构建器
+  int? itemCount, // 页面数量
+  ...
+})
+```
+
+## 属性
+| 属性名 | 属性类型 | 说明 |
+|--------|----------|------|
+| `scrollDirection` | `Axis` | 滚动方向，horizontal（水平）或 vertical（垂直） |
+| `reverse` | `bool` | 是否反向滚动，默认 false |
+| `controller` | `PageController` | 控制页面滚动和跳转的控制器 |
+| `physics` | `ScrollPhysics` | 滚动物理效果，如 BouncingScrollPhysics |
+| `pageSnapping` | `bool` | 是否启用页面吸附效果，默认 true |
+| `onPageChanged` | `Function(int)` | 页面索引改变时的回调函数 |
+| `children` | `List<Widget>` | 直接子页面列表（PageView 使用） |
+| `itemBuilder` | `IndexedWidgetBuilder` | 页面构建函数（PageView.builder 使用） |
+| `itemCount` | `int` | 页面总数（PageView.builder 使用） |
+| `dragStartBehavior` | `DragStartBehavior` | 拖拽开始行为配置 |
+| `allowImplicitScrolling` | `bool` | 是否允许 Accessibility 隐式滚动 |
+| `restorationId` | `String` | 状态恢复标识符 |
+| `clipBehavior` | `Clip` | 子组件裁剪方式 |
+| `scrollBehavior` | `ScrollBehavior` | 自定义滚动行为 |
+
+### 关键属性详解
+**controller(PageController)**: 
+- 核心控制属性，用于编程方式控制页面切换
+- 重要方法: `jumpToPage()`、`animateToPage()`、`nextPage()`、`previousPage()`
+- 可以设置初始页面: `PageController(initialPage: 0)`
+
+**physics(ScrollPhysics)**: 
+- 控制滚动行为和边缘效果
+- 常用选项: 
+  - `AlwaysScrollableScrollPhysics()`: 始终可滚动
+  - `NeverScrollableScrollPhysics()`: 禁用滚动
+  - `BouncingScrollPhysics()`: iOS 风格弹性效果
+  - `ClampingScrollPhysics()`: Android风格`clamping`效果
+
+**pageSnapping(bool)**:
+- 设置为true时，松手后会自动吸附到最近的完整页面
+- 设置为false时，可以停留在页面之间的任意位置
+- 适用于需要精确控制滚动位置的场景
+
+**scrollDirection(Axis)**: 
+- 默认水平滚动(`Axis.horizontal`)
+- 垂直滚动设置为`Axis.vertical`
+- 垂直滚动时注意页面高度约束
