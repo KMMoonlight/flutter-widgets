@@ -1,0 +1,190 @@
+---
+title: FadeTransition
+description: 用于实现透明度动画过渡的核心组件
+---
+
+`FadeTransition`是Flutter中用于实现透明度动画过渡的核心组件，属于动画库的一部分。它通过动态控制子组件的透明度(alpha值)，创建淡入淡出效果，适用于页面切换、元素显隐等场景。
+
+- **主要用途**: 将子组件的透明度与一个动画对象(`Animation<double>`)绑定，当动画值变化时，子组件会平滑过渡显示或隐藏。其核心逻辑是依赖Flutter的动画系统，通过`opacity`属性实时更新渲染。
+
+### 使用场景:
+- 页面加载时的淡入效果(如启动页过渡)。
+- 用户交互触发的元素显隐(如按钮点击后内容渐现)。
+- 列表项动态添加或删除时的平滑过渡。
+
+
+## 示例
+### 基础淡入效果
+```dart
+import 'package:flutter/material.dart';
+
+class BasicFadeDemo extends StatefulWidget {
+  @override
+  _BasicFadeDemoState createState() => _BasicFadeDemoState();
+}
+
+class _BasicFadeDemoState extends State<BasicFadeDemo> with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _animation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: Duration(seconds: 2),
+      vsync: this,
+    );
+    _animation = CurvedAnimation(parent: _controller, curve: Curves.easeIn);
+    _controller.forward(); // 启动动画
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FadeTransition(
+      opacity: _animation,
+      child: Container(
+        width: 200,
+        height: 200,
+        color: Colors.blue,
+        child: Center(child: Text('淡入文本', style: TextStyle(color: Colors.white))),
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+}
+```
+
+
+### 交互式显隐
+```dart
+class InteractiveFadeDemo extends StatefulWidget {
+  @override
+  _InteractiveFadeDemoState createState() => _InteractiveFadeDemoState();
+}
+
+class _InteractiveFadeDemoState extends State<InteractiveFadeDemo> with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _animation;
+  bool _isVisible = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: Duration(milliseconds: 500),
+      vsync: this,
+    );
+    _animation = CurvedAnimation(parent: _controller, curve: Curves.easeOut);
+  }
+
+  void _toggleVisibility() {
+    setState(() {
+      _isVisible = !_isVisible;
+      _isVisible ? _controller.forward() : _controller.reverse();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        ElevatedButton(
+          onPressed: _toggleVisibility,
+          child: Text(_isVisible ? '隐藏' : '显示'),
+        ),
+        FadeTransition(
+          opacity: _animation,
+          child: Container(
+            margin: EdgeInsets.only(top: 20),
+            padding: EdgeInsets.all(16),
+            color: Colors.green,
+            child: Text('动态显隐内容', style: TextStyle(color: Colors.white)),
+          ),
+        ),
+      ],
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+}
+```
+
+
+### 与主题系统结合
+```dart
+class ThemedFadeDemo extends StatelessWidget {
+  final AnimationController controller;
+  final Animation<double> animation;
+
+  ThemedFadeDemo({required this.controller, required this.animation});
+
+  @override
+  Widget build(BuildContext context) {
+    return FadeTransition(
+      opacity: animation,
+      child: Card(
+        color: Theme.of(context).colorScheme.surface,
+        child: Padding(
+          padding: EdgeInsets.all(16),
+          child: Text(
+            '适配主题的淡入卡片',
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
+        ),
+      ),
+    );
+  }
+}
+// 注：需在StatefulWidget中管理controller和animation的初始化
+```
+
+
+## 注意点
+### 性能优化:
+- 避免在频繁重建的组件树中创建新的`AnimationController`，应将其置于`StatefulWidget`的`State`中，并通过`dispose()`释放资源。
+- 对静态内容使用`FadeTransition`；若子组件本身频繁变化(如动态列表)，考虑用`AnimatedOpacity`替代以减少开销。
+
+### 常见问题:
+- 动画未启动: 检查`AnimationController`是否调用`forward()`或`reverse()`，并确保`vsync`参数正确设置(使用`SingleTickerProviderStateMixin`)。
+- 透明度无效: 确认动画值范围正确(通常为0.0到1.0)，若曲线动画(如`CurvedAnimation`)的`curve`设置不当可能导致值越界。
+
+### 最佳实践:
+- 组合使用`CurvedAnimation`让过渡更自然(如`Curves.easeInOut`)。
+- 在页面销毁时务必调用`controller.dispose()`，防止内存泄漏。
+
+
+
+## 构造函数
+```dart
+const FadeTransition({
+  Key? key,
+  required Animation<double> opacity, // 必需参数：控制透明度的动画对象
+  Widget? child, // 可选参数：要应用透明度效果的子组件
+})
+```
+
+
+## 属性
+| 属性名       | 属性类型               | 说明                                                                 |
+|--------------|------------------------|----------------------------------------------------------------------|
+| `opacity`    | `Animation<double>`    | **必需**。驱动透明度变化的动画对象，值域[0.0, 1.0]决定透明程度。       |
+| `child`      | `Widget?`              | 可选。要应用淡入淡出效果的子组件，如Container、Text或其他组合组件。 |
+
+
+### 关键属性解析: 
+
+- `opacity`: 这是组件的核心属性，必须与一个`Animation<double>`对象绑定。其值实时映射到子组件的透明度: 
+  - 值为0.0时子组件完全透明(不可见)。
+  - 值为1.0时子组件完全显示。
+  - 通过控制动画的进度(如`controller.forward()`)，可实现自动化过渡效果。若需高性能场景，可配合`Tween`定义自定义值范围。
+
+- `child`: 虽然可选，但实际开发中必须指定具体内容，否则动画无意义。子组件应为静态或低频率更新内容，以保持动画平滑性。
