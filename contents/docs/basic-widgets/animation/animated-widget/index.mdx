@@ -1,0 +1,227 @@
+---
+title: AnimatedWidget
+description: 用于简化动画管理逻辑的组件
+---
+
+`AnimatedWidget`是Flutter中的一个核心动画组件，主要用于简化动画管理逻辑。它通过将动画监听器(`AnimationListener`)与`Widget`构建过程封装在一起，实现自动响应动画值变化并重建UI。其核心逻辑
+基于Flutter的动画系统(`Animation`对象)，当动画值更新时，`AnimatedWidget`自动调用`build`方法重绘子组件，无需开发者手动管理`setState`。
+
+### 使用场景:
+- 简化动画代码: 适用于需要根据动画值(如透明度、位置、尺寸)动态更新UI的场景，避免重复编写`addListener`和`setState`。
+- 与`AnimationController`配合: 常与`AnimationController`、`Tween`等动画类结合，用于补间动画(如渐变、平移)。
+- 性能优化: 通过隔离动画逻辑，减少不必要的全局重建，提升动画流畅性。
+
+
+## 示例
+### 基础透明度动画
+```dart
+import 'package:flutter/material.dart';
+
+class FadeInWidget extends AnimatedWidget {
+  const FadeInWidget({
+    Key? key,
+    required Animation<double> animation,
+  }) : super(key: key, listenable: animation);
+
+  @override
+  Widget build(BuildContext context) {
+    final animation = listenable as Animation<double>;
+    return Opacity(
+      opacity: animation.value, // 透明度从 0 到 1
+      child: Container(
+        width: 200,
+        height: 100,
+        color: Colors.blue,
+        child: const Center(child: Text('淡入动画')),
+      ),
+    );
+  }
+}
+
+// 在页面中使用
+class DemoPage extends StatefulWidget {
+  const DemoPage({super.key});
+
+  @override
+  State<DemoPage> createState() => _DemoPageState();
+}
+
+class _DemoPageState extends State<DemoPage> with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _animation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: const Duration(seconds: 2),
+      vsync: this,
+    );
+    _animation = Tween<double>(begin: 0, end: 1).animate(_controller);
+    _controller.forward(); // 启动动画
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Center(
+        child: FadeInWidget(animation: _animation), // 直接使用 AnimatedWidget
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+}
+```
+
+
+### 缩放动画按钮
+```dart
+class ScaleButton extends AnimatedWidget {
+  const ScaleButton({
+    Key? key,
+    required Animation<double> animation,
+    this.onPressed,
+  }) : super(key: key, listenable: animation);
+
+  final VoidCallback? onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final animation = listenable as Animation<double>;
+    return Transform.scale(
+      scale: animation.value, // 缩放值（如 1.0 到 1.5）
+      child: ElevatedButton(
+        onPressed: onPressed,
+        child: const Text('点击放大'),
+      ),
+    );
+  }
+}
+
+// 触发逻辑
+class InteractiveDemo extends StatefulWidget {
+  const InteractiveDemo({super.key});
+
+  @override
+  State<InteractiveDemo> createState() => _InteractiveDemoState();
+}
+
+class _InteractiveDemoState extends State<InteractiveDemo> with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _animation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: const Duration(milliseconds: 300),
+      vsync: this,
+    );
+    _animation = Tween<double>(begin: 1, end: 1.5).animate(_controller);
+  }
+
+  void _triggerAnimation() {
+    _controller.forward().then((_) => _controller.reverse()); // 点击后放大再恢复
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: ScaleButton(
+        animation: _animation,
+        onPressed: _triggerAnimation,
+      ),
+    );
+  }
+}
+```
+
+
+### 旋转动画
+```dart
+class SpinningLoader extends AnimatedWidget {
+  const SpinningLoader({
+    Key? key,
+    required Animation<double> animation,
+  }) : super(key: key, listenable: animation);
+
+  @override
+  Widget build(BuildContext context) {
+    final animation = listenable as Animation<double>;
+    return Transform.rotate(
+      angle: animation.value * 2 * 3.14159, // 弧度值（0 到 2π）
+      child: const Icon(Icons.refresh, size: 50),
+    );
+  }
+}
+
+// 循环动画配置
+class LoaderDemo extends StatefulWidget {
+  const LoaderDemo({super.key});
+
+  @override
+  State<LoaderDemo> createState() => _LoaderDemoState();
+}
+
+class _LoaderDemoState extends State<LoaderDemo> with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: const Duration(seconds: 1),
+      vsync: this,
+    )..repeat(); // 无限循环
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: SpinningLoader(
+        animation: _controller, // 直接传入 Controller（其本身是 Animation<double>）
+      ),
+    );
+  }
+}
+```
+
+## 注意点
+### 性能优化: 
+- 避免重建昂贵组件: 在`build`方法中尽量减少复杂计算或嵌套过深的组件，防止动画卡顿。
+- 使用`const`子组件:若子组件静态，标记为`const`以减少重复构建。
+
+### 常见问题:
+- 动画未启动: 确保`AnimationController`已调用`forward()`或`repeat()`。
+- 内存泄漏: 必须在页面销毁时调用`_controller.dispose()`。
+
+### 最佳实践:
+- 封装自定义`AnimatedWidget`: 为每个动画类型创建独立类，提高代码可读性。
+- 结合`Tween`使用: 通过`Tween`定义动画值范围，使动画更可控。
+
+
+
+## 构造函数
+```dart
+const AnimatedWidget({
+  Key? key,
+  required this.listenable,
+}) : super(key: key);
+```
+
+
+## 属性
+| 属性名        | 属性类型    | 说明                                                                 |
+|---------------|-------------|----------------------------------------------------------------------|
+| `listenable`  | `Listenable` | 核心监听对象（如 Animation），值变化时自动调用 `build` 方法重建 UI。 |
+| `key`         | `Key?`      | 组件标识符，用于优化渲染和状态管理。                                |
+
+
+### 关键属性解析:
+- `listenable`: 这是`AnimatedWidget`的核心属性，必须传入一个实现了`Listenable`接口的对象(如`AnimationController`或`Animation`)。其作用机制是注册一个监听器，当动画值更新时，`AnimatedWidget`会自动调用`build`方法，无需手动管理状态更新。
+注意: 若传入的`Animation`未启动或未添加监听，动画将不会生效。
