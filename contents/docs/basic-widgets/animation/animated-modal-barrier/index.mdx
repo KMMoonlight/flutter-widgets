@@ -194,7 +194,7 @@ class _ThemedBarrierExampleState extends State<ThemedBarrierExample> with Single
 ## 注意点
 ### 常见问题与解决方案:
 - **性能瓶颈**: 如果动画控制器未正确销毁(如未在`dispose`中释放)，可能导致内存泄漏。务必在`State`销毁时调用`_controller.dispose()`。
-- **兼容性警告**: `AnimatedModalBarrier`通常需与`Stack`或`Overlay`结合使用。在旧版Flutter(<2.0)中，可能需要手动管理`OverlayEntry`，建议使用现成组件如`Dialog`或`Drawer`简化集成。
+- **兼容性警告**: `AnimatedModalBarrier`通常需与`Stack`或`Overlay`结合使用。在旧版Flutter(\<2.0)中，可能需要手动管理`OverlayEntry`，建议使用现成组件如`Dialog`或`Drawer`简化集成。
 - **手势冲突**: 当`dismissible: true`时，遮罩会拦截触摸事件。确保底层内容无需交互，或通过`onDismiss`回调处理关闭逻辑。
 
 ### 优化技巧:
