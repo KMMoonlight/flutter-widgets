@@ -1,0 +1,237 @@
+---
+title: AnimatedPositioned
+description: 动画定位组件
+---
+
+`AnimatedPositioned`是Flutter中一个强大的动画定位组件，继承自`Positioned`组件。它的主要功能是在`Stack`布局中实现子组件位置和尺寸的平滑过渡动画。当
+组件的`top`、`bottom`、`left`、`right`、`width`、`height`等属性发生变化时，`AnimatedPositioned`会自动创建流畅的动画效果，无需手动管理动画控制器。
+
+**核心逻辑**: 通过监听位置属性的变化，自动应用隐式动画，使用指定的曲线和持续时间来实现平滑过渡。
+
+### 使用场景
+- 界面切换动画: 在不同界面状态间平滑移动元素位置
+- 响应式布局调整: 根据屏幕尺寸或用户交互动态调整组件布局
+- 交互反馈: 为用户操作提供视觉反馈，如按钮点击后的位置变化
+- 加载状态动画: 在加载过程中元素的动态位置调整
+
+
+## 示例
+### 基础位置动画
+```dart
+import 'package:flutter/material.dart';
+
+class BasicAnimatedPositioned extends StatefulWidget {
+  @override
+  _BasicAnimatedPositionedState createState() => _BasicAnimatedPositionedState();
+}
+
+class _BasicAnimatedPositionedState extends State<BasicAnimatedPositioned> {
+  bool _isMoved = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('基础位置动画')),
+      body: Stack(
+        children: [
+          AnimatedPositioned(
+            duration: Duration(seconds: 1),
+            curve: Curves.easeInOut,
+            left: _isMoved ? 200.0 : 50.0,
+            top: _isMoved ? 200.0 : 100.0,
+            child: Container(
+              width: 100,
+              height: 100,
+              color: Colors.blue,
+              child: Center(child: Text('动画方块')),
+            ),
+          ),
+        ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          setState(() {
+            _isMoved = !_isMoved;
+          });
+        },
+        child: Icon(Icons.play_arrow),
+      ),
+    );
+  }
+}
+```
+
+
+### 尺寸和位置组合动画
+```dart
+class SizePositionAnimation extends StatefulWidget {
+  @override
+  _SizePositionAnimationState createState() => _SizePositionAnimationState();
+}
+
+class _SizePositionAnimationState extends State<SizePositionAnimation> {
+  bool _isExpanded = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('尺寸位置组合动画')),
+      body: Center(
+        child: Stack(
+          children: [
+            AnimatedPositioned(
+              duration: Duration(milliseconds: 800),
+              curve: Curves.elasticOut,
+              left: _isExpanded ? 20.0 : 100.0,
+              top: _isExpanded ? 20.0 : 100.0,
+              width: _isExpanded ? 300.0 : 100.0,
+              height: _isExpanded ? 300.0 : 100.0,
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.green,
+                  borderRadius: BorderRadius.circular(15),
+                ),
+                child: Center(child: Text('动态调整')),
+              ),
+            ),
+          ],
+        ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          setState(() {
+            _isExpanded = !_isExpanded;
+          });
+        },
+        child: Icon(Icons.transform),
+      ),
+    );
+  }
+}
+```
+
+
+### 复杂交互动画
+```dart
+class InteractiveAnimation extends StatefulWidget {
+  @override
+  _InteractiveAnimationState createState() => _InteractiveAnimationState();
+}
+
+class _InteractiveAnimationState extends State<InteractiveAnimation> {
+  double _leftPosition = 50.0;
+  double _topPosition = 50.0;
+
+  void _updatePosition(Offset offset) {
+    setState(() {
+      _leftPosition = offset.dx - 25; // 减去一半宽度居中
+      _topPosition = offset.dy - 25; // 减去一半高度居中
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('交互式动画')),
+      body: GestureDetector(
+        onTapDown: (details) => _updatePosition(details.localPosition),
+        onPanUpdate: (details) => _updatePosition(details.localPosition),
+        child: Container(
+          width: double.infinity,
+          height: double.infinity,
+          color: Colors.grey[200],
+          child: Stack(
+            children: [
+              AnimatedPositioned(
+                duration: Duration(milliseconds: 500),
+                curve: Curves.bounceOut,
+                left: _leftPosition,
+                top: _topPosition,
+                child: Container(
+                  width: 50,
+                  height: 50,
+                  decoration: BoxDecoration(
+                    color: Colors.red,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(Icons.favorite, color: Colors.white),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+```
+
+## 注意点
+### 常见问题
+- 性能问题: 过度使用或复杂动画可能导致性能下降，特别是在低端设备上
+- 布局约束: 必须作为`Stack`的直接子组件使用，否则会抛出异常
+- 尺寸冲突: 同时设置`left/right`和`width`可能导致布局冲突
+- 动画跳跃: 在动画过程中修改属性可能导致不连续的动画效果
+
+### 优化技巧
+- 合理设置持续时间: 避免过长的动画时间影响用户体验
+- 选择合适的曲线: 根据动画效果选择合适的`Curves`类型
+- 限制动画数量: 避免同时运行过多动画影响性能
+- 使用`ConstrainedBox`: 结合`ConstrainedBox`确保动画过程中的布局稳定性
+
+### 最佳实践
+- 预计算位置: 在状态改变前预先计算好目标位置
+- 测试不同设备: 在不同屏幕尺寸上测试动画效果
+- 提供回退方案: 为不支持动画的情况提供静态布局
+- 考虑可访问性: 为动画效果提供适当的可访问性支持
+
+
+## 构造函数
+```dart
+const AnimatedPositioned({
+  Key? key,
+  required this.child,
+  required this.duration,
+  this.curve = Curves.linear,
+  this.left,
+  this.top,
+  this.right,
+  this.bottom,
+  this.width,
+  this.height,
+  this.onEnd,
+})
+```
+
+## 属性
+| 属性名 | 属性类型 | 说明 |
+|--------|----------|------|
+| child | Widget | 要应用动画的子组件 |
+| duration | Duration | 动画的持续时间 |
+| curve | Curve | 动画的时间曲线 |
+| left | double? | 距离父容器左边的距离 |
+| top | double? | 距离父容器顶部的距离 |
+| right | double? | 距离父容器右边的距离 |
+| bottom | double? | 距离父容器底部的距离 |
+| width | double? | 组件的宽度 |
+| height | double? | 组件的高度 |
+| onEnd | VoidCallback? | 动画结束时的回调函数 |
+
+### 关键属性详解
+- **duration(最重要)**
+  - 作用: 控制动画的播放时间，直接影响用户体验
+  - 最佳实践: 通常设置在200-1000毫秒之间，根据动画复杂度调整
+  - 注意事项: 过短的动画可能不明显，过长的动画会让用户等待
+
+- **curve(性能关键)**
+  - 作用: 定义动画的速度变化模式
+  - 常用值: `Curves.easeInOut`(平滑进出)、`Curves.bounceOut`(弹跳效果)
+  - 优化建议: 复杂的曲线可能增加计算负担
+
+- **left/top/right/bottom(核心定位属性)**
+  - 约束规则: 必须至少设置两个相对的约束(如`left/right`或`left/width`)
+  - 布局影响: 这些属性的变化会触发重建和动画，需谨慎使用
+
+- **onEnd(交互增强)**
+  - 使用场景: 用于动画完成后执行额外操作，如状态更新或触发后续动画
+  - 注意事项: 避免在回调中执行耗时操作，以免阻塞UI线程
