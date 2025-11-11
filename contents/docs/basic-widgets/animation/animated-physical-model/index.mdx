@@ -1,0 +1,173 @@
+---
+title: AnimatedPhysicalModel
+description: 用于实现物理模型动画的组件
+---
+
+`AnimatedPhysicalModel`是Flutter中用于实现物理模型动画的组件，它基于`PhysicalModel`(提供物理效果如阴影和裁剪)并添加了平滑的属性过渡动画。该组件通过隐式动画自动在属性变化时(如形状、颜色或阴影)生成过渡效果，适用于需要动态交互的UI元素。
+
+### 核心逻辑:
+- 继承自`ImplicitlyAnimatedWidget`，当属性(如`shape`、`color`或`elevation`)发生变化时，自动使用`CurvedAnimation`进行插值过渡。
+- 内部通过`AnimatedPhysicalModel`的动画控制器管理过渡时长和曲线，确保动画流畅且性能优化。
+- 典型应用场景包括按钮点击效果、卡片悬停动画、或任何需要动态物理反馈的界面元素。
+
+### 使用场景:
+- 交互式按钮(如点击时阴影加深、形状变化)。
+- 动态卡片(如列表项选中时凸起动画)。
+- 主题切换时的平滑过渡(如颜色和阴影随主题变化)。
+
+
+## 示例
+### 基础形状和颜色动画
+```dart
+import 'package:flutter/material.dart';
+
+class BasicAnimatedPhysicalModel extends StatefulWidget {
+  @override
+  _BasicAnimatedPhysicalModelState createState() => _BasicAnimatedPhysicalModelState();
+}
+
+class _BasicAnimatedPhysicalModelState extends State<BasicAnimatedPhysicalModel> {
+  bool _isPressed = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () => setState(() => _isPressed = !_isPressed),
+      child: AnimatedPhysicalModel(
+        duration: Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+        shape: _isPressed ? BoxShape.circle : BoxShape.rectangle,
+        borderRadius: _isPressed ? BorderRadius.circular(50) : BorderRadius.circular(8),
+        color: _isPressed ? Colors.blue : Colors.grey,
+        shadowColor: Colors.black,
+        elevation: _isPressed ? 10 : 4,
+        child: Container(
+          width: 100,
+          height: 100,
+          child: Icon(Icons.star, color: Colors.white),
+        ),
+      ),
+    );
+  }
+}
+```
+
+### 交互式卡片动画
+```dart
+class InteractiveCardExample extends StatefulWidget {
+  @override
+  _InteractiveCardExampleState createState() => _InteractiveCardExampleState();
+}
+
+class _InteractiveCardExampleState extends State<InteractiveCardExample> {
+  bool _isSelected = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () => setState(() => _isSelected = !_isSelected),
+      child: AnimatedPhysicalModel(
+        duration: Duration(milliseconds: 500),
+        shape: BoxShape.rectangle,
+        borderRadius: BorderRadius.circular(12),
+        color: _isSelected ? Colors.amber : Colors.white,
+        shadowColor: _isSelected ? Colors.amber : Colors.grey,
+        elevation: _isSelected ? 16 : 2,
+        child: Padding(
+          padding: EdgeInsets.all(16),
+          child: Text(
+            _isSelected ? 'Selected!' : 'Tap me',
+            style: TextStyle(fontSize: 18),
+          ),
+        ),
+      ),
+    );
+  }
+}
+```
+
+### 主题适配动画
+```dart
+class ThemeAdaptiveExample extends StatefulWidget {
+  @override
+  _ThemeAdaptiveExampleState createState() => _ThemeAdaptiveExampleState();
+}
+
+class _ThemeAdaptiveExampleState extends State<ThemeAdaptiveExample> {
+  bool _isDarkMode = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Switch(
+          value: _isDarkMode,
+          onChanged: (v) => setState(() => _isDarkMode = v),
+        ),
+        AnimatedPhysicalModel(
+          duration: Duration(seconds: 1),
+          curve: Curves.easeInOut,
+          shape: BoxShape.rectangle,
+          borderRadius: BorderRadius.circular(10),
+          color: _isDarkMode ? Colors.grey[900]! : Colors.white,
+          shadowColor: _isDarkMode ? Colors.blue : Colors.black,
+          elevation: _isDarkMode ? 20 : 5,
+          child: Container(
+            width: 200,
+            height: 100,
+            child: Center(child: Text('Theme: ${_isDarkMode ? 'Dark' : 'Light'}')),
+          ),
+        ),
+      ],
+    );
+  }
+}
+```
+
+## 注意点
+### 性能优化:
+- 避免在频繁重建的组件(如列表项)中过度使用动画，可通过`const`构造函数或提取子组件减少不必要的重绘。
+- 长动画(如超过 500ms)可能影响流畅度，建议在`duration`中使用合理时长。
+
+### 兼容性警告:
+- 在旧版Flutter(< 2.0)中，`shadowColor`可能不支持透明色，需测试目标平台。
+- 部分形状(如`BoxShape.circle`)与`borderRadius`冲突，优先使用`BoxShape.rectangle`配合圆角。
+
+### 最佳实践:
+- 使用`Curves.easeInOut`等标准曲线使动画更自然。
+- 结合`GestureDetector`或`InkWell`实现点击交互，避免直接嵌套多个动画组件。
+
+
+## 构造函数
+```dart
+const AnimatedPhysicalModel({
+  Key? key,
+  required this.child, // 子组件（必填）
+  required this.shape, // 形状类型（BoxShape.rectangle 或 BoxShape.circle）
+  required this.color, // 背景颜色
+  this.borderRadius, // 圆角（仅当 shape 为 rectangle 时有效）
+  this.elevation = 0.0, // 阴影高度
+  this.shadowColor = Colors.black, // 阴影颜色
+  required this.duration, // 动画时长（必填）
+  this.curve = Curves.linear, // 动画曲线
+})
+```
+
+
+## 属性
+| 属性名         | 属性类型           | 说明                                                                 |
+|----------------|--------------------|----------------------------------------------------------------------|
+| `child`        | `Widget`           | 子组件（必填），用于承载内容。                                       |
+| `shape`        | `BoxShape`         | 形状类型（必填），可选 `BoxShape.rectangle` 或 `BoxShape.circle`。   |
+| `color`        | `Color`            | 背景颜色（必填），支持动态变化触发动画。                             |
+| `borderRadius` | `BorderRadius?`    | 圆角半径（仅对矩形有效），默认 null。                                |
+| `elevation`    | `double`           | 阴影高度（默认 0.0），值越大阴影越明显。                             |
+| `shadowColor`  | `Color`            | 阴影颜色（默认黑色），支持透明色。                                   |
+| `duration`     | `Duration`         | 动画过渡时长（必填），控制动画速度。                                 |
+| `curve`        | `Curve`            | 动画曲线（默认线性），如 `Curves.easeInOut` 使过渡更平滑。           |
+
+
+### 关键属性解释：
+- `elevation`: 控制阴影深度，直接影响视觉层次感。高值(如 >10)可能在某些设备上引起性能开销，需测试实际效果。
+- `curve`: 动画插值曲线，常用`Curves.easeInOut`避免生硬的线性变化，提升用户体验。
+- `shape`与`borderRadius`: 当`shape`为`BoxShape.circle`时，`borderRadius`无效，需确保逻辑一致性。
