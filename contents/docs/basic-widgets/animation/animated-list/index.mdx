@@ -1,0 +1,181 @@
+---
+title: AnimatedList
+description: 在列表项添加、删除或更新时显示平滑动画效果的动态列表组件
+---
+
+`AnimatedList`是Flutter中的一个动态列表组件，专门用于在列表项添加、删除或更新时显示平滑的动画效果。它继承自`StatefulWidget`，核心逻辑基于一个同步的`ListModel`来管理数据项，并通过`GlobalKey`控制动画状态。主要用途包
+括实现交互动画(如待办事项列表的增删)、数据驱动的UI更新(如聊天消息列表)，以及提升用户体验的视觉反馈。
+
+### 使用场景
+- 动态数据列表: 当列表数据频繁变化(如用户添加、删除或重新排序项)时，通过动画过渡避免生硬的UI跳跃。
+- 交互式应用: 例如任务管理应用(添加任务时项滑入、删除时淡出)、社交应用(消息列表的更新动画)。
+- 性能敏感场景: 需要高效处理大量项动画，避免过度重建整个列表。
+
+
+## 示例
+### 基础动态列表
+```dart
+import 'package:flutter/material.dart';
+
+void main() => runApp(MyApp());
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: AnimatedListExample(),
+    );
+  }
+}
+
+class AnimatedListExample extends StatefulWidget {
+  @override
+  _AnimatedListExampleState createState() => _AnimatedListExampleState();
+}
+
+class _AnimatedListExampleState extends State<AnimatedListExample> {
+  final GlobalKey<AnimatedListState> _listKey = GlobalKey<AnimatedListState>();
+  List<String> _items = ['Item 1', 'Item 2', 'Item 3'];
+  int _counter = 4;
+
+  void _addItem() {
+    _items.add('Item $_counter');
+    _listKey.currentState!.insertItem(_items.length - 1);
+    setState(() => _counter++);
+  }
+
+  void _removeItem(int index) {
+    final removedItem = _items.removeAt(index);
+    _listKey.currentState!.removeItem(
+      index,
+      (context, animation) => _buildItem(removedItem, animation),
+    );
+  }
+
+  Widget _buildItem(String item, Animation<double> animation) {
+    return SizeTransition(
+      sizeFactor: animation,
+      child: Card(
+        child: ListTile(
+          title: Text(item),
+          trailing: IconButton(
+            icon: Icon(Icons.delete),
+            onPressed: () => _removeItem(_items.indexOf(item)),
+          ),
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('AnimatedList Example')),
+      body: AnimatedList(
+        key: _listKey,
+        initialItemCount: _items.length,
+        itemBuilder: (context, index, animation) {
+          return _buildItem(_items[index], animation);
+        },
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _addItem,
+        child: Icon(Icons.add),
+      ),
+    );
+  }
+}
+```
+
+
+### 与主题适配的动画列表
+```dart
+// 在_buildItem方法中替换为渐变动画，适配暗色主题
+Widget _buildItem(String item, Animation<double> animation) {
+  return FadeTransition(
+    opacity: animation,
+    child: Container(
+      margin: EdgeInsets.symmetric(vertical: 4),
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardColor,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: ListTile(
+        title: Text(item, style: TextStyle(color: Theme.of(context).primaryColor)),
+      ),
+    ),
+  );
+}
+```
+
+
+### 自定义滑动删除动画
+```dart
+// 在_removeItem方法中使用SlideTransition实现横向滑出效果
+Widget _buildItem(String item, Animation<double> animation) {
+  return SlideTransition(
+    position: Tween<Offset>(begin: Offset(-1, 0), end: Offset(0, 0)).animate(animation),
+    child: Dismissible(
+      key: Key(item),
+      direction: DismissDirection.endToStart,
+      onDismissed: (direction) => _removeItem(_items.indexOf(item)),
+      background: Container(color: Colors.red),
+      child: Card(child: ListTile(title: Text(item))),
+    ),
+  );
+}
+```
+
+
+## 注意点
+### 常见问题与优化技巧
+- **性能瓶颈**: 
+  - 避免在`itemBuilder`中执行耗时操作(如网络请求)，否则动画会卡顿。
+  - 使用`const`构造函数优化子组件(如`const ListTile()`)，减少重建开销。
+
+### 兼容性警告:
+- 在空列表或越界索引时调用`insertItem/removeItem`会抛出异常，需用条件语句防护(如`if (index >= 0 && index < _items.length)`)。
+- 动画过程中快速操作可能导致状态冲突，建议用`bool _isAnimating`标志位限制并发操作。
+
+### 最佳实践:
+- 为每个项设置唯一`Key`(如`Key(item)`)，确保动画正确关联数据。
+- 使用`CurvedAnimation`替代默认线性动画，使过渡更自然(如`Curves.easeInOut`)。
+
+
+## 构造函数
+```dart
+AnimatedList({
+  Key? key,
+  required this.itemBuilder,      // 必需：项构建函数
+  this.initialItemCount = 0,      // 初始项数
+  this.scrollDirection = Axis.vertical, // 滚动方向
+  this.reverse = false,           // 是否反向滚动
+  this.controller,                // 滚动控制器
+  this.primary,                   // 是否使用主滚动视图
+  this.physics,                   // 滚动物理效果
+  this.shrinkWrap = false,        // 是否收缩包装
+  this.padding,                   // 内边距
+})
+```
+
+## 属性
+| 属性名               | 属性类型                  | 说明                                                                 |
+|----------------------|---------------------------|----------------------------------------------------------------------|
+| `itemBuilder`        | `AnimatedListItemBuilder` | **必需**：构建列表项的函数，接收索引和动画对象。                     |
+| `initialItemCount`   | `int`                     | 初始渲染的项数量，默认为 0。                                        |
+| `scrollDirection`    | `Axis`                    | 滚动方向（垂直或水平），默认为 `Axis.vertical`。                     |
+| `reverse`            | `bool`                    | 是否反向滚动（从底部开始），默认为 `false`。                        |
+| `controller`         | `ScrollController?`       | 控制滚动位置，如实现滚动到特定项。                                  |
+| `shrinkWrap`         | `bool`                    | 是否根据内容收缩高度，适用于嵌套滚动视图，默认为 `false`。          |
+
+
+### 关键属性详解
+- `itemBuilder`: 该属性是`AnimatedList`的核心，必须返回一个使用`Animation`参数的组件(如`FadeTransition`)，否则动画无效。动画对象由列表自动管理，开发者只需将其应用于子组件。
+- `controller`: 通过`ScrollController`可监听滚动事件或调用`jumpTo()`方法，例如在添加新项后自动滚动到底部:
+```dart
+final ScrollController _controller = ScrollController();
+void _addItem() {
+  // ...添加逻辑
+  _controller.jumpTo(_controller.position.maxScrollExtent);
+}
+```
