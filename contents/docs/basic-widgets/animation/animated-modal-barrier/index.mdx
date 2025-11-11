@@ -1,0 +1,231 @@
+---
+title: AnimatedModalBarrier
+description: 用于构建模态交互界面的专用组件
+---
+
+`AnimatedModalBarrier`是Flutter中用于构建模态交互界面的专用组件，主要功能是创建一个动态的背景遮罩层。它继承自`ModalBarrier`，但增加了动画支持，允许遮
+罩颜色、透明度等属性平滑过渡。该组件常用于对话框、侧边栏或全屏模态页面的背景，通过动画效果增强用户体验，逻辑上通过监听动画状态自动更新外观。
+
+### 使用场景:
+- 弹出对话框或菜单时，背景遮罩的淡入淡出效果。
+- 侧边导航栏展开时，背景的渐变动画。
+- 全屏模态页面切换时，避免用户与底层内容交互。
+
+
+## 示例
+### 简单对话框背景遮罩
+```dart
+import 'package:flutter/material.dart';
+
+class SimpleDialogExample extends StatefulWidget {
+  @override
+  _SimpleDialogExampleState createState() => _SimpleDialogExampleState();
+}
+
+class _SimpleDialogExampleState extends State<SimpleDialogExample> with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<Color?> _colorAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: Duration(milliseconds: 300),
+      vsync: this,
+    );
+    _colorAnimation = ColorTween(
+      begin: Colors.transparent,
+      end: Colors.black54,
+    ).animate(_controller);
+    _controller.forward(); // 启动动画
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        // 底层内容
+        Scaffold(appBar: AppBar(title: Text('主页'))),
+        // 模态遮罩层
+        Positioned.fill(
+          child: AnimatedModalBarrier(
+            color: _colorAnimation,
+            dismissible: true, // 点击遮罩关闭
+            onDismiss: () {
+              _controller.reverse();
+              Navigator.of(context).pop(); // 关闭对话框
+            },
+          ),
+        ),
+        // 对话框内容
+        Center(child: Dialog(child: Text('这是一个对话框'))),
+      ],
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+}
+```
+
+
+### 侧边栏展开交互
+```dart
+import 'package:flutter/material.dart';
+
+class DrawerExample extends StatefulWidget {
+  @override
+  _DrawerExampleState createState() => _DrawerExampleState();
+}
+
+class _DrawerExampleState extends State<DrawerExample> with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  bool _isDrawerOpen = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: Duration(milliseconds: 500),
+      vsync: this,
+    );
+  }
+
+  void _toggleDrawer() {
+    setState(() {
+      _isDrawerOpen = !_isDrawerOpen;
+      _isDrawerOpen ? _controller.forward() : _controller.reverse();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('侧边栏示例')),
+      drawer: Drawer(child: ListView(children: [Text('菜单项1')])),
+      body: Stack(
+        children: [
+          // 主内容
+          Center(child: Text('主页面内容')),
+          // 条件渲染遮罩层
+          if (_isDrawerOpen)
+            AnimatedModalBarrier(
+              color: _controller.drive(ColorTween(
+                begin: Colors.transparent,
+                end: Colors.black.withOpacity(0.6),
+              )),
+              dismissible: true,
+              onDismiss: _toggleDrawer, // 点击遮罩关闭侧边栏
+            ),
+        ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _toggleDrawer,
+        child: Icon(_isDrawerOpen ? Icons.close : Icons.menu),
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+}
+```
+
+
+### 主题适配的动态遮罩
+```dart
+import 'package:flutter/material.dart';
+
+class ThemedBarrierExample extends StatefulWidget {
+  @override
+  _ThemedBarrierExampleState createState() => _ThemedBarrierExampleState();
+}
+
+class _ThemedBarrierExampleState extends State<ThemedBarrierExample> with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<Color?> _themeAwareAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: Duration(milliseconds: 400),
+      vsync: this,
+    )..repeat(reverse: true); // 循环动画用于演示
+    _themeAwareAnimation = _controller.drive(
+      ColorTween(
+        begin: Colors.transparent,
+        end: Theme.of(context).brightness == Brightness.dark
+            ? Colors.white30 // 暗色主题下使用浅色遮罩
+            : Colors.blueGrey.withOpacity(0.5), // 亮色主题下使用深色遮罩
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('主题适配示例')),
+      body: Center(
+        child: AnimatedModalBarrier(
+          color: _themeAwareAnimation,
+          dismissible: false, // 禁用点击关闭
+          // 无 onDismiss 回调
+        ),
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+}
+```
+
+
+## 注意点
+### 常见问题与解决方案:
+- **性能瓶颈**: 如果动画控制器未正确销毁(如未在`dispose`中释放)，可能导致内存泄漏。务必在`State`销毁时调用`_controller.dispose()`。
+- **兼容性警告**: `AnimatedModalBarrier`通常需与`Stack`或`Overlay`结合使用。在旧版Flutter(<2.0)中，可能需要手动管理`OverlayEntry`，建议使用现成组件如`Dialog`或`Drawer`简化集成。
+- **手势冲突**: 当`dismissible: true`时，遮罩会拦截触摸事件。确保底层内容无需交互，或通过`onDismiss`回调处理关闭逻辑。
+
+### 优化技巧:
+- 使用`ColorTween`定义颜色过渡，避免直接设置静态值以支持平滑动画。
+- 为动画控制器设置合适的时长(如 300-500ms)，避免过长影响响应速度。
+
+### 最佳实践:
+- 始终将`AnimatedModalBarrier`置于`Stack`的顶层，以确保遮罩覆盖其他内容。
+- 在`onDismiss`回调中同步反转动画控制器(如`_controller.reverse()`)，实现关闭时的反向动画。
+
+
+## 构造函数
+```dart
+const AnimatedModalBarrier({
+  Key? key,
+  required Animation<Color?> color, // 必需参数：定义遮罩颜色的动画
+  bool dismissible = true, // 可选：是否允许点击遮罩关闭（默认true）
+  VoidCallback? onDismiss, // 可选：点击遮罩时的回调函数
+  String? semanticsLabel, // 可选：语义化标签（用于无障碍支持）
+})
+```
+
+## 属性
+| 属性名           | 属性类型               | 说明                                                                 |
+|------------------|------------------------|----------------------------------------------------------------------|
+| `color`          | `Animation<Color?>`    | **必需**。定义遮罩颜色变化的动画对象，如通过 ColorTween 生成。        |
+| `dismissible`    | `bool`                 | 可选。控制点击遮罩是否触发关闭行为（默认 true）。                    |
+| `onDismiss`      | `VoidCallback?`        | 可选。当 dismissible 为 true 时，点击遮罩会调用此回调函数。          |
+| `semanticsLabel` | `String?`              | 可选。为无障碍功能提供描述标签，如 '关闭遮罩'。                      |
+
+
+### 关键属性解释:
+- `color`: 最核心属性，必须是一个动画类型。它直接控制遮罩的视觉表现，如使用`ColorTween`可实现透明度渐变，对性能影响较大——复杂的颜色过渡可能增加渲染负载。
+- `dismissible`和`onDismiss`: 常用组合属性。当`dismissible`为 true 时，务必通过`onDismiss`处理关闭逻辑(如导航回退或状态更新)，否则用户交互无反馈。
