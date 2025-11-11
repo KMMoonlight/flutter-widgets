@@ -1,0 +1,295 @@
+---
+title: AnimatedSize
+description: 在子组件尺寸发生变化时自动添加平滑过渡效果的容器组件
+---
+
+`AnimatedSize`是Flutter中的一个动画容器组件，用于在子组件尺寸发生变化时自动添加平滑的动画过渡效果。它基于`Tween`动画系统，能够自动检测子组件尺寸的变化并应用动画。
+
+### 核心逻辑
+- 监听子组件尺寸变化
+- 使用插值动画在旧尺寸和新尺寸之间平滑过渡
+- 支持自定义动画曲线和持续时间
+
+### 使用场景
+- 动态显示/隐藏UI元素时的平滑过渡
+- 内容展开/收起动画
+- 响应式布局中的尺寸变化动画
+- 图片加载完成后的尺寸调整动画
+
+
+## 示例
+### 基础尺寸变化动画
+```dart
+import 'package:flutter/material.dart';
+
+class BasicAnimatedSizeExample extends StatefulWidget {
+  @override
+  _BasicAnimatedSizeExampleState createState() => _BasicAnimatedSizeExampleState();
+}
+
+class _BasicAnimatedSizeExampleState extends State<BasicAnimatedSizeExample> {
+  bool _isExpanded = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        AnimatedSize(
+          duration: Duration(milliseconds: 300),
+          curve: Curves.easeInOut,
+          child: Container(
+            width: _isExpanded ? 200 : 100,
+            height: _isExpanded ? 200 : 100,
+            color: Colors.blue,
+            child: Center(
+              child: Text(
+                _isExpanded ? '展开状态' : '收起状态',
+                style: TextStyle(color: Colors.white),
+              ),
+            ),
+          ),
+        ),
+        SizedBox(height: 20),
+        ElevatedButton(
+          onPressed: () {
+            setState(() {
+              _isExpanded = !_isExpanded;
+            });
+          },
+          child: Text(_isExpanded ? '收起' : '展开'),
+        ),
+      ],
+    );
+  }
+}
+```
+
+
+### 动态内容切换动画
+```dart
+import 'package:flutter/material.dart';
+
+class ContentSwitchExample extends StatefulWidget {
+  @override
+  _ContentSwitchExampleState createState() => _ContentSwitchExampleState();
+}
+
+class _ContentSwitchExampleState extends State<ContentSwitchExample> {
+  int _currentIndex = 0;
+  
+  final List<Widget> _contents = [
+    Container(
+      width: 150,
+      height: 80,
+      color: Colors.red,
+      child: Center(child: Text('内容1', style: TextStyle(color: Colors.white))),
+    ),
+    Container(
+      width: 200,
+      height: 120,
+      color: Colors.green,
+      child: Center(child: Text('内容2', style: TextStyle(color: Colors.white))),
+    ),
+    Container(
+      width: 180,
+      height: 100,
+      color: Colors.orange,
+      child: Center(child: Text('内容3', style: TextStyle(color: Colors.white))),
+    ),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        AnimatedSize(
+          duration: Duration(milliseconds: 500),
+          curve: Curves.easeInOutBack,
+          alignment: Alignment.center,
+          child: _contents[_currentIndex],
+        ),
+        SizedBox(height: 20),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            ElevatedButton(
+              onPressed: _currentIndex > 0 ? () {
+                setState(() {
+                  _currentIndex--;
+                });
+              } : null,
+              child: Text('上一个'),
+            ),
+            SizedBox(width: 20),
+            ElevatedButton(
+              onPressed: _currentIndex < _contents.length - 1 ? () {
+                setState(() {
+                  _currentIndex++;
+                });
+              } : null,
+              child: Text('下一个'),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+}
+```
+
+
+### 条件渲染与主题适配
+```dart
+import 'package:flutter/material.dart';
+
+class ConditionalRenderExample extends StatefulWidget {
+  @override
+  _ConditionalRenderExampleState createState() => _ConditionalRenderExampleState();
+}
+
+class _ConditionalRenderExampleState extends State<ConditionalRenderExample> {
+  bool _showDetails = false;
+  bool _darkMode = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      theme: _darkMode ? ThemeData.dark() : ThemeData.light(),
+      home: Scaffold(
+        appBar: AppBar(
+          title: Text('条件渲染示例'),
+          actions: [
+            IconButton(
+              icon: Icon(_darkMode ? Icons.light_mode : Icons.dark_mode),
+              onPressed: () {
+                setState(() {
+                  _darkMode = !_darkMode;
+                });
+              },
+            ),
+          ],
+        ),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              AnimatedSize(
+                duration: Duration(milliseconds: 400),
+                curve: Curves.easeInOut,
+                child: _showDetails
+                    ? Container(
+                        padding: EdgeInsets.all(20),
+                        decoration: BoxDecoration(
+                          color: _darkMode ? Colors.grey[800] : Colors.grey[200],
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              '详细信息',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            SizedBox(height: 10),
+                            Text('这是详细的描述内容...'),
+                            SizedBox(height: 10),
+                            Text('更多信息在这里显示'),
+                          ],
+                        ),
+                      )
+                    : SizedBox.shrink(),
+              ),
+              SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: () {
+                  setState(() {
+                    _showDetails = !_showDetails;
+                  });
+                },
+                child: Text(_showDetails ? '隐藏详情' : '显示详情'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+```
+
+## 注意点
+### 常见问题
+1. 性能考虑:
+  - 避免在频繁变化的布局中使用，可能导致性能问题
+  - 尺寸变化过大时可能影响动画流畅度
+2. 兼容性警告:
+  - 需要与`SingleTickerProviderStateMixin`配合使用
+  - 在`StatefulWidget`中确保正确管理动画控制器
+
+### 优化技巧
+- 为动画设置合适的持续时间(通常200-500ms)
+- 选择合适的动画曲线(如`Curves.easeInOut`)
+- 使用`alignment`属性控制尺寸变化的方向
+
+
+### 最佳实践
+```dart
+// 正确用法 - 使用 SingleTickerProviderStateMixin
+class _MyWidgetState extends State<MyWidget> with SingleTickerProviderStateMixin {
+  // 自动获得 ticker provider
+}
+
+// 避免在 build 方法中创建新的 AnimatedSize 实例
+Widget build(BuildContext context) {
+  return AnimatedSize(
+    duration: const Duration(milliseconds: 300), // 使用 const 避免重复创建
+    child: MyChildWidget(),
+  );
+}
+```
+
+
+## 构造函数
+```dart
+const AnimatedSize({
+  Key? key,
+  required this.child,
+  this.alignment = Alignment.center,
+  this.curve = Curves.linear,
+  required this.duration,
+  this.reverseDuration,
+  this.clipBehavior = Clip.hardEdge,
+})
+```
+
+
+## 属性
+| 属性名 | 属性类型 | 说明 |
+|--------|----------|------|
+| child | Widget | 要应用尺寸动画的子组件 |
+| alignment | Alignment | 尺寸变化时的对齐方式，默认居中 |
+| curve | Curve | 动画时间曲线，控制动画速度变化 |
+| duration | Duration | 动画正向播放的持续时间 |
+| reverseDuration | Duration? | 动画反向播放的持续时间（可选） |
+| clipBehavior | Clip | 子组件的裁剪行为，默认硬边缘裁剪 |
+
+
+### 关键属性详解
+- `duration`(关键属性):
+  - 重要性: 必需参数，控制动画播放速度
+  - 推荐值: 通常设置为200-500毫秒
+  - 影响: 过短可能不流畅，过长可能影响用户体验
+
+- `curve`(重要属性):
+  - 作用: 控制动画的加速度曲线
+  - 常用值: `Curves.easeInOut`、`Curves.ease`、`Curves.elasticOut`
+  - 优化建议: 根据交互场景选择合适的曲线
+
+- `alignment`(布局关键):
+  - 功能: 控制尺寸变化时的锚点位置
+  - 示例: `Alignment.topLeft`会使尺寸从左上角开始变化
+  - 使用场景: 需要特定方向展开/收起时特别有用
