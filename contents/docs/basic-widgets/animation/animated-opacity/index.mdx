@@ -88,7 +88,7 @@ AnimatedOpacity(
 - 若需高性能动画（如游戏），考虑使用 AnimationController 显式管理动画。
 
 ### 兼容性警告：
-- 在旧版Flutter(<1.12)中，`AnimatedOpacity`可能需配合`RepaintBoundary`避免重绘整个子树。当前版本已优化，但复杂UI中仍需测试性能。
+- 在旧版Flutter(\<1.12)中，`AnimatedOpacity`可能需配合`RepaintBoundary`避免重绘整个子树。当前版本已优化，但复杂UI中仍需测试性能。
 
 ### 最佳实践：
 - 始终设置`duration`参数，避免默认值(0)导致无动画效果。
