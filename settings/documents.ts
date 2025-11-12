@@ -638,5 +638,47 @@ export const Documents: Paths[] = [
         ]
       }
     ],
+  },
+  {
+    title: "设计系统",
+    href: '/design-system',
+    items: [
+      {
+        title: "Material Design",
+        href: '/material-design',
+        items: [
+          {
+            title: "Actions",
+            href: '/actions',
+            items: [
+              {
+                title: "Common buttons",
+                href: '/common-buttons'
+              },
+              {
+                title: "FloatingActionButton",
+                href: '/floating-action-button'
+              },
+              {
+                title: "Extended FloatingActionButton",
+                href: '/extended-floating-action-button'
+              },
+              {
+                title: "Icon Button",
+                href: '/icon-button'
+              },
+              {
+                title: "SegmentedButton",
+                href: '/segmented-button'
+              }
+            ]
+          }
+        ]
+      },
+      {
+        title: "Cupertino Design",
+        href: '/cupertino-design'
+      }
+    ]
   }
 ]
