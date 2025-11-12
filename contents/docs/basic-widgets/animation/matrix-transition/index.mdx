@@ -1,0 +1,226 @@
+---
+title: MatrixTransition
+description: 通过矩阵变换实现平滑过渡动画效果的组件
+---
+
+`MatrixTransition`是Flutter中的一个动画组件，用于通过矩阵变换(如平移、旋转、缩放)实现平滑的过渡动画效果。它基于`Matrix4`对象，允许开发者自定义复杂的2D或3D变换动画，适用于需要动态调整组件位置、大小或旋转
+角度的场景。其核心逻辑是通过`Animation<Matrix4>`驱动矩阵插值，在动画过程中实时更新子组件的变换效果。
+
+### 使用场景
+- 动态图标变换: 如图标从列表项平滑移动到详情页标题位置。
+- 卡片展开/折叠: 通过缩放矩阵实现卡片的展开动画。
+- 3D翻转效果: 结合旋转矩阵创建卡片正反面翻转的交互。
+- 游戏元素动画: 如角色移动时的平移和旋转组合变换。
+
+## 示例
+### 基础平移动画
+```dart
+import 'package:flutter/material.dart';
+
+class BasicTranslationExample extends StatefulWidget {
+  @override
+  _BasicTranslationExampleState createState() => _BasicTranslationExampleState();
+}
+
+class _BasicTranslationExampleState extends State<BasicTranslationExample> with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<Matrix4> _animation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: Duration(seconds: 2),
+      vsync: this,
+    )..repeat(reverse: true); // 循环反向播放
+
+    // 创建从原点平移至 (100,100) 的矩阵动画
+    _animation = Matrix4Tween(
+      begin: Matrix4.identity(),
+      end: Matrix4.identity()..translate(100.0, 100.0),
+    ).animate(_controller);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return MatrixTransition(
+      animation: _animation,
+      child: Container(
+        width: 50,
+        height: 50,
+        color: Colors.blue,
+        child: Icon(Icons.star, color: Colors.white),
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+}
+```
+
+
+### 交互式缩放旋转
+```dart
+class InteractiveExample extends StatefulWidget {
+  @override
+  _InteractiveExampleState createState() => _InteractiveExampleState();
+}
+
+class _InteractiveExampleState extends State<InteractiveExample> {
+  double _scale = 1.0;
+  double _rotate = 0.0;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Slider(
+          value: _scale,
+          min: 0.5,
+          max: 2.0,
+          onChanged: (value) => setState(() => _scale = value),
+        ),
+        Slider(
+          value: _rotate,
+          min: 0,
+          max: 6.28, // 2π弧度（360度）
+          onChanged: (value) => setState(() => _rotate = value),
+        ),
+        MatrixTransition(
+          animation: AlwaysStoppedAnimation<Matrix4>(
+            Matrix4.identity()
+              ..scale(_scale, _scale) // 缩放
+              ..rotateZ(_rotate),     // 绕Z轴旋转
+          ),
+          child: Container(
+            width: 100,
+            height: 100,
+            color: Colors.green,
+            alignment: Alignment.center,
+            child: Text('交互控制', style: TextStyle(color: Colors.white)),
+          ),
+        ),
+      ],
+    );
+  }
+}
+```
+
+
+### 主题适配的3D翻转
+```dart
+class ThemeFlipExample extends StatefulWidget {
+  @override
+  _ThemeFlipExampleState createState() => _ThemeFlipExampleState();
+}
+
+class _ThemeFlipExampleState extends State<ThemeFlipExample> with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: Duration(seconds: 1),
+      vsync: this,
+    );
+  }
+
+  void _flipCard() {
+    if (_controller.status == AnimationStatus.completed) {
+      _controller.reverse();
+    } else {
+      _controller.forward();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final matrixAnim = Matrix4Tween(
+      begin: Matrix4.identity(),
+      end: Matrix4.identity()..rotateY(3.14), // 绕Y轴旋转180度（π弧度）
+    ).animate(_controller);
+
+    return GestureDetector(
+      onTap: _flipCard,
+      child: MatrixTransition(
+        animation: matrixAnim,
+        child: Container(
+          width: 150,
+          height: 200,
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.primary,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          alignment: Alignment.center,
+          child: Text(
+            '点击翻转',
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.onPrimary,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+}
+```
+
+
+## 注意点
+### 常见问题与解决方案
+- 性能瓶颈: 复杂矩阵变换(如透视投影)可能引发渲染性能下降。建议：
+- 对静态变换使用`Transform`组件而非`MatrixTransition`。
+- 避免在动画中频繁更新矩阵(如每秒60次以上)，可通过`AnimationController`控制帧率。
+- 子组件溢出: 变换后子组件可能超出父容器范围。解决方案：
+- 用`ClipRect`包裹`MatrixTransition`限制显示区域。
+- 矩阵顺序敏感: 矩阵操作(如先平移后旋转vs先旋转后平移)结果不同。务必确认操作顺序符合设计意图。
+
+### 优化技巧
+- 使用`Matrix4.identity()`作为初始值，逐步叠加变换操作。
+- 通过`Matrix4Tween`插值生成动画矩阵，确保平滑过渡。
+- 在`dispose`时及时释放`AnimationController`防止内存泄漏。
+
+### 最佳实践
+- 优先使用`Transform`组件实现简单静态变换，`MatrixTransition`专用于动态动画。
+- 测试动画在低端设备上的流畅度，必要时降低动画复杂度或时长。
+- 结合`CurvedAnimation`为矩阵变换添加缓动效果(如`Curves.easeInOut`)。
+
+
+## 构造函数
+```dart
+MatrixTransition({
+  Key? key,
+  required Animation<Matrix4> animation,
+  Widget? child,
+})
+```
+
+
+## 属性
+| 属性名       | 属性类型               | 说明                                                                 |
+|--------------|------------------------|----------------------------------------------------------------------|
+| `animation`  | `Animation<Matrix4>`   | **核心属性**：控制矩阵变换的动画对象，其值变化驱动组件更新。          |
+| `child`      | `Widget?`              | 可选子组件，接受矩阵变换效果。若为 `null`，则渲染空组件。            |
+
+
+### 关键属性解析
+- `animation`:
+  - 必须为`Animation<Matrix4>`类型，通常通过`Matrix4Tween`生成。
+  - 矩阵值变化时自动触发重绘，无需手动更新状态。
+  - 支持与`AnimationController`或`CurvedAnimation`结合控制动画行为。
+
+- `child`:
+  - 变换仅应用于直接子组件，嵌套子组件会继承当前变换状态。
+  - 若动画期间需切换子组件(如翻转后显示不同内容)，建议将状态管理移至父组件。
