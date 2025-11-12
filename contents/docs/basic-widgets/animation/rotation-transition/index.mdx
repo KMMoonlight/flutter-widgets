@@ -1,0 +1,170 @@
+---
+title: RotationTransition
+description: 通过旋转动画变换其子组件的组件
+---
+
+`RotationTransition`是Flutter中的一个动画组件，用于通过旋转动画变换其子组件。它基于一个`Animation`对象(通常取值范围为0.0到1.0，对应0°到360°的旋转角度)，动态调整子组件的旋转效果。核心逻辑是通
+过矩阵变换实现平滑旋转，适用于需要周期性或角度变化的UI场景。
+
+### 使用场景
+- 加载指示器: 如自定义旋转加载动画。
+- 交互反馈: 按钮点击时添加旋转效果增强用户体验。
+- 图标动画: 动态图标(如设置齿轮、刷新箭头)的旋转展示。
+- 游戏元素: 简单游戏中的物体旋转(如转盘、指针)。
+
+
+## 示例
+### 基础旋转动画
+```dart
+import 'package:flutter/material.dart';
+
+class BasicRotationDemo extends StatefulWidget {
+  @override
+  _BasicRotationDemoState createState() => _BasicRotationDemoState();
+}
+
+class _BasicRotationDemoState extends State<BasicRotationDemo> with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: const Duration(seconds: 2),
+      vsync: this,
+    )..repeat(); // 无限循环旋转
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return RotationTransition(
+      turns: _controller, // 控制旋转角度（0.0~1.0对应0°~360°）
+      child: const Icon(Icons.refresh, size: 50),
+    );
+  }
+}
+```
+
+
+### 交互控制旋转
+```dart
+class InteractiveRotationDemo extends StatefulWidget {
+  @override
+  _InteractiveRotationDemoState createState() => _InteractiveRotationDemoState();
+}
+
+class _InteractiveRotationDemoState extends State<InteractiveRotationDemo> with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  bool _isRotating = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: const Duration(milliseconds: 500),
+      vsync: this,
+    );
+  }
+
+  void _toggleRotation() {
+    setState(() {
+      _isRotating = !_isRotating;
+      _isRotating ? _controller.repeat() : _controller.stop();
+    });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        RotationTransition(
+          turns: _controller,
+          child: const FlutterLogo(size: 100),
+        ),
+        ElevatedButton(
+          onPressed: _toggleRotation,
+          child: Text(_isRotating ? '停止旋转' : '开始旋转'),
+        ),
+      ],
+    );
+  }
+}
+```
+
+
+### 适配主题的旋转动画
+```dart
+class ThemedRotationDemo extends StatelessWidget {
+  final Animation<double> turns; // 从父组件传递动画对象
+
+  const ThemedRotationDemo({Key? key, required this.turns}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return RotationTransition(
+      turns: turns,
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.primary,
+          shape: BoxShape.circle,
+        ),
+        child: Icon(
+          Icons.settings,
+          color: Theme.of(context).colorScheme.onPrimary,
+          size: 30,
+        ),
+      ),
+    );
+  }
+}
+```
+
+
+## 注意点
+### 常见问题与优化
+- **性能瓶颈**: 
+  - 避免在动画中嵌套复杂布局(如`ListView`)，否则可能导致帧率下降。
+  - 使用`RepaintBoundary`隔离旋转区域，减少重绘范围。
+- **兼容性警告**: 
+  - 在iOS设备上，旋转中心默认与子组件中心对齐，但某些旧版本可能需要显式设置`alignment`属性。
+- **最佳实践**: 
+  - 始终在`initState`中初始化`AnimationController`，并在`dispose`中释放资源。
+  - 通过`CurvedAnimation`添加缓动效果(如`Curves.easeInOut`)使旋转更自然。
+
+
+
+## 构造函数
+```dart
+RotationTransition({
+  Key? key,
+  required Animation<double> turns, // 控制旋转角度的动画对象
+  Alignment alignment = Alignment.center, // 旋转中心点（默认居中）
+  Widget? child, // 需要旋转的子组件
+})
+```
+
+
+## 属性
+| 属性名        | 属性类型               | 说明                                                                 |
+|---------------|------------------------|----------------------------------------------------------------------|
+| `turns`       | `Animation<double>`    | **必需**。驱动旋转的动画对象，值从0.0到1.0对应0°到360°。             |
+| `alignment`   | `Alignment`            | 旋转的中心点，默认`Alignment.center`（子组件中心）。                 |
+| `child`       | `Widget?`              | 被旋转的子组件，可为空但通常需指定。                                 |
+
+
+### 关键属性详解
+- `turns`: 核心动画属性，需与`AnimationController`或`CurvedAnimation`配合使用。若值为1.5，则对应540°旋转(1.5 × 360°)。
+- `alignment`: `Alignment.topLeft`会使子组件以左上角为轴旋转，适用于非对称动画设计。
