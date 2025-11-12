@@ -1,0 +1,304 @@
+---
+title: ScaleTransition
+description: 实现子组件缩放动画效果的组件
+---
+
+`ScaleTransition`是Flutter中的一个动画过渡组件，用于实现子组件的缩放动画效果。它基于一个`Animation`对象来控制缩放比例，可以实现在X轴和Y轴上的独立或同步缩放变换。
+
+**核心逻辑**: `ScaleTransition`通过监听动画控制器的值变化，实时更新子组件的缩放变换矩阵，从而实现平滑的缩放动画效果。它继承自`AnimatedWidget`，能够自动响应动画状态的变化。
+
+### 使用场景
+- 页面切换动画: 实现页面进入/退出的缩放过渡效果
+- 交互反馈: 按钮点击时的缩放反馈动画
+- 焦点效果: 列表项获得焦点时的放大突出显示
+- 加载状态: 加载过程中的缩放脉冲动画
+
+
+## 示例
+### 基础缩放动画
+```dart
+import 'package:flutter/material.dart';
+
+class BasicScaleTransition extends StatefulWidget {
+  @override
+  _BasicScaleTransitionState createState() => _BasicScaleTransitionState();
+}
+
+class _BasicScaleTransitionState extends State<BasicScaleTransition>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _animation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: const Duration(seconds: 2),
+      vsync: this,
+    );
+    _animation = CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeInOut,
+    );
+    
+    // 启动动画（循环播放）
+    _controller.repeat(reverse: true);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: ScaleTransition(
+        scale: _animation,
+        child: Container(
+          width: 100,
+          height: 100,
+          color: Colors.blue,
+          child: const Center(
+            child: Text(
+              '缩放动画',
+              style: TextStyle(color: Colors.white),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+}
+```
+
+
+### 交互式缩放按钮
+```dart
+import 'package:flutter/material.dart';
+
+class InteractiveScaleButton extends StatefulWidget {
+  @override
+  _InteractiveScaleButtonState createState() => _InteractiveScaleButtonState();
+}
+
+class _InteractiveScaleButtonState extends State<InteractiveScaleButton>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _animation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: const Duration(milliseconds: 150),
+      vsync: this,
+    );
+    _animation = CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeInOut,
+    );
+  }
+
+  void _onTapDown(TapDownDetails details) {
+    _controller.forward();
+  }
+
+  void _onTapUp(TapUpDetails details) {
+    _controller.reverse();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTapDown: _onTapDown,
+      onTapUp: _onTapUp,
+      onTapCancel: () => _controller.reverse(),
+      child: ScaleTransition(
+        scale: _animation.drive(
+          Tween<double>(begin: 1.0, end: 0.8),
+        ),
+        child: Container(
+          width: 120,
+          height: 50,
+          decoration: BoxDecoration(
+            color: Colors.blue,
+            borderRadius: BorderRadius.circular(25),
+          ),
+          child: const Center(
+            child: Text(
+              '点击我',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+}
+```
+
+
+### 主题适配的缩放卡片
+```dart
+import 'package:flutter/material.dart';
+
+class ThemedScaleCard extends StatefulWidget {
+  @override
+  _ThemedScaleCardState createState() => _ThemedScaleCardState();
+}
+
+class _ThemedScaleCardState extends State<ThemedScaleCard>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _scaleAnimation;
+  bool _isExpanded = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: const Duration(milliseconds: 300),
+      vsync: this,
+    );
+    _scaleAnimation = CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeInOut,
+    );
+  }
+
+  void _toggleCard() {
+    setState(() {
+      _isExpanded = !_isExpanded;
+      if (_isExpanded) {
+        _controller.forward();
+      } else {
+        _controller.reverse();
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ScaleTransition(
+      scale: _scaleAnimation.drive(
+        Tween<double>(begin: 0.7, end: 1.2),
+      ),
+      child: Card(
+        elevation: 8,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: InkWell(
+          onTap: _toggleCard,
+          borderRadius: BorderRadius.circular(16),
+          child: Container(
+            width: 200,
+            height: 150,
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  _isExpanded ? Icons.expand_less : Icons.expand_more,
+                  size: 40,
+                  color: Theme.of(context).primaryColor,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  _isExpanded ? '点击缩小' : '点击放大',
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+}
+```
+
+
+## 注意点
+### 常见问题
+- **性能问题**: 复杂的子组件结合缩放动画可能导致性能下降
+- **内存泄漏**: 忘记释放`AnimationController`会造成内存泄漏
+- **布局异常**: 缩放可能影响父组件的布局计算
+- **触摸区域**: 缩放后的组件触摸区域可能不准确
+
+### 优化技巧
+- 使用`RepaintBoundary`包裹复杂子组件以减少重绘范围
+- 对于简单的缩放动画，考虑使用`Transform.scale`替代
+- 合理设置动画时长，避免过长或过短的动画时间
+- 使用`Curves`类中的预设曲线实现更自然的动画效果
+
+
+### 最佳实践
+```dart
+// 正确使用方式
+ScaleTransition(
+  scale: _animation,
+  child: YourWidget(), // 保持子组件简单
+)
+
+// 避免过度嵌套
+ScaleTransition(
+  scale: _animation,
+  child: ComplexWidgetWithMultipleAnimations(), // 不推荐
+)
+```
+
+
+## 构造函数
+```dart
+const ScaleTransition({
+  Key? key,
+  required Animation<double> scale,
+  this.alignment = Alignment.center,
+  this.filterQuality = FilterQuality.low,
+  Widget? child,
+})
+```
+
+
+## 属性
+| 属性名 | 属性类型 | 说明 |
+|--------|----------|------|
+| scale | `Animation<double>` | 控制缩放比例的动画对象，必需参数 |
+| alignment | Alignment | 缩放变换的中心点，默认值为 Alignment.center |
+| filterQuality | FilterQuality | 缩放时应用的图像过滤质量，默认值为 FilterQuality.low |
+| child | Widget? | 要进行缩放变换的子组件 |
+
+
+### 关键属性详解
+- **`scale`属性**:
+  - 重要性: 核心属性，必需参数
+  - 功能: 接受一个`Animation`对象，数值1.0表示原始大小，小于1.0表示缩小，大于1.0表示放大
+  - 性能影响: 动画值的频繁更新会触发重绘，影响性能
+
+- **`alignment`属性**:
+  - 用途: 决定缩放的中心点，可以创建不对称的缩放效果
+  - 示例值: `Alignment.topLeft`、`Alignment.center`、`Alignment(0.2, 0.8)`
+  - 注意事项: 不同的对齐方式会影响缩放视觉效果
+
+- **`filterQuality`属性**:
+  - 优化建议: 对于需要高质量缩放效果的图像，可以设置为`FilterQuality.high`
+  - 性能权衡: 高质量过滤会消耗更多性能资源
