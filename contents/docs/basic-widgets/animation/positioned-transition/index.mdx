@@ -1,0 +1,256 @@
+---
+title: PositionedTransition
+description: 对子组件的位置变化应用平滑的动画效果
+---
+
+`PositionedTransition`是Flutter中的一个动画过渡组件，属于`widgets`库。它专门用于对子组件的位置变化(如`top`、`left`、`right`、`bottom`等属性)应用平滑的动画效果。该组件基于`Animation<RelativeRect>`驱动，通过监听动
+画值的变化，动态调整子组件在父容器(必须是`Stack`)中的相对位置。
+
+**核心逻辑是**: 当`Animation<RelativeRect>`的值从起始状态过渡到结束状态时，子组件的位置会随之动画移动，适用于需要动态调整布局的场景(如列表项展开、浮动按钮移动等)。
+
+### 使用场景
+- 动态UI调整: 例如，在用户交互时改变按钮或卡片的位置(如从屏幕底部移动到顶部)。
+- 页面过渡效果: 作为页面切换动画的一部分，控制某个元素的位置变化。
+- 响应式布局: 当屏幕尺寸变化或数据更新时，平滑过渡组件位置。
+
+
+## 示例
+### 基础位置动画
+```dart
+import 'package:flutter/material.dart';
+
+class BasicPositionedTransitionExample extends StatefulWidget {
+  @override
+  _BasicPositionedTransitionExampleState createState() =>
+      _BasicPositionedTransitionExampleState();
+}
+
+class _BasicPositionedTransitionExampleState
+    extends State<BasicPositionedTransitionExample>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<RelativeRect> _animation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: const Duration(seconds: 1),
+      vsync: this,
+    );
+    // 定义动画：从左上角 (top:0, left:0) 过渡到右下角 (bottom:0, right:0)
+    _animation = RelativeRectTween(
+      begin: RelativeRect.fromLTRB(0, 0, 0, 0), // 起始位置
+      end: RelativeRect.fromLTRB(0, 0, 0, 0).subtract(const RelativeRect.fromLTRB(0, 0, 100, 100)), // 结束位置（向右下偏移）
+    ).animate(_controller);
+  }
+
+  void _toggleAnimation() {
+    if (_controller.status == AnimationStatus.completed) {
+      _controller.reverse();
+    } else {
+      _controller.forward();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('基础位置动画')),
+      body: Stack(
+        children: [
+          PositionedTransition(
+            rect: _animation,
+            child: Container(
+              width: 100,
+              height: 100,
+              color: Colors.blue,
+              child: Center(child: Text('动画元素')),
+            ),
+          ),
+        ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _toggleAnimation,
+        child: Icon(Icons.play_arrow),
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+}
+```
+
+
+
+### 交互式位置控制
+```dart
+import 'package:flutter/material.dart';
+
+class InteractivePositionedTransitionExample extends StatefulWidget {
+  @override
+  _InteractivePositionedTransitionExampleState createState() =>
+      _InteractivePositionedTransitionExampleState();
+}
+
+class _InteractivePositionedTransitionExampleState
+    extends State<InteractivePositionedTransitionExample> {
+  double _sliderValue = 0.0;
+
+  @override
+  Widget build(BuildContext context) {
+    // 使用 AnimationController 和 Tween 构建动画，但通过滑块控制进度
+    final animation = RelativeRectTween(
+      begin: RelativeRect.fromLTRB(50, 50, 0, 0),
+      end: RelativeRect.fromLTRB(200, 200, 0, 0),
+    ).animate(AlwaysStoppedAnimation(_sliderValue)); // 用 AlwaysStoppedAnimation 固定动画值
+
+    return Scaffold(
+      appBar: AppBar(title: Text('交互式位置控制')),
+      body: Column(
+        children: [
+          Expanded(
+            child: Stack(
+              children: [
+                PositionedTransition(
+                  rect: animation,
+                  child: Container(
+                    width: 80,
+                    height: 80,
+                    color: Colors.green,
+                    child: Center(child: Text('拖动滑块')),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Slider(
+            value: _sliderValue,
+            min: 0.0,
+            max: 1.0,
+            onChanged: (value) {
+              setState(() {
+                _sliderValue = value;
+              });
+            },
+          ),
+        ],
+      ),
+    );
+  }
+}
+```
+
+
+### 主题适配的动画
+```dart
+import 'package:flutter/material.dart';
+
+class ThemedPositionedTransitionExample extends StatefulWidget {
+  @override
+  _ThemedPositionedTransitionExampleState createState() =>
+      _ThemedPositionedTransitionExampleState();
+}
+
+class _ThemedPositionedTransitionExampleState
+    extends State<ThemedPositionedTransitionExample>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<RelativeRect> _animation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: const Duration(seconds: 2),
+      vsync: this,
+    );
+    _animation = RelativeRectTween(
+      begin: RelativeRect.fromLTRB(20, 20, 0, 0),
+      end: RelativeRect.fromLTRB(20, 200, 0, 0),
+    ).animate(CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeInOut, // 使用缓动曲线使动画更自然
+    ));
+    _controller.repeat(reverse: true); // 自动循环动画
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('主题适配动画'),
+        backgroundColor: Theme.of(context).primaryColor,
+      ),
+      body: Stack(
+        children: [
+          PositionedTransition(
+            rect: _animation,
+            child: Container(
+              width: 100,
+              height: 100,
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.secondary, // 使用主题色
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(Icons.star, color: Colors.white),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+}
+```
+
+
+## 注意点
+### 常见问题
+1. **性能瓶颈**:
+  - 问题: 如果动画频率过高或子组件复杂(如大量嵌套)，可能导致UI卡顿。
+  - 解决: 使用`const`优化子组件，或对静态部分使用`RepaintBoundary`减少重绘。
+2. **兼容性警告**:
+  - 必须将`PositionedTransition`置于`Stack`组件内，否则会抛出布局错误。
+  - 确保`Animation<RelativeRect>`的`begin`和`end`值有效(例如，不包含负值或超出父容器边界)。
+
+### 优化技巧
+- 重用`AnimationController`: 在`StatefulWidget`中管理`AnimationController`，并在`dispose()`中释放资源。
+- 使用`Tween`序列: 通过`ChainTween`或`SequenceTween`实现复杂位置路径。
+- 预加载动画: 在`initState()`中初始化动画，避免构建时重复创建。
+
+### 最佳实践提示
+- 始终为动画设置合理的时长(如200-500ms)，避免用户体验不佳。
+- 在测试时，使用`debugPaintSizeEnabled`可视化布局边界，帮助调试位置问题。
+- 结合`AnimatedBuilder`分离动画逻辑与UI，提升代码可维护性。
+
+
+## 构造函数
+```dart
+PositionedTransition({
+  Key? key,
+  required Animation<RelativeRect> rect,
+  required Widget child,
+})
+```
+
+
+## 属性
+| 属性名 | 属性类型 | 说明 |
+|--------|----------|------|
+| `key` | `Key?` | 组件的键，用于标识和更新组件（可选）。 |
+| `rect` | `Animation<RelativeRect>` | **必需**，控制子组件位置变化的动画对象。 |
+| `child` | `Widget` | **必需**，要应用动画的子组件。 |
+
+### 关键属性解释
+- `rect`: 这是核心属性，类型为`Animation<RelativeRect>`。它通过`RelativeRect`值(描述相对于父容器的位置)驱动动画。使用时必须通过`Tween`(如`RelativeRectTween`)定义起始和结束状态，否则动画无效。性能上，避免在动画过程中频繁创建新的`Tween`实例。
+- `child`: 子组件会随`rect`动画移动，但本身不处理动画逻辑。优化时，应确保`child`尽可能轻量(例如，避免包含复杂图像或频繁重建的组件)。
