@@ -1,0 +1,201 @@
+---
+title: SizeTransition
+description: 实现子组件在尺寸上的平滑过渡效果
+---
+
+`SizeTransition`是Flutter中的一个动画组件，主要用于实现子组件在尺寸上的平滑过渡效果。它通过控制一个轴向上的尺
+寸变化(如宽度或高度)，结合动画控制器(`AnimationController`)来驱动缩放动画。核心逻辑基于父组件提供的动画对象(`Animation`)，动态调整子组件的尺
+寸比例，从而创建展开、收缩或呼吸式动画效果。该组件继承自`AnimatedWidget`，无需手动管理动画状态，简化了动画集成流程。
+
+### 使用场景:
+- 列表项展开/折叠: 在列表界面中，点击某项后动态展开详细信息区域。
+- 菜单栏动画: 侧边栏菜单的滑入滑出效果，通过宽度变化实现。
+- 进度指示器: 动态变化的进度条，如文件下载时的宽度增长动画。
+- 交互反馈: 按钮点击后轻微缩放，增强用户操作感知。
+
+
+
+## 示例
+### 基础尺寸动画
+```dart
+import 'package:flutter/material.dart';
+
+class BasicSizeTransition extends StatefulWidget {
+  @override
+  _BasicSizeTransitionState createState() => _BasicSizeTransitionState();
+}
+
+class _BasicSizeTransitionState extends State<BasicSizeTransition> with SingleTickerProviderStateMixin {
+  AnimationController _controller;
+  Animation<double> _animation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: Duration(seconds: 2),
+      vsync: this,
+    )..repeat(reverse: true); // 循环往复动画
+    _animation = CurvedAnimation(parent: _controller, curve: Curves.easeInOut);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SizeTransition(
+      sizeFactor: _animation,
+      axis: Axis.vertical, // 垂直方向缩放
+      child: Container(
+        color: Colors.blue,
+        child: Center(child: Text('高度动态变化')),
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+}
+```
+
+
+### 交互式展开/折叠
+```dart
+class InteractiveSizeTransition extends StatefulWidget {
+  @override
+  _InteractiveSizeTransitionState createState() => _InteractiveSizeTransitionState();
+}
+
+class _InteractiveSizeTransitionState extends State<InteractiveSizeTransition> with SingleTickerProviderStateMixin {
+  AnimationController _controller;
+  bool _isExpanded = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: Duration(milliseconds: 300),
+      vsync: this,
+    );
+  }
+
+  void _toggleAnimation() {
+    setState(() {
+      _isExpanded = !_isExpanded;
+      _isExpanded ? _controller.forward() : _controller.reverse();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        ElevatedButton(
+          onPressed: _toggleAnimation,
+          child: Text(_isExpanded ? '折叠' : '展开'),
+        ),
+        SizeTransition(
+          sizeFactor: _controller,
+          axis: Axis.horizontal, // 水平方向缩放
+          child: Container(
+            height: 100,
+            color: Colors.green,
+            child: Center(child: Text('可交互的尺寸动画')),
+          ),
+        ),
+      ],
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+}
+```
+
+
+### 适配主题的进度动画
+```dart
+class ThemedSizeTransition extends StatefulWidget {
+  @override
+  _ThemedSizeTransitionState createState() => _ThemedSizeTransitionState();
+}
+
+class _ThemedSizeTransitionState extends State<ThemedSizeTransition> with SingleTickerProviderStateMixin {
+  AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: Duration(seconds: 3),
+      vsync: this,
+    )..forward();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: Theme.of(context).scaffoldBackgroundColor,
+      child: SizeTransition(
+        sizeFactor: _controller,
+        axis: Axis.horizontal,
+        axisAlignment: -1.0, // 从左侧开始增长
+        child: LinearProgressIndicator(
+          backgroundColor: Colors.grey,
+          valueColor: AlwaysStoppedAnimation(Theme.of(context).primaryColor),
+        ),
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+}
+```
+
+
+
+## 注意点
+- **性能优化**: 
+  - 避免在频繁重建的组件树中使用高复杂度动画，可通过`RepaintBoundary`隔离动画区域。
+  - 使用`CurvedAnimation`替代线性动画，减少不必要的渲染计算(如`Curves.easeInOut`)。
+- **兼容性警告**:
+  - 在`ListView`或`GridView`中嵌套时，确保动画控制器在页面销毁时正确释放(`dispose`)，防止内存泄漏。
+  - 部分旧版本Flutter(\<1.17)可能存在轴对齐偏差，建议测试目标平台。
+- **最佳实践**:
+  - 优先使用`AnimatedBuilder`或显式动画组件(如`AnimatedContainer`)替代简单场景，减少代码量。
+  - 通过`axisAlignment`控制缩放原点，避免布局跳动(如从左侧或中心缩放)。
+
+
+
+## 构造函数
+```dart
+const SizeTransition({
+  Key? key,
+  required this.sizeFactor,      // 必需参数：控制尺寸比例的动画对象
+  this.axis = Axis.vertical,     // 缩放方向，默认为垂直轴
+  this.axisAlignment = 0.0,      // 缩放对齐基准点（-1.0~1.0）
+  required this.child,           // 必需参数：子组件
+})
+```
+
+
+## 属性
+| 属性名          | 属性类型             | 说明                                                                 |
+|-----------------|---------------------|----------------------------------------------------------------------|
+| `sizeFactor`    | `Animation<double>` | **核心属性**：控制子组件尺寸的动画对象，值越小尺寸越收缩。           |
+| `axis`          | `Axis`              | 缩放方向轴，默认为垂直方向（`Axis.vertical`）。                      |
+| `axisAlignment` | `double`            | 缩放对齐点，影响尺寸变化的起始位置。                                |
+| `child`         | `Widget`            | 需要应用尺寸动画的子组件。                                          |
+
+
+### 关键属性详解：
+- `sizeFactor`: 必须与`AnimationController`绑定，例如通过`Tween(begin: 0.0, end: 1.0).animate(controller)`生成。若动画值超出`[0.0, 1.0]`，可能导致子组件溢出或布局异常。
+- `axisAlignment`: 值为-1.0时，缩放从组件左侧(水平)或顶部(垂直)开始；值为0.0时从中心缩放；值为1.0时从末端缩放。调整此参数可避免动画过程中的布局偏移。
