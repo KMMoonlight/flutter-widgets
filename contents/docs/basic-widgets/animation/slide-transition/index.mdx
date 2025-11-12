@@ -1,0 +1,205 @@
+---
+title: SlideTransition
+description: 用于子组件实现平移动画的核心组件
+---
+
+`SlideTransition`是Flutter中用于实现平移动画的核心组件，属于动画库(`flutter/animation.dart`)的一部分。它通过接收一个动画对象(`Animation<Offset>`)来控制子组件的位置偏移，从而创建滑动效果。
+
+- **主要用途**: 将子组件沿水平或垂直方向平滑移动，常用于页面切换、元素入场/出场动画、列表项动态效果等场景。
+- **核心逻辑**: 基于`Animation<Offset>`的当前值(如`Offset(0.1, 0.5)`)实时计算子组件的偏移位置，其中`Offset(dx, dy)`的`dx`和`dy`分别表示横向和纵向的偏移比例(1.0表示完整组件宽度或高度)。
+
+### 典型使用场景：
+- 页面切换时的滑动过渡(如左滑进入新页面)。
+- 按钮点击后提示信息的滑入/滑出。
+- 列表项删除时的滑动消失动画。
+
+
+## 示例
+### 基础水平滑动
+```dart
+import 'package:flutter/material.dart';
+
+class SimpleSlideDemo extends StatefulWidget {
+  @override
+  _SimpleSlideDemoState createState() => _SimpleSlideDemoState();
+}
+
+class _SimpleSlideDemoState extends State<SimpleSlideDemo> with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<Offset> _animation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: Duration(seconds: 1),
+      vsync: this,
+    );
+    _animation = Tween<Offset>(
+      begin: Offset(-1.0, 0.0), // 从左侧外部开始
+      end: Offset.zero, // 滑动到原始位置
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            SlideTransition(
+              position: _animation,
+              child: Container(
+                width: 100,
+                height: 100,
+                color: Colors.blue,
+                child: Center(child: Text('滑动组件')),
+              ),
+            ),
+            ElevatedButton(
+              onPressed: () => _controller.forward(), // 点击触发动画
+              child: Text('开始滑动'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+}
+```
+
+
+### 垂直滑动与循环动画
+```dart
+// 在 initState 中修改动画配置为循环模式
+@override
+void initState() {
+  super.initState();
+  _controller = AnimationController(
+    duration: Duration(seconds: 2),
+    vsync: this,
+  )..repeat(reverse: true); // 自动往复循环
+  _animation = Tween<Offset>(
+    begin: Offset(0.0, -0.5), // 向上偏移一半高度
+    end: Offset(0.0, 0.5),    // 向下偏移一半高度
+  ).animate(_controller);
+}
+
+// Build 方法中仅保留 SlideTransition 部分
+SlideTransition(
+  position: _animation,
+  child: FlutterLogo(size: 100),
+);
+```
+
+
+### 结合手势拖拽
+```dart
+import 'package:flutter/material.dart';
+
+class DragSlideDemo extends StatefulWidget {
+  @override
+  _DragSlideDemoState createState() => _DragSlideDemoState();
+}
+
+class _DragSlideDemoState extends State<DragSlideDemo> with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<Offset> _animation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: Duration(seconds: 1),
+      vsync: this,
+    );
+    _animation = _controller.drive(
+      Tween<Offset>(begin: Offset.zero, end: Offset(1.0, 0.0)),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: GestureDetector(
+        onPanUpdate: (details) {
+          // 根据拖拽距离更新动画值
+          _controller.value += details.delta.dx / 300;
+        },
+        child: SlideTransition(
+          position: _animation,
+          child: Container(
+            width: 200,
+            height: 200,
+            color: Colors.green,
+            child: Center(child: Text('拖拽我')),
+          ),
+        ),
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+}
+```
+
+
+
+## 注意点
+### 性能优化:
+- 避免在频繁重建的组件树中创建新的`AnimationController`，应在`StatefulWidget`的`initState`中初始化并在`dispose`中释放。
+- 对静态内容使用`SlideTransition`，动态内容需考虑使用`AnimatedBuilder`减少重绘范围。
+
+### 常见问题:
+- 偏移量计算: `Offset(dx, dy)`的参数为比例值(相对于子组件自身尺寸)，例如`Offset(0.5, 0.0)`表示向右移动子组件宽度的50%。
+- 动画控制器状态: 确保`AnimationController`的`vsync`参数正确设置(混入`SingleTickerProviderStateMixin`)，防止动画卡顿。
+
+### 最佳实践:
+- 与`CurvedAnimation`结合使用以添加缓动效果(如`Curves.easeInOut`)。
+- 通过`Tween`明确指定`begin`和`end`偏移量，避免默认值不符合预期。
+
+
+## 构造函数
+```dart
+SlideTransition({
+  Key? key,
+  required Animation<Offset> position, // 控制偏移的动画对象
+  this.transformHitTests = true, // 点击测试是否随偏移变换
+  this.textDirection, // 用于方向敏感的偏移（如右对齐布局）
+  Widget? child, // 子组件
+})
+```
+
+
+
+## 属性
+| 属性名               | 属性类型               | 说明                                                                 |
+|----------------------|------------------------|----------------------------------------------------------------------|
+| `position`           | `Animation<Offset>`     | **必需**，控制子组件偏移位置的动画对象（如 `Tween<Offset>` 生成的动画）。 |
+| `transformHitTests`  | `bool`                 | 点击事件检测区域是否随组件平移（默认 `true`）。                      |
+| `textDirection`      | `TextDirection?`       | 文本方向，影响偏移方向（如右向左布局中 `Offset(0.1, 0)` 实际向左偏移）。 |
+| `child`              | `Widget?`               | 需要应用滑动动画的子组件。                                           |
+
+
+
+### 关键属性详解: 
+- `position`: 必须通过`AnimationController`和`Tween<Offset>`创建。例如:
+```dart
+Tween<Offset>(begin: Offset(-1.0, 0), end: Offset.zero).animate(controller)
+```
+
+此属性直接决定动画效果，需谨慎设置`begin/end`值以避免视觉异常。
+
+
+- `textDirection`: 在国际化场景中尤为重要，若未设置且布局方向为右向左(RTL)，偏移方向会自动反转。
