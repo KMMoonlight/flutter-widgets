@@ -1,0 +1,162 @@
+---
+title: FloatingActionButton
+description: 界面上悬浮的应用主要操作按钮
+---
+
+`FloatingActionButton`(浮动操作按钮)是Flutter中一个常用的`Material Design`组件，通常作为应用的主要操作按钮悬浮在界面之上。它通过醒目的圆形设计和图标吸引用户注意力，常用于触发关键操作(如添加、分享或导航)。
+
+- **主要用途**: 提供快速访问应用核心功能的入口，提升用户交互效率。
+- **核心逻辑**: 基于`Material Design`规范，按钮默认悬浮在屏幕右下角，可自定义位置、形状和交互行为。它继承自`StatelessWidget`，通过属性控制外观和事件响应。
+
+### 使用场景:
+- 在记事本应用中，用于快速创建新笔记。
+- 在社交应用中，触发发布新内容。
+- 作为导航按钮，跳转到特定页面(如相机界面)。
+
+
+## 示例
+### 基础UI场景
+```dart
+import 'package:flutter/material.dart';
+
+void main() => runApp(MyApp());
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: Scaffold(
+        appBar: AppBar(title: Text('基础FAB示例')),
+        body: Center(child: Text('点击右下角按钮试试！')),
+        floatingActionButton: FloatingActionButton(
+          onPressed: () {
+            // 触发添加操作
+            print('添加新项目');
+          },
+          child: Icon(Icons.add), // 使用内置图标
+          backgroundColor: Colors.blue,
+        ),
+      ),
+    );
+  }
+}
+```
+
+
+### 交互逻辑场景
+```dart
+import 'package:flutter/material.dart';
+
+void main() => runApp(MyApp());
+
+class MyApp extends StatefulWidget {
+  @override
+  _MyAppState createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  int _counter = 0;
+
+  void _incrementCounter() {
+    setState(() {
+      _counter++;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: Scaffold(
+        appBar: AppBar(title: Text('交互FAB示例')),
+        body: Center(child: Text('计数器值: $_counter')),
+        floatingActionButton: FloatingActionButton(
+          onPressed: _incrementCounter,
+          child: Icon(Icons.add),
+          tooltip: '增加计数', // 悬停提示
+        ),
+      ),
+    );
+  }
+}
+```
+
+
+### 适配主题场景
+```dart
+import 'package:flutter/material.dart';
+
+void main() => runApp(MyApp());
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      theme: ThemeData(
+        primarySwatch: Colors.green,
+        floatingActionButtonTheme: FloatingActionButtonThemeData(
+          backgroundColor: Colors.orange, // 通过主题统一设置
+          foregroundColor: Colors.white,
+        ),
+      ),
+      home: Scaffold(
+        appBar: AppBar(title: Text('主题适配FAB示例')),
+        body: Center(child: Text('主题化按钮')),
+        floatingActionButton: FloatingActionButton(
+          onPressed: () {},
+          child: Icon(Icons.favorite),
+          // 不设置backgroundColor，优先使用主题
+        ),
+      ),
+    );
+  }
+}
+```
+
+
+## 注意点
+### 常见问题:
+- 性能瓶颈: 避免在`onPressed`中执行耗时操作(如网络请求)，否则会阻塞UI线程。建议使用异步操作(`async/await`)。
+- 兼容性警告: 在非`Material Design`环境(如`Cupertino`)中可能风格不协调，需额外适配。
+- 溢出问题: 当页面内容过长时，`FAB`可能被遮挡。可通过`Scaffold`的`floatingActionButtonLocation`属性调整位置(如`FloatingActionButtonLocation.centerFloat`)。
+
+### 优化技巧:
+- 使用`heroTag`属性避免多个`FAB`在页面切换时动画冲突（常见于`TabBar`视图）。
+- 通过`FloatingActionButton.extended`扩展按钮支持文本标签，提升可访问性。
+
+### 最佳实践:
+- 一个界面最多使用一个`FAB`，避免功能冗余。
+- 优先使用`Material Design`内置图标(如`Icons.add`)保持一致性。
+
+
+
+## 构造函数
+```dart
+FloatingActionButton({
+  Key? key,
+  required this.onPressed,    // 必填回调函数
+  Widget? child,              // 子组件（通常为Icon）
+  Color? backgroundColor,     // 背景色
+  Color? foregroundColor,     // 前景色（图标/文本颜色）
+  String? tooltip,            // 悬停提示文本
+  Object? heroTag,            // 动画标识
+})
+```
+
+
+## 属性
+| 属性名             | 属性类型               | 说明                                                                 |
+|--------------------|------------------------|----------------------------------------------------------------------|
+| `onPressed`        | `VoidCallback?`        | 点击回调函数，为`null`时按钮禁用。                                   |
+| `child`            | `Widget?`              | 按钮内容组件，通常为`Icon`或`Text`。                                 |
+| `backgroundColor`  | `Color?`               | 背景颜色，默认使用主题色`ThemeData.primaryColor`。                   |
+| `foregroundColor`  | `Color?`               | 前景颜色（影响图标/文本），默认使用`ThemeData.accentIconTheme.color`。|
+| `tooltip`          | `String?`              | 长按或悬停时显示的提示文本，提升可访问性。                           |
+| `heroTag`          | `Object?`              | 用于Hero动画的标识符，多个FAB时需唯一。                              |
+| `elevation`        | `double`               | 阴影高度，默认6.0。                                                  |
+| `highlightElevation` | `double`             | 点击时阴影高度，默认12.0。                                           |
+
+
+### 关键属性详解: 
+- `onPressed`: 必须设置，否则按钮无效。这是`FAB`的核心交互属性。
+- `heroTag`: 在多个FAB共存的场景(如TabView)中必须唯一，否则会导致动画异常。
+- `backgroundColor`: 若未设置，会继承`FloatingActionButtonThemeData`或主题的默认值，优先使用主题以保持一致性。
