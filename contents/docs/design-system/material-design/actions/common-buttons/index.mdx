@@ -1,0 +1,158 @@
+---
+title: Common buttons
+description: Material Design 3规范中定义的五种常用按钮样式，用于在不同重要性和视觉重量层次上触发操作
+---
+
+这组按钮是`Material Design 3`规范中定义的五种常用按钮样式，用于在不同重要性和视觉重量层次上触发操作。它们共享相似的核心交互逻辑(如点击、禁用状态)，但通过不同的背景、边框和阴影来传达不同的操作优先级，从而引导用户的注意力。
+
+- `ElevatedButton`: 带有阴影的凸起按钮，用于高强调操作。它是主要操作按钮，在需要吸引用户注意力的扁平界面上非常有效。
+- `FilledButton`: 具有实心背景的按钮，同样用于高强调操作。在`ElevatedButton`显得过于突出或需要更现代外观时使用。
+- `FilledButton.tonal`: 使用次要容器颜色填充的按钮，用于中等强调操作。它的视觉重量介于`FilledButton`和`OutlinedButton`之间。
+- `OutlinedButton`: 具有轮廓边框但无填充色的按钮，用于中等强调操作。通常用于次要但重要的操作，如“取消”。
+- `TextButton`: 最低强调程度的文本按钮，用于低强调操作。通常用于如“跳过”或对话框中的选项等不太关键的操作。
+
+
+### 使用场景
+- `ElevatedButton`/`FilledButton`: 用于流程中的主要操作，如表单的“提交”、页面的“创建新项目”。
+- `FilledButton.tonal`: 用于页面内的重要操作，但并非最主要的操作，或者当界面已有一个`FilledButton`时，用它来表示次重要的操作。
+- `OutlinedButton`: 用于与主要操作并存的次要操作，如对话框中的“取消”，或者用于不那么重要的操作以避免界面过于沉重。
+- `TextButton`: 用于最不醒目的操作，如“忘记密码？”、“查看更多”，或用于避免打断用户阅读流。
+
+
+## 示例
+### 简单UI-登录表单
+```dart
+Column(
+  mainAxisSize: MainAxisSize.min,
+  children: [
+    TextField(decoration: InputDecoration(labelText: '用户名')),
+    SizedBox(height: 10),
+    TextField(obscureText: true, decoration: InputDecoration(labelText: '密码')),
+    SizedBox(height: 20),
+    // 主要操作：登录
+    FilledButton(
+      onPressed: () { /* 执行登录逻辑 */ },
+      child: Text('登录'),
+    ),
+    // 次要操作：忘记密码，使用低强调按钮
+    TextButton(
+      onPressed: () { /* 导航到找回密码页面 */ },
+      child: Text('忘记密码？'),
+    ),
+  ],
+)
+```
+
+### 交互逻辑-确定对话框
+```dart
+AlertDialog(
+  title: Text('确认删除'),
+  content: Text('您确定要删除这个项目吗？此操作不可撤销。'),
+  actions: [
+    // 次要操作：取消
+    OutlinedButton(
+      onPressed: () {
+        Navigator.of(context).pop(); // 关闭对话框
+      },
+      child: Text('取消'),
+    ),
+    // 主要操作：确认删除
+    FilledButton(
+      onPressed: () {
+        // 执行删除逻辑
+        deleteItem();
+        Navigator.of(context).pop(); // 关闭对话框
+      },
+      child: Text('删除'),
+    ),
+  ],
+)
+```
+
+
+### 适配主题-自定义按钮样式
+```dart
+// 在页面或应用的Theme中统一设置
+final ButtonStyle myFilledButtonStyle = FilledButton.styleFrom(
+  foregroundColor: Colors.white,
+  backgroundColor: Colors.deepPurple, // 背景色
+  padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+);
+
+final ButtonStyle myOutlinedButtonStyle = OutlinedButton.styleFrom(
+  foregroundColor: Colors.deepPurple,
+  side: BorderSide(color: Colors.deepPurple), // 边框颜色
+);
+
+// 使用自定义样式
+Column(
+  children: [
+    FilledButton(
+      style: myFilledButtonStyle,
+      onPressed: () {},
+      child: Text('自定义填充按钮'),
+    ),
+    SizedBox(height: 10),
+    OutlinedButton(
+      style: myOutlinedButtonStyle,
+      onPressed: () {},
+      child: Text('自定义轮廓按钮'),
+    ),
+  ],
+)
+```
+
+## 注意点
+1. **常见问题与性能**
+  - 滥用`ElevatedButton`: 在已经有很多元素的卡片或对话框中，使用`ElevatedButton`可能会让界面显得凌乱。此时考虑使用`FilledButton`。
+  - 禁用状态: 所有按钮在`onPressed`回调为`null`时会自动进入禁用状态，并改变外观(如降低透明度)。请确保在异步操作(如网络请求)期间将`onPressed`设置为`null`以防止重复提交。
+  - 性能: 按钮本身是轻量级组件。性能问题通常源于在`onPressed`回调中执行了繁重的计算或低效的构建。请确保回调函数是高效的。
+2. **优化技巧与最佳实践**
+  - 一致性: 在整个应用中保持按钮样式的一致性。例如，所有主要操作都使用`FilledButton`，所有次要操作都使用`OutlinedButton`。
+  - 可访问性: 确保按钮的文本标签清晰描述了其功能(例如，使用“保存”而非“确定”)，并为图标按钮提供语义标签(`Semantics`或`Tooltip`)。
+  - 层次清晰: 一个视图内通常只有一个最高强调的按钮(`ElevatedButton`或`FilledButton`)，以避免用户困惑。
+
+
+## 构造函数
+这五种按钮的构造函数结构基本一致，以`FilledButton`为例:
+```dart
+FilledButton({
+  Key? key,
+  required VoidCallback? onPressed, // 必选参数，点击回调。为null时按钮禁用。
+  VoidCallback? onLongPress, // 可选参数，长按回调。
+  ButtonStyle? style, // 可选参数，用于自定义按钮样式。
+  FocusNode? focusNode, // 可选参数，控制按钮的焦点。
+  bool? autofocus, // 可选参数，是否自动获取焦点。
+  Clip clipBehavior = Clip.none, // 裁剪行为，通常无需修改。
+  required Widget child, // 必选参数，按钮内的子组件，通常是Text或Icon。
+})
+```
+
+
+## 属性
+| 属性名 (通过ButtonStyle控制) | 属性类型 | 说明 |
+| :--- | :--- | :--- |
+| `backgroundColor` | `MaterialStateProperty<Color?>` | 按钮的背景颜色。对于`OutlinedButton`和`TextButton`，通常为透明。 |
+| `foregroundColor` | `MaterialStateProperty<Color?>` | 文本和图标的颜色。 |
+| `overlayColor` | `MaterialStateProperty<Color?>` | 按钮在点击、悬停等状态下的叠加颜色。 |
+| `shadowColor` | `MaterialStateProperty<Color?>` | 阴影颜色，主要影响`ElevatedButton`。 |
+| `elevation` | `MaterialStateProperty<double?>` | 阴影高度，主要影响`ElevatedButton`。 |
+| `padding` | `MaterialStateProperty<EdgeInsetsGeometry?>` | 按钮内容的内边距。 |
+| `minimumSize` | `MaterialStateProperty<Size?>` | 按钮的最小尺寸。 |
+| `side` | `MaterialStateProperty<BorderSide?>` | 按钮的边框。主要用于`OutlinedButton`，也可用于其他按钮。 |
+| `shape` | `MaterialStateProperty<OutlinedBorder?>` | 按钮的形状，如`RoundedRectangleBorder`。 |
+
+
+
+### 关键属性解释
+1. `MaterialStateProperty`: 这是最关键的属性类型。它允许你为按钮的不同状态(如按下`pressed`、悬停`hovered`、禁用`disabled`、正常`none`)定义不同的值。例如，你可以轻松设置按钮按下时的颜色。
+```dart
+FilledButton.styleFrom(
+  foregroundColor: Colors.white,
+  backgroundColor: Colors.blue,
+  // 当按钮被按下时，背景色变深
+  overlayColor: Colors.blue.shade700,
+)
+```
+2. `styleFrom`方法: 这是最常用的辅助方法，用于快速创建一个基础的`ButtonStyle`。它内部处理了`MaterialStateProperty`的复杂性，让你能够用简单的值进行设置，如上例所示。对于大多数自定义需求，使用`styleFrom`就足够了。
+3. `side`(边框): 这是区分`OutlinedButton`与其他按钮的核心属性。虽然你可以为任何按钮添加边框，但`OutlinedButton`的默认样式就是通过`side`属性实现的。
