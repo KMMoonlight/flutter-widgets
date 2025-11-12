@@ -672,6 +672,128 @@ export const Documents: Paths[] = [
                 href: '/segmented-button'
               }
             ]
+          },
+          {
+            title: "Communication",
+            href: '/communication',
+            items: [
+              {
+                title: "Badge",
+                href: '/badge'
+              },
+              {
+                title: "LinearProgressIndicator",
+                href: '/linear-progress-indicator'
+              },
+              {
+                title: "SnackBar",
+                href: '/snack-bar'
+              }
+            ]
+          },
+          {
+            title: "Containment",
+            href: '/containment',
+            items: [
+              {
+                title: "AlertDialog",
+                href: '/alert-dialog'
+              },
+              {
+                title: "Bottom sheet",
+                href: '/bottom-sheet'
+              },
+              {
+                title: "Card",
+                href: '/card'
+              },
+              {
+                title: "Divider",
+                href: '/divider'
+              },
+              {
+                title: "ListTile",
+                href: '/list-tile'
+              }
+            ]
+          },
+          {
+            title: "Navigation",
+            href: '/navigation',
+            items: [
+              {
+                title: "AppBar",
+                href: '/app-bar'
+              },
+              {
+                title: "Bottom app bar",
+                href: '/bottom-app-bar'
+              },
+              {
+                title: "NavigationBar",
+                href: '/navigation-bar'
+              },
+              {
+                title: "NavigationDrawer",
+                href: '/navigation-drawer'
+              },
+              {
+                title: "Navigation rail",
+                href: '/navigation-rail'
+              },
+              {
+                title: "TabBar",
+                href: '/tab-bar'
+              }
+            ]
+          },
+          {
+            title: "Selection",
+            href: '/selection',
+            items: [
+              {
+                title: "Checkbox",
+                href: '/checkbox'
+              },
+              {
+                title: "Chip",
+                href: '/chip'
+              },
+              {
+                title: "DatePicker",
+                href: '/date-picker'
+              },
+              {
+                title: "Menu",
+                href: '/menu'
+              },
+              {
+                title: "Radio",
+                href: '/radio'
+              },
+              {
+                title: "Slider",
+                href: '/slider'
+              },
+              {
+                title: "Switch",
+                href: '/switch'
+              },
+              {
+                title: "TimePicker",
+                href: '/time-picker'
+              }
+            ]
+          },
+          {
+            title: "Text inputs",
+            href: '/text-inputs',
+            items: [
+              {
+                title: "TextField",
+                href: '/text-field'
+              }
+            ]
           }
         ]
       },
