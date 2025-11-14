@@ -1,0 +1,143 @@
+---
+title: Switch
+description: 基本UI控件，用于表示一个二选一的开关状态(如打开/关闭)
+---
+
+`Switch`是Flutter中的一个基本UI控件，用于表示一个二选一的开关状态(如打开/关闭)。它继承自`StatefulWidget`，通过监听用户点击或拖动手势来切换状态，并触发相应的回
+调函数。`Switch`的核心逻辑基于布尔值(true/false)管理状态变化，适用于需要快速切换设置的场景。
+
+![](https://docs.flutter.dev/assets/images/docs/widget-catalog/material-3-switch.png)
+
+### 使用场景
+- 移动应用中的设置页面(如启用通知、夜间模式)。
+- 表单中的选项切换(如同意条款)。
+- 实时控制功能(如开关蓝牙、Wi-Fi)。
+
+
+## 示例
+### 基础开关
+```dart
+import 'package:flutter/material.dart';
+
+class BasicSwitchExample extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Switch(
+      value: true, // 默认打开
+      onChanged: (bool newValue) {
+        print('开关状态: $newValue');
+      },
+    );
+  }
+}
+```
+
+
+### 状态管理开关
+```dart
+import 'package:flutter/material.dart';
+
+class StatefulSwitchExample extends StatefulWidget {
+  @override
+  _StatefulSwitchExampleState createState() => _StatefulSwitchExampleState();
+}
+
+class _StatefulSwitchExampleState extends State<StatefulSwitchExample> {
+  bool _isSwitched = false; // 初始状态为关闭
+
+  @override
+  Widget build(BuildContext context) {
+    return Switch(
+      value: _isSwitched,
+      onChanged: (bool newValue) {
+        setState(() {
+          _isSwitched = newValue; // 更新状态
+        });
+      },
+    );
+  }
+}
+```
+
+
+### 自定义主题和标签的开关
+```dart
+import 'package:flutter/material.dart';
+
+class ThemedSwitchExample extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Text('启用定位:'),
+        Switch(
+          value: true,
+          activeColor: Colors.green, // 自定义打开颜色
+          activeTrackColor: Colors.lightGreen,
+          inactiveThumbColor: Colors.grey,
+          onChanged: (bool newValue) {},
+        ),
+      ],
+    );
+  }
+}
+```
+
+## 注意点
+### 常见问题
+- 性能: 避免在`onChanged`回调中执行耗时操作(如网络请求)，可能导致UI卡顿。
+- 兼容性: 在旧版Flutter中，`Switch`的样式可能因平台而异(Android/iOS)，建议测试多平台。
+- 无障碍支持: 若未提供语义标签，屏幕阅读器可能无法正确识别开关用途。
+
+### 优化技巧
+- 使用`ValueNotifier`或状态管理库(如`Provider`)替代`setState`，以提升复杂应用的性能。
+- 为开关添加`semanticLabel`属性，增强无障碍功能。
+
+### 最佳实践
+- 始终提供视觉反馈(如颜色变化），确保用户感知状态切换。
+- 在禁用状态下(`onChanged: null`)，将开关置灰以避免误操作。
+
+
+## 构造函数
+```dart
+Switch({
+  Key? key,
+  required bool value,
+  required ValueChanged<bool>? onChanged,
+  Color? activeColor,
+  Color? activeTrackColor,
+  Color? inactiveThumbColor,
+  Color? inactiveTrackColor,
+  ImageProvider? activeThumbImage,
+  ImageProvider? inactiveThumbImage,
+  MaterialTapTargetSize? materialTapTargetSize,
+  DragStartBehavior dragStartBehavior = DragStartBehavior.start,
+  MouseCursor? mouseCursor,
+  Color? focusColor,
+  Color? hoverColor,
+  Color? splashRadius,
+  FocusNode? focusNode,
+  bool autofocus = false,
+})
+```
+
+
+## 属性
+| 属性名                  | 属性类型                  | 说明                                                                 |
+|-------------------------|---------------------------|----------------------------------------------------------------------|
+| `value`                 | `bool`                    | 开关的当前状态（true=打开，false=关闭）。                           |
+| `onChanged`             | `ValueChanged<bool>?`      | 状态变化时的回调函数；null 表示禁用开关。                           |
+| `activeColor`           | `Color?`                  | 打开状态下拇指（圆形按钮）的颜色。                                 |
+| `activeTrackColor`      | `Color?`                  | 打开状态下轨道（背景条）的颜色。                                   |
+| `inactiveThumbColor`    | `Color?`                  | 关闭状态下拇指的颜色。                                             |
+| `inactiveTrackColor`    | `Color?`                  | 关闭状态下轨道的颜色。                                             |
+| `activeThumbImage`      | `ImageProvider?`          | 打开状态下拇指的图片（替代颜色）。                                 |
+| `inactiveThumbImage`    | `ImageProvider?`          | 关闭状态下拇指的图片。                                             |
+| `materialTapTargetSize` | `MaterialTapTargetSize?`  | 点击目标区域的大小（影响可访问性）。                               |
+| `dragStartBehavior`     | `DragStartBehavior`       | 拖动手势的起始行为（默认 start）。                                 |
+
+
+### 关键属性详解
+- `value`和`onChanged`: 这是`Switch`的核心属性。`value`必须与状态管理绑定，而`onChanged`回调应同步更新状态，否则开关可能无法正确响应。
+- 颜色相关属性(如`activeColor`): 常用于主题适配，但注意过度自定义可能破坏平台一致性。优先使用`ThemeData`全局配置。
+- `materialTapTargetSize`: 设置为`MaterialTapTargetSize.shrinkWrap`可缩小点击区域，适合紧凑布局。
