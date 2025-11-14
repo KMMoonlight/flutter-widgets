@@ -1,0 +1,114 @@
+---
+title: LinearProgressIndicator
+description: 线性进度指示器组件
+---
+
+`LinearProgressIndicator`是Flutter提供的线性进度指示器组件，用于直观展示任务的完成进度或加载状态。其核心逻辑基于两种模式:
+- 确定进度模式: 通过`value`属性设置具体进度值(0.0~1.0)，适用于可量化的任务(如文件上传)。
+- 不确定进度模式: 不指定`value`，进度条会循环动画，适用于未知时长的等待(如网络请求)。
+
+![](https://docs.flutter.dev/assets/images/docs/widget-catalog/material-3-progress-indicator.png)
+
+### 典型使用场景:
+- 文件上传/下载界面
+- 表单提交的加载状态
+- 数据同步过程的视觉反馈
+
+
+
+## 示例
+### 基础不确定进度条
+```dart
+LinearProgressIndicator(
+  backgroundColor: Colors.grey[300],
+  color: Colors.blue, // 进度颜色
+)
+```
+
+
+### 带具体进度的确定模式
+```dart
+LinearProgressIndicator(
+  value: 0.6, // 进度值 60%
+  backgroundColor: Colors.grey,
+  valueColor: AlwaysStoppedAnimation<Color>(Colors.green), // 动态颜色
+)
+```
+
+### 嵌套在布局中的交互逻辑
+```dart
+class ProgressDemo extends StatefulWidget {
+  @override
+  _ProgressDemoState createState() => _ProgressDemoState();
+}
+
+class _ProgressDemoState extends State<ProgressDemo> {
+  bool _isLoading = false;
+
+  void _toggleLoading() {
+    setState(() {
+      _isLoading = !_isLoading;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        ElevatedButton(
+          onPressed: _toggleLoading,
+          child: Text(_isLoading ? '隐藏进度' : '显示进度'),
+        ),
+        if (_isLoading) LinearProgressIndicator(), // 条件渲染
+      ],
+    );
+  }
+}
+```
+
+
+## 注意点
+- 性能优化: 
+  - 避免在频繁重建的组件树中嵌套不确定进度条(如`ListView.builder`的`item`)，可能引发不必要的动画重绘。
+  - 确定模式优先使用`valueColor: AlwaysStoppedAnimation`替代`AnimationController`，减少动画资源占用。
+
+- 兼容性警告: 
+  - 在旧版本Flutter(\<2.5)中，自定义颜色需通过`valueColor`设置，且必须包裹`AlwaysStoppedAnimation`。
+  - 进度条高度依赖父容器约束，若未指定宽度(如直接放在`Column`中)，需用`SizedBox`或`ConstrainedBox`限制尺寸。
+
+- 最佳实践: 
+  - 不确定进度条应搭配文字提示(如“加载中...”)，避免用户误以为卡顿。
+  - 使用`Semantics`组件为进度条添加无障碍标签(如semanticsLabel: '文件上传进度 60%')。
+
+
+## 构造函数
+```dart
+LinearProgressIndicator({
+  Key? key,
+  double? value, // 进度值（null 则为不确定模式）
+  Color? backgroundColor, // 背景色
+  Animation<Color>? valueColor, // 进度颜色动画
+  Color? color, // 进度颜色（简化设置，Flutter 2.5+）
+  double? minHeight, // 最小高度（默认 4.0）
+  String? semanticsLabel, // 无障碍标签
+  String? semanticsValue, // 无障碍值描述
+})
+```
+
+
+## 属性
+| 属性名            | 类型                     | 说明                                                                 |
+|-------------------|--------------------------|----------------------------------------------------------------------|
+| `value`           | `double?`                | 进度值（0.0~1.0），null 表示不确定模式                                |
+| `backgroundColor` | `Color?`                 | 进度条背景颜色，默认透明灰色                                          |
+| `valueColor`      | `Animation<Color>?`      | 进度颜色的动画对象（如 `AlwaysStoppedAnimation(Colors.red)`）         |
+| `color`           | `Color?`                 | 进度颜色（Flutter 2.5+ 简化版，自动包裹为动画）                        |
+| `minHeight`       | `double?`                | 进度条最小高度（默认 4.0），受父容器约束影响                          |
+| `semanticsLabel`  | `String?`                | 无障碍标签（用于屏幕阅读器）                                         |
+| `semanticsValue`  | `String?`                | 无障碍值描述（如“60%”）                                              |
+
+
+### 关键属性详解：
+- `value`: 核心参数，决定进度条模式。不确定模式下动画消耗资源较多，需谨慎使用。
+- `minHeight`: 影响视觉权重，值过小(如\<2.0)可能导致触摸区域不足，建议根据设计系统调整。
+- `valueColor`与`color`: 优先使用`color`简化设置，复杂动画(如渐变)需通过`valueColor`自定义`Animation`对象。
