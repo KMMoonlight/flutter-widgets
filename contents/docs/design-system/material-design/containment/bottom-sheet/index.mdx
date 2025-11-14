@@ -1,0 +1,239 @@
+---
+title: BottomSheet
+description: 用于从屏幕底部向上滑出的面板组件
+---
+
+`BottomSheet`是Flutter中用于从屏幕底部向上滑出的面板组件，常用于显示辅助内容、选项菜单或详细操作。它提供了一种非侵入式的交互方式，不会完全打断用户当前操作流程。
+
+![](https://docs.flutter.dev/assets/images/docs/widget-catalog/material-3-bottom-sheet.png)
+
+### 使用场景
+- 设置选项: 显示应用的设置或配置选项
+- 内容预览: 快速预览图片、文件等内容
+- 操作菜单: 提供针对特定项目的操作选项
+- 表单输入: 收集用户输入信息而不跳转页面
+
+
+## 示例
+### 基础BottomSheet
+```dart
+// 简单的内容展示面板
+void showBasicBottomSheet(BuildContext context) {
+  showModalBottomSheet(
+    context: context,
+    builder: (BuildContext context) {
+      return Container(
+        height: 200,
+        child: Column(
+          children: [
+            ListTile(
+              leading: Icon(Icons.share),
+              title: Text('分享'),
+              onTap: () {
+                Navigator.pop(context);
+                // 执行分享操作
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.save),
+              title: Text('保存'),
+              onTap: () {
+                Navigator.pop(context);
+                // 执行保存操作
+              },
+            ),
+          ],
+        ),
+      );
+    },
+  );
+}
+```
+
+
+### 可交互的BottomSheet
+```dart
+// 包含表单输入的复杂面板
+void showInteractiveBottomSheet(BuildContext context) {
+  TextEditingController controller = TextEditingController();
+  
+  showModalBottomSheet(
+    context: context,
+    isScrollControlled: true, // 允许滚动控制
+    builder: (BuildContext context) {
+      return Padding(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).viewInsets.bottom,
+        ),
+        child: Container(
+          padding: EdgeInsets.all(16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: controller,
+                decoration: InputDecoration(
+                  labelText: '输入备注',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              SizedBox(height: 16),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: Text('取消'),
+                  ),
+                  SizedBox(width: 8),
+                  ElevatedButton(
+                    onPressed: () {
+                      // 处理输入数据
+                      String remark = controller.text;
+                      Navigator.pop(context);
+                    },
+                    child: Text('确认'),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      );
+    },
+  );
+}
+```
+
+
+### 自定义主题的BottomSheet
+```dart
+// 应用自定义样式的面板
+void showThemedBottomSheet(BuildContext context) {
+  showModalBottomSheet(
+    context: context,
+    backgroundColor: Colors.transparent, // 透明背景用于自定义样式
+    builder: (BuildContext context) {
+      return Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(20),
+            topRight: Radius.circular(20),
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black26,
+              blurRadius: 10,
+              offset: Offset(0, -2),
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              height: 4,
+              width: 40,
+              margin: EdgeInsets.symmetric(vertical: 8),
+              decoration: BoxDecoration(
+                color: Colors.grey[300],
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            ListTile(
+              leading: Icon(Icons.photo, color: Colors.blue),
+              title: Text('选择照片'),
+              onTap: () => Navigator.pop(context),
+            ),
+            ListTile(
+              leading: Icon(Icons.camera_alt, color: Colors.green),
+              title: Text('拍照'),
+              onTap: () => Navigator.pop(context),
+            ),
+            SizedBox(height: 16),
+          ],
+        ),
+      );
+    },
+  );
+}
+```
+
+## 注意点
+### 常见问题
+1. 键盘遮挡: 当`BottomSheet`包含输入框时，键盘可能会遮挡内容
+  - 解决方案: 使用`isScrollControlled: true`并调整`padding`
+2. 性能问题: 复杂内容可能导致动画卡顿
+  - 优化建议: 避免在`BottomSheet`中嵌套过深的`widget`树
+3. 手势冲突: 与页面其他手势产生冲突
+  - 处理方法: 合理设置`BarrierColor`和手势识别
+
+### 优化技巧
+- 使用`mainAxisSize: MainAxisSize.min`让内容自适应高度
+- 为长内容启用滚动控制(`isScrollControlled: true`)
+- 考虑使用`PersistentBottomSheet`实现持久化显示
+
+### 最佳实践
+- 保持内容简洁，避免过度复杂的设计
+- 提供明确的关闭方式(点击外部或取消按钮)
+- 测试在不同屏幕尺寸下的显示效果
+- 考虑无障碍访问需求
+
+
+## 构造函数
+```dart
+static Future<T?> showModalBottomSheet<T>({
+  required BuildContext context,
+  required WidgetBuilder builder,
+  Color? backgroundColor,
+  double? elevation,
+  ShapeBorder? shape,
+  Clip? clipBehavior,
+  BoxConstraints? constraints,
+  Color? barrierColor,
+  bool isScrollControlled = false,
+  bool useRootNavigator = false,
+  bool isDismissible = true,
+  bool enableDrag = true,
+  RouteSettings? routeSettings,
+  AnimationController? transitionAnimationController,
+})
+```
+
+
+## 属性
+| 属性名 | 属性类型 | 说明 |
+|--------|----------|------|
+| backgroundColor | Color? | 底部面板的背景颜色 |
+| elevation | double? | 面板的阴影高度，控制立体效果 |
+| shape | ShapeBorder? | 面板的形状定义，支持圆角等效果 |
+| clipBehavior | Clip? | 内容裁剪行为，默认为 Clip.none |
+| constraints | BoxConstraints? | 面板的尺寸约束条件 |
+| barrierColor | Color? | 背景遮罩层的颜色 |
+| isScrollControlled | bool | 是否允许滚动控制，影响面板高度 |
+| isDismissible | bool | 是否允许通过点击外部关闭面板 |
+| enableDrag | bool | 是否允许通过拖拽手势关闭面板 |
+
+
+### 关键属性详解
+- `isScrollControlled(bool)`
+  - 作用: 控制面板是否可滚动以及最大高度
+  - 重要值: 
+    - `false`: 面板高度自适应内容(默认)
+    - `true`: 面板可占据大部分屏幕，支持滚动
+  - 使用场景: 当内容较长或需要输入时设置为`true`
+
+- `isDismissible(bool)`
+  - 作用: 控制是否允许用户通过点击背景遮罩关闭面板
+  - 默认值: `true`(允许关闭)
+  - 注意事项: 对于重要操作，建议设置为`false`强制用户明确选择
+
+- `enableDrag(bool)`
+  - 作用: 控制是否允许通过向下拖拽手势关闭面板
+  - 交互优化: 结合拖拽反馈提供更好的用户体验
+  - 兼容性: 需要与平台手势规范保持一致
+
+- `backgroundColor(Color?)`
+  - 设计建议: 使用`Theme.of(context).bottomSheetTheme.backgroundColor`保持主题一致
+  - 透明效果: 设置为`Colors.transparent`可实现自定义背景样式
