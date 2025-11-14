@@ -1,0 +1,138 @@
+---
+title: TabBar
+description: 用于实现标签页导航的核心组件，通常与TabBarView配合使用
+---
+
+`TabBar`是Flutter中用于实现标签页导航的核心组件，通常与`TabBarView`配合使用，通过水平排列的标签按钮管理内容切换。其核
+心逻辑基于`TabController`，通过索引同步标签和内容区域的选中状态，适用于需要分模块展示信息的界面(如设置页、新闻分类)。
+
+![](https://docs.flutter.dev/assets/images/docs/widget-catalog/material-3-tab-bar.png)
+
+### 使用场景
+- 内容分类导航: 例如新闻应用的“热点/科技/体育”标签切换。
+- 模块化界面: 如用户个人中心的“订单/收藏/地址”管理。
+- 数据筛选: 在电商应用中通过标签筛选商品类别。
+
+
+## 示例
+### 基础标签栏
+```dart
+import 'package:flutter/material.dart';
+
+class BasicTabBar extends StatelessWidget {
+  const BasicTabBar({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return DefaultTabController(
+      length: 3, // 标签数量
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('新闻分类'),
+          bottom: const TabBar(
+            tabs: [
+              Tab(text: '热点'),
+              Tab(text: '科技'),
+              Tab(text: '体育'),
+            ],
+          ),
+        ),
+        body: const TabBarView(
+          children: [
+            Center(child: Text('热点内容区域')),
+            Center(child: Text('科技内容区域')),
+            Center(child: Text('体育内容区域')),
+          ],
+        ),
+      ),
+    );
+  }
+}
+```
+
+### 自定义标签样式与交互
+```dart
+TabBar(
+  tabs: const [
+    Tab(icon: Icon(Icons.home), text: '首页'),
+    Tab(icon: Icon(Icons.settings), text: '设置'),
+  ],
+  indicatorColor: Colors.blue, // 指示器颜色
+  labelColor: Colors.red, // 选中标签颜色
+  unselectedLabelColor: Colors.grey, // 未选中标签颜色
+  onTap: (index) {
+    // 标签点击回调（需配合自定义 TabController 使用）
+    debugPrint('切换到标签: $index');
+  },
+)
+```
+
+### 动态生成标签
+```dart
+TabBar(
+  tabs: const [
+    Tab(icon: Icon(Icons.home), text: '首页'),
+    Tab(icon: Icon(Icons.settings), text: '设置'),
+  ],
+  indicatorColor: Colors.blue, // 指示器颜色
+  labelColor: Colors.red, // 选中标签颜色
+  unselectedLabelColor: Colors.grey, // 未选中标签颜色
+  onTap: (index) {
+    // 标签点击回调（需配合自定义 TabController 使用）
+    debugPrint('切换到标签: $index');
+  },
+)
+```
+
+
+## 注意点
+- 常见问题与解决方案
+  - 标签数量不匹配错误: `TabBar`的`tabs`数量必须与`TabBarView`的`children`数量一致，否则会抛出"Inconsistent TabBar and TabBarView lengths"异常。
+  - 控制器未初始化: 若使用自定义`TabController`，需确保其`length`参数与标签数一致，并在`dispose()`中释放资源。
+  - 横向空间不足: 标签过多时默认压缩显示，建议设置`isScrollable: true`启用滚动模式。
+
+- 性能优化技巧
+  - 对复杂内容的`TabBarView`子项使用`AutomaticKeepAliveClientMixin`避免切换时重复渲染。
+  - 动态生成标签时避免在`build()`中直接创建列表，应提前初始化数据以减少重建开销。
+
+- 最佳实践
+  - 优先使用`DefaultTabController`简化状态管理，复杂场景(如异步数据加载)再改用自定义`TabController`。
+  - 通过`indicatorWeight`和`indicatorPadding`微调指示器样式以适配设计规范。
+
+## 构造函数
+```dart
+const TabBar({
+  Key? key,
+  required this.tabs, // 标签列表（必填）
+  this.controller, // 自定义控制器（可选）
+  this.isScrollable = false, // 是否可滚动
+  this.indicatorColor, // 指示器颜色
+  this.indicatorWeight = 2.0, // 指示器厚度
+  this.indicatorPadding = EdgeInsets.zero, // 指示器内边距
+  this.labelColor, // 选中标签颜色
+  this.unselectedLabelColor, // 未选中标签颜色
+  // ... 其他参数见属性表格
+})
+```
+
+## 属性
+| 属性名                 | 属性类型               | 说明                                                                 |
+|----------------------|----------------------|--------------------------------------------------------------------|
+| `tabs`               | `List<Widget>`       | **必填** 标签列表，通常包含 Tab 组件                                  |
+| `controller`         | `TabController?`     | 标签控制器，未设置时使用 DefaultTabController                        |
+| `isScrollable`       | `bool`               | 是否允许横向滚动（标签过多时设为 true）                               |
+| `indicatorColor`     | `Color?`             | 底部指示器颜色                                                        |
+| `indicatorWeight`    | `double`             | 指示器厚度（默认 2.0）                                               |
+| `indicatorPadding`   | `EdgeInsetsGeometry` | 指示器与标签的间距                                                    |
+| `labelColor`         | `Color?`             | 选中状态标签的文字/图标颜色                                           |
+| `unselectedLabelColor`| `Color?`            | 未选中状态标签的颜色                                                  |
+| `labelStyle`         | `TextStyle?`         | 选中标签的文本样式                                                    |
+| `unselectedLabelStyle`| `TextStyle?`        | 未选中标签的文本样式                                                  |
+| `onTap`              | `ValueChanged<int>?` | 标签点击回调（需自定义 controller 时生效）                           |
+
+
+### 关键属性详解
+- `isScrollable`: 当标签总宽度超过屏幕宽度时，必须设置为true以避免布局溢出错误。
+- `indicatorPadding`: 通过调整`EdgeInsets.only(top: 10)`等值可精确控制指示器位置。
+- `controller`: 自定义控制器可用于实现异步切换、动态修改标签数量等高级功能。
+
