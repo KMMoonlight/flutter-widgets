@@ -1,0 +1,156 @@
+---
+title: Extended FloatingActionButton
+description: FloatingActionButton的扩展版本
+---
+
+`Extended FloatingActionButton`是Flutter中`FloatingActionButton`的扩展版本，提供了更丰富的布局选项，特别适合需要显示图标和文本组合的场景。它在标准`FloatingActionButton`的基础上增加了水平排列图标和标签的能力，使按钮功能更加明确。
+
+### 使用场景
+- 表单提交操作: 带有"保存"、"提交"等明确标签的按钮
+- 主要功能入口: 应用中的核心操作，如"新建项目"、"发布内容"
+- 多步骤流程: 需要明确指示下一步操作的场景
+- 数据操作: 如"导出数据"、"同步信息"等需要明确说明的操作
+
+
+## 示例
+### 基础使用，创建笔记按钮
+```dart
+ExtendedFloatingActionButton(
+  icon: Icon(Icons.note_add),
+  label: Text('新建笔记'),
+  onPressed: () {
+    // 处理新建笔记逻辑
+    print('创建新笔记');
+  },
+  backgroundColor: Colors.blue,
+  foregroundColor: Colors.white,
+)
+```
+
+### 带主题适配的提交按钮
+```dart
+ExtendedFloatingActionButton(
+  icon: Icon(Icons.check),
+  label: Text('提交审核'),
+  onPressed: _isLoading ? null : _submitForm,
+  // 根据加载状态改变样式
+  backgroundColor: _isLoading ? Colors.grey : Theme.of(context).primaryColor,
+  extendedPadding: EdgeInsets.symmetric(horizontal: 20),
+  shape: RoundedRectangleBorder(
+    borderRadius: BorderRadius.circular(12),
+  ),
+)
+```
+
+### 动态交互按钮
+```dart
+bool _isExpanded = false;
+
+@override
+Widget build(BuildContext context) {
+  return AnimatedContainer(
+    duration: Duration(milliseconds: 300),
+    child: ExtendedFloatingActionButton(
+      icon: _isExpanded ? Icon(Icons.close) : Icon(Icons.add),
+      label: _isExpanded ? Text('收起选项') : Text('展开选项'),
+      onPressed: () {
+        setState(() {
+          _isExpanded = !_isExpanded;
+        });
+      },
+      // 根据展开状态调整样式
+      backgroundColor: _isExpanded ? Colors.red : Colors.green,
+    ),
+  );
+}
+```
+
+
+## 注意点
+### 常见问题
+- 布局溢出: 当标签文本过长时可能导致布局问题，建议控制文本长度或使用`tooltip`属性
+- 响应式设计: 在小屏设备上考虑使用标准`FloatingActionButton`替代
+- 无障碍支持: 确保为视障用户提供适当的语义标签
+
+### 优化技巧
+- 使用`heroTag`确保在页面转换时`FloatingActionButton`动画正确工作
+- 考虑使用`ExtendedFloatingActionButton.locations`进行多按钮布局管理
+- 对于复杂交互，可以结合`ScaffoldMessenger`显示操作结果
+
+
+### 最佳实践
+```dart
+// 推荐：使用常量定义标签文本，便于国际化
+ExtendedFloatingActionButton(
+  icon: Icon(Icons.save),
+  label: Text(AppStrings.saveButton),
+  heroTag: 'unique_save_button', // 避免hero动画冲突
+  tooltip: '保存当前内容', // 提供无障碍支持
+  onPressed: _canSave ? _saveData : null,
+)
+```
+
+## 构造函数
+```dart
+ExtendedFloatingActionButton({
+  Key? key,
+  required Widget icon,           // 必需：左侧图标
+  required Widget label,          // 必需：右侧文本标签
+  VoidCallback? onPressed,        // 点击回调函数
+  String? tooltip,               // 长按提示文本
+  Color? backgroundColor,         // 背景颜色
+  Color? foregroundColor,         // 前景颜色（图标和文字颜色）
+  Color? focusColor,             // 获取焦点时的颜色
+  Color? hoverColor,             // 悬停时的颜色
+  Color? splashColor,            // 水波纹颜色
+  double? elevation,              // 阴影高度
+  double? hoverElevation,        // 悬停时的阴影高度
+  double? focusElevation,        // 焦点时的阴影高度
+  double? highlightElevation,    // 按下时的阴影高度
+  double? disabledElevation,     // 禁用时的阴影高度
+  ShapeBorder? shape,            // 按钮形状
+  EdgeInsetsGeometry? extendedPadding, // 内边距
+  MaterialTapTargetSize? materialTapTargetSize, // 点击目标大小
+  bool? isExtended,              // 是否扩展显示（通常为true）
+  bool? autofocus,               // 是否自动获取焦点
+  Object? heroTag,               // Hero动画标签
+})
+```
+
+
+## 属性
+| 属性名 | 属性类型 | 说明 |
+|--------|----------|------|
+| icon | Widget | 按钮左侧显示的图标（必需） |
+| label | Widget | 按钮右侧显示的文本标签（必需） |
+| onPressed | VoidCallback? | 按钮点击事件回调函数 |
+| tooltip | String? | 长按按钮时显示的提示文本 |
+| backgroundColor | Color? | 按钮背景颜色 |
+| foregroundColor | Color? | 图标和文本的前景颜色 |
+| elevation | double? | 正常状态下的阴影高度 |
+| shape | ShapeBorder? | 按钮的形状定义 |
+| extendedPadding | EdgeInsetsGeometry? | 按钮内部的内边距 |
+| heroTag | Object? | Hero动画的标识符 |
+
+
+
+### 关键属性详解
+- `icon`和`label`(必需属性)
+  - 这是`ExtendedFloatingActionButton`的核心特性，允许同时显示图标和文本
+  - 建议使用有意义的图标和清晰的文本标签组合
+  - 示例: `icon: Icon(Icons.send), label: Text('发送消息')`
+
+- `onPressed`(核心交互)
+  - 控制按钮的交互逻辑，设置为`null`时按钮处于禁用状态
+  - 在实际应用中，通常需要结合业务逻辑进行状态管理
+  - 禁用状态示例: `onPressed: _isLoading ? null : _submitData`
+
+- `heroTag`(动画控制)
+  - 用于页面转场时的`Hero`动画，确保每个`ExtendedFloatingActionButton`有唯一标识
+  - 在同一页面有多个`FloatingActionButton`时必须设置
+  - 推荐使用描述性的字符串: `heroTag: 'create_post_button'`
+
+- `extendedPadding`(布局控制)
+  - 控制图标和标签之间的间距以及整体内边距
+  - 默认值通常足够，但在特殊布局需求时可以自定义
+  - 示例: `extendedPadding: EdgeInsets.symmetric(horizontal: 24)`
