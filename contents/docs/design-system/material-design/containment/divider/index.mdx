@@ -1,0 +1,98 @@
+---
+title: Divider
+description: 用于在界面中绘制一条水平或垂直的分隔线
+---
+
+`Divider`是Flutter中的一个基础UI组件，用于在界面中绘制一条水平或垂直的分隔线，通常用于视觉上分隔内容区块(如列表项、卡片或表单字段)。其核心逻辑是通过简单的几何绘制实现分隔效果，支持自定义高度、颜色和
+边距，确保在不同布局中保持清晰的可读性。`Divider`是一个无状态组件，仅依赖属性配置，不涉及复杂交互逻辑。
+
+![](https://docs.flutter.dev/assets/images/docs/widget-catalog/material-3-divider.png)
+
+
+### 使用场景
+- 列表分隔: 在`ListView`或`Column`中隔开多个列表项，避免视觉拥挤。
+- 内容分组: 在设置页面或表单中将不同功能模块(如“账户设置”与“隐私设置”)用分隔线区分。
+- 布局美化: 作为装饰性元素，增强界面的层次感和结构清晰度。
+- 响应式设计: 通过调整边距适配横竖屏或不同屏幕尺寸。
+
+
+## 示例
+### 基础列表分隔
+```dart
+ListView(
+  children: [
+    ListTile(title: Text('项目 1')),
+    Divider(), // 默认分隔线
+    ListTile(title: Text('项目 2')),
+    Divider(height: 2, color: Colors.grey), // 自定义高度和颜色
+    ListTile(title: Text('项目 3')),
+  ],
+)
+```
+
+
+### 垂直分隔线
+```dart
+Row(
+  children: [
+    Expanded(child: Text('左侧内容')),
+    VerticalDivider(width: 2, indent: 10, endIndent: 10), // 垂直分隔，带上下边距
+    Expanded(child: Text('右侧内容')),
+  ],
+)
+```
+
+
+### 适配主题的分隔线
+```dart
+Theme(
+  data: ThemeData(dividerTheme: DividerThemeData(color: Colors.blue, thickness: 1.5)),
+  child: Column(
+    children: [
+      Text('区块 A'),
+      Divider(), // 继承主题的蓝色粗线
+      Text('区块 B'),
+    ],
+  ),
+)
+```
+
+
+## 注意点
+### 常见问题与优化技巧
+- 性能瓶颈: `Divider`本身极轻量，但过度使用(如超长列表每项都加分隔线)可能增加渲染负担。建议对长列表使用`ListView.separated`按需构建分隔项。
+- 兼容性警告: 
+  - 在`VerticalDivider`中，父容器必须明确高度(如用`SizedBox`包裹)，否则可能无法显示。
+  - 旧版Flutter(\<2.0)中`indent/endIndent`属性需配合`height`使用，否则无效。
+- 最佳实践: 
+  - 通过`thickness`控制线粗而非用`height`模拟，避免布局计算错误。
+  - 在暗色主题下使用`Color.withOpacity`调整分隔线透明度，增强可访问性。
+
+
+## 构造函数
+```dart
+const Divider({
+  Key? key,
+  double? height,      // 分隔线区域总高度（含上下边距），默认为 16.0
+  double? thickness,   // 线条实际粗细，默认为 1.0
+  double? indent,      // 左侧起始边距（水平分隔线）或顶部起始边距（垂直分隔线）
+  double? endIndent,   // 右侧结束边距（水平）或底部结束边距（垂直）
+  Color? color,        // 线条颜色，默认为 ThemeData.dividerColor
+})
+```
+
+
+## 属性
+| 属性名       | 属性类型     | 说明                                                                 |
+|--------------|--------------|----------------------------------------------------------------------|
+| `height`     | `double?`    | 分隔线占据的垂直空间（含空白），为 null 时默认为 16.0。             |
+| `thickness`  | `double?`    | 线条的物理粗细，为 null 时默认为 1.0。                              |
+| `indent`     | `double?`    | 线条起始侧边距，水平分隔线控制左侧空距，垂直分隔线控制顶部空距。     |
+| `endIndent`  | `double?`    | 线条结束侧边距，水平分隔线控制右侧空距，垂直分隔线控制底部空距。     |
+| `color`      | `Color?`     | 线条颜色，未设置时继承主题的 `dividerColor`。                       |
+
+
+### 关键属性解析
+- `height`与`thickness`的区别: `height`定义整个分隔线组件的高度(包括线条和上下空白区域)，而`thickness`仅控制线条本身的粗细。例如设置`height: 20, thickness: 2`时，线条上下各有9逻辑像素的空白。
+- `indent/endIndent`的适配性: 这两个属性常用于实现响应式布局，例如在宽屏中通过增大`indent`使分隔线不与边缘对齐，提升视觉平衡。
+- `color`的主题集成：优先使用主题颜色而非硬编码，确保暗色/亮色模式切换时自动适配，提升代码可维护性。
