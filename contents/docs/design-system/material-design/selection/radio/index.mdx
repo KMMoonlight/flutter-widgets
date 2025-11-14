@@ -1,0 +1,210 @@
+---
+title: Radio
+description: 用于实现单选按钮功能的组件
+---
+
+`Radio`是Flutter中的一个基础UI组件，用于实现单选按钮功能。它允许用户从一组互斥选项中选择一个选项。`Radio`组件基于Material Design风格，通常与`RadioListTile`或独立使用结合，以提供清晰的视觉反馈。
+
+- **主要用途**: 在表单、设置页面或任何需要用户做出单一选择的场景中，提供单选交互。
+- **核心逻辑**: `Radio`通过`value`和`groupValue`属性管理选中状态。当`value`与`groupValue`匹配时，按钮显示为选中状态；用户点击时，会触发`onChanged`回调更新`groupValue`，实现状态切换。
+
+![](https://docs.flutter.dev/assets/images/docs/widget-catalog/material-3-radio-button.png)
+
+
+### 使用场景
+- 表单中的性别选择(如“男/女”)。
+- 设置页面的主题切换(如“亮色/暗色”)。
+- 调查问卷中的选项选择(如“是/否/不确定”)。
+
+## 示例
+### 基础单选按钮
+```dart
+import 'package:flutter/material.dart';
+
+void main() => runApp(MyApp());
+
+class MyApp extends StatefulWidget {
+  @override
+  _MyAppState createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  String _selectedFruit = 'apple'; // 初始选中值
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: Scaffold(
+        appBar: AppBar(title: Text('基础 Radio 示例')),
+        body: Column(
+          children: [
+            Radio<String>(
+              value: 'apple',
+              groupValue: _selectedFruit,
+              onChanged: (String? value) {
+                setState(() {
+                  _selectedFruit = value!;
+                });
+              },
+            ),
+            Text('苹果'),
+            Radio<String>(
+              value: 'banana',
+              groupValue: _selectedFruit,
+              onChanged: (String? value) {
+                setState(() {
+                  _selectedFruit = value!;
+                });
+              },
+            ),
+            Text('香蕉'),
+          ],
+        ),
+      ),
+    );
+  }
+}
+```
+
+
+### 结合`RadioListTile`的交互逻辑
+```dart
+import 'package:flutter/material.dart';
+
+void main() => runApp(MyApp());
+
+class MyApp extends StatefulWidget {
+  @override
+  _MyAppState createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  int _selectedOption = 1; // 用数字管理选项
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: Scaffold(
+        appBar: AppBar(title: Text('RadioListTile 示例')),
+        body: ListView(
+          children: [
+            RadioListTile<int>(
+              title: Text('选项 1'),
+              value: 1,
+              groupValue: _selectedOption,
+              onChanged: (int? value) {
+                setState(() {
+                  _selectedOption = value!;
+                });
+              },
+            ),
+            RadioListTile<int>(
+              title: Text('选项 2'),
+              value: 2,
+              groupValue: _selectedOption,
+              onChanged: (int? value) {
+                setState(() {
+                  _selectedOption = value!;
+                });
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+```
+
+### 适配主题的自定义`Radio`
+```dart
+import 'package:flutter/material.dart';
+
+void main() => runApp(MyApp());
+
+class MyApp extends StatefulWidget {
+  @override
+  _MyAppState createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  bool _isSelected = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      theme: ThemeData(primarySwatch: Colors.blue),
+      home: Scaffold(
+        body: Center(
+          child: Radio<bool>(
+            value: true,
+            groupValue: _isSelected,
+            onChanged: (bool? value) {
+              setState(() {
+                _isSelected = value!;
+              });
+            },
+            activeColor: Colors.green, // 自定义选中颜色
+            fillColor: MaterialStateProperty.all(Colors.orange), // 动态颜色
+          ),
+        ),
+      ),
+    );
+  }
+}
+```
+
+
+## 注意点
+### 常见问题
+- **状态管理错误**: 忘记在`onChanged`中调用`setState`会导致UI不更新。确保在状态改变时触发重建。
+- **类型不匹配**: `value`和`groupValue`必须为同一类型(如均为`String`或`int`)，否则可能引发运行时错误。
+- **无障碍支持**: 单独使用`Radio`时，需手动添加语义标签(如`Semantics`组件)，而`RadioListTile`已内置支持。
+
+### 优化技巧
+- 性能: 在选项较多时(如超过10个)，避免直接使用多个`Radio`组件，改用`ListView.builder`或分页加载。
+- 用户体验: 优先使用`RadioListTile`，它提供更大的点击区域和集成标签，减少误操作。
+
+### 最佳实践
+- 将`Radio`组包裹在`Form`中，结合`FormField`实现验证逻辑。
+- 为`onChanged`添加空值检查(如`onChanged: enabled ? (value) {...} : null`)，以支持禁用状态。
+
+
+## 构造函数
+```dart
+Radio<T>({
+  Key? key,
+  required T? value,
+  required T? groupValue,
+  required ValueChanged<T?>? onChanged,
+  MouseCursor? mouseCursor,
+  bool toggleable = false,
+  Color? activeColor,
+  Color? focusColor,
+  Color? hoverColor,
+  MaterialTapTargetSize? materialTapTargetSize,
+  VisualDensity? visualDensity,
+  FocusNode? focusNode,
+  bool autofocus = false,
+})
+```
+
+
+## 属性
+| 属性名                  | 属性类型                  | 说明                                                                 |
+|-------------------------|---------------------------|----------------------------------------------------------------------|
+| `value`                 | `T?`                      | 当前选项的值，必须与 `groupValue` 类型一致。                         |
+| `groupValue`            | `T?`                      | 组当前选中的值，用于判断是否选中。                                   |
+| `onChanged`             | `ValueChanged<T?>?`       | 状态改变时的回调；为 `null` 时按钮禁用。                             |
+| `toggleable`            | `bool`                    | 是否允许取消选中（默认 `false`）。                                   |
+| `activeColor`           | `Color?`                  | 选中状态的颜色（默认使用主题色）。                                   |
+| `focusColor`            | `Color?`                  | 获取焦点时的颜色。                                                   |
+| `hoverColor`            | `Color?`                  | 鼠标悬停时的颜色。                                                   |
+| `materialTapTargetSize` | `MaterialTapTargetSize?`  | 点击目标的大小（如调整为更易点击）。                                 |
+| `visualDensity`         | `VisualDensity?`          | 组件的视觉密度（影响尺寸紧凑性）。                                   |
+
+
+### 关键属性详解
+- `value`和`groupValue`: 这是`Radio`的核心属性，通过比较两者决定选中状态。务必确保类型匹配，例如同时使用`int`或`String`。
+- `onChanged`: 必须为非空回调才能启用交互。禁用时可设置为null，此时按钮显示为灰色。
+- `toggleable`: 设置为true时，用户可再次点击已选中的按钮取消选择(适用于“无选择”场景)。
