@@ -1,0 +1,115 @@
+---
+title: TimePicker
+description: 用于选择时间的核心组件
+---
+
+`TimePicker`是Flutter中用于选择时间的核心组件，通常通过`showTimePicker`函数触发模态对话框。它允许用户通过滚轮或数字输入选择小时和分钟，适用于需要精确时间设
+置的场景(如闹钟、日程安排)。组件的核心逻辑基于`TimeOfDay`对象，提供12/24小时制支持，并自动适配当前设备的本地化格式。
+
+![](https://docs.flutter.dev/assets/images/docs/widget-catalog/material-3-time-picker.png)
+
+### 使用场景
+- 设置闹钟或计时器的时间。
+- 预约系统中选择具体时间点。
+- 表单中需要用户输入时间(如打卡记录)。
+
+
+## 示例
+### 基础时间选择
+```dart
+ElevatedButton(
+  onPressed: () async {
+    final TimeOfDay? selectedTime = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.now(),
+    );
+    if (selectedTime != null) {
+      print("选择的时间: ${selectedTime.format(context)}");
+    }
+  },
+  child: Text("选择时间"),
+)
+```
+
+
+### 自定义初始时间与交互逻辑
+```dart
+TimeOfDay _currentTime = TimeOfDay(hour: 14, minute: 30); // 初始下午2:30
+
+void _selectTime() async {
+  final TimeOfDay? picked = await showTimePicker(
+    context: context,
+    initialTime: _currentTime,
+    builder: (context, child) {
+      return MediaQuery(
+        data: MediaQuery.of(context).copyWith(alwaysUse24HourFormat: true), // 强制24小时制
+        child: child!,
+      );
+    },
+  );
+  if (picked != null && picked != _currentTime) {
+    setState(() {
+      _currentTime = picked; // 更新状态
+    });
+  }
+}
+```
+
+
+### 适配主题与高级配置
+```dart
+showTimePicker(
+  context: context,
+  initialTime: TimeOfDay.now(),
+  builder: (context, child) => Theme(
+    data: ThemeData.light().copyWith(
+      colorScheme: ColorScheme.light(primary: Colors.orange), // 自定义主题色
+      buttonTheme: ButtonThemeData(textTheme: ButtonTextTheme.primary),
+    ),
+    child: child!,
+  ),
+  helpText: '会议时间选择', // 对话框标题
+  cancelText: '取消',      // 自定义取消按钮文本
+  confirmText: '确认',     // 自定义确认按钮文本
+);
+```
+
+
+## 注意点
+### 常见问题
+- 性能瓶颈: 在低端设备上，频繁调用`showTimePicker`可能导致页面卡顿，建议通过状态管理减少重建。
+- 兼容性警告: 部分旧版本Android设备可能不支持Material Design时间选择器，需测试备用方案。
+
+### 优化技巧
+- 使用`initialTime`预填常用时间(如当前时间)提升用户体验。
+- 通过`builder`参数自定义主题，确保与应用整体风格一致。
+
+### 最佳实践
+- 始终检查返回值为null的情况(用户取消操作)。
+- 在国际化应用中使用`TimeOfDay.format(context)`自动适配本地时间格式。
+
+
+## 构造函数
+`TimePicker`通过`showTimePicker`函数调用，其参数列表如下: 
+| 参数名 | 类型 | 必选/可选 | 描述 |
+|--------|------|-----------|------|
+| `context` | `BuildContext` | 必选 | 构建上下文，用于显示对话框。 |
+| `initialTime` | `TimeOfDay` | 必选 | 对话框打开时的初始时间。 |
+| `cancelText` | `String?` | 可选 | 自定义取消按钮的文本（默认依赖本地化）。 |
+| `confirmText` | `String?` | 可选 | 自定义确认按钮的文本。 |
+| `helpText` | `String?` | 可选 | 对话框顶部的辅助说明文本。 |
+| `builder` | `WidgetBuilder?` | 可选 | 自定义对话框的样式和主题。 |
+
+
+## 属性
+| 属性名 | 类型 | 说明 |
+|--------|------|------|
+| `hour` | `int` | 小时（0-23）。 |
+| `minute` | `int` | 分钟（0-59）。 |
+
+
+### 关键属性解释：
+- `hour`与`minute`: 
+  - 这两个属性共同定义具体时间，需通过`TimeOfDay(hour: 14, minute: 30)`构造对象。
+  - 注意: 在12小时制界面中，小时会自动转换为AM/PM格式显示，但底层存储仍为24小时制数值。
+  - 使用`format(context)`方法可自动根据设备设置格式化输出(如 "2:30 PM")。
