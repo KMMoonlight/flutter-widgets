@@ -1,0 +1,148 @@
+---
+title: Slider
+description: 允许用户通过滑动轨道上的滑块来选择一个连续的数值范围组件
+---
+
+`Slider`是Flutter提供的核心UI组件，允许用户通过滑动轨道上的滑块来选择一个连续的数值范围。其核心逻辑基于`value`(当前值)和`onChanged`回调(值变化时的响应)，支持自定义范围、步长和视觉样式。
+
+![](https://docs.flutter.dev/assets/images/docs/widget-catalog/material-3-slider.png)
+
+### 使用场景
+- 设置参数: 如音量、亮度、进度调节。
+- 数据过滤: 选择价格区间或日期范围。
+- 交互反馈: 实时调整参数并同步更新UI。
+
+
+## 示例
+### 基础数值选择
+```dart
+import 'package:flutter/material.dart';
+
+class BasicSliderExample extends StatefulWidget {
+  @override
+  _BasicSliderExampleState createState() => _BasicSliderExampleState();
+}
+
+class _BasicSliderExampleState extends State<BasicSliderExample> {
+  double _currentValue = 50.0;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Text('当前值: ${_currentValue.toStringAsFixed(1)}'),
+        Slider(
+          value: _currentValue,
+          min: 0.0,
+          max: 100.0,
+          onChanged: (double newValue) {
+            setState(() {
+              _currentValue = newValue;
+            });
+          },
+        ),
+      ],
+    );
+  }
+}
+```
+
+
+### 带步长和标签的`Slider`
+```dart
+Slider(
+  value: _currentValue,
+  min: 0.0,
+  max: 100.0,
+  divisions: 10, // 将范围分为 10 段（步长 10）
+  label: _currentValue.round().toString(), // 滑块上显示标签
+  onChanged: (double newValue) {
+    setState(() {
+      _currentValue = newValue;
+    });
+  },
+);
+```
+
+
+### 自定义样式和主题适配
+```dart
+SliderTheme(
+  data: SliderTheme.of(context).copyWith(
+    activeTrackColor: Colors.blueAccent,
+    inactiveTrackColor: Colors.grey,
+    thumbColor: Colors.blue,
+    overlayColor: Colors.blue.withOpacity(0.3),
+    trackHeight: 4.0,
+  ),
+  child: Slider(
+    value: _currentValue,
+    min: 0.0,
+    max: 100.0,
+    onChanged: (double newValue) {
+      setState(() {
+        _currentValue = newValue;
+      });
+    },
+  ),
+);
+```
+
+## 注意点
+### 常见问题
+- 性能瓶颈: 避免在`onChanged`中执行重计算(如网络请求)，否则会导致滑动卡顿。
+- 兼容性警告: 在低版本Flutter中，部分样式属性可能不支持，需测试目标平台。
+- 空值错误: 若`value`超出`min/max`范围，会抛出异常。
+
+### 优化技巧
+- 使用`divisions`限制步长，提升操作精度。
+- 对频繁更新的值使用`StatefulWidget`，确保UI实时响应。
+- 通过`SliderTheme`统一多`Slider`样式，减少代码重复。
+
+### 最佳实践
+- 始终提供视觉反馈(如标签或伴随文本)。
+- 在表单中结合`FormField`封装`Slider`，便于验证和提交。
+
+
+## 构造函数
+```dart
+Slider({
+  Key? key,
+  required double value,
+  required this.onChanged,
+  this.onChangeStart,
+  this.onChangeEnd,
+  double min = 0.0,
+  double max = 1.0,
+  int? divisions,
+  String? label,
+  Color? activeColor,
+  Color? inactiveColor,
+  Color? thumbColor,
+  MouseCursor? mouseCursor,
+  // 其他样式参数...
+})
+```
+
+
+## 属性
+| 属性名             | 属性类型               | 说明                                                                 |
+|---------------------|------------------------|----------------------------------------------------------------------|
+| `value`             | `double`               | **必需**，当前滑块的值。                                             |
+| `onChanged`         | `ValueChanged<double>` | **必需**，值变化时的回调函数。                                       |
+| `min`               | `double`               | 滑块最小值，默认为 0.0。                                             |
+| `max`               | `double`               | 滑块最大值，默认为 1.0。                                             |
+| `divisions`         | `int?`                 | 分段数量，用于限制步长（如设为 10，则值按步长变化）。                |
+| `label`             | `String?`              | 滑块上显示的标签文本（通常用于显示当前值）。                         |
+| `activeColor`       | `Color?`               | 滑块轨道激活部分（最小值到当前值）的颜色。                           |
+| `inactiveColor`     | `Color?`               | 滑块轨道未激活部分（当前值到最大值）的颜色。                         |
+| `thumbColor`        | `Color?`               | 滑块圆圈的颜色。                                                     |
+| `onChangeStart`     | `ValueChanged<double>?` | 滑动开始时的回调。                                                   |
+| `onChangeEnd`       | `ValueChanged<double>?` | 滑动结束时的回调。                                                   |
+
+
+### 关键属性解释
+- `value`与`onChanged`: 必须配合使用，确保`Slider`为受控组件(值由父组件管理)。
+- `divisions`: 关键功能属性，既能限制步长，也会在轨道上显示分段刻度。
+- `activeColor/inactiveColor`: 直接影响用户体验，建议根据主题对比度调整。
+
