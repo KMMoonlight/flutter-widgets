@@ -1,0 +1,178 @@
+---
+title: DatePicker
+description: 选择日期和时间的组件
+---
+
+`DatePicker`(日期选择器)是Flutter中用于选择日期和时间的内置组件，基于Material Design风格。它通过弹窗或内嵌式界面，帮助用户快速输入日期，支持年、月、日及时间的选择。核心逻
+辑是通过`showDatePicker`或`showTimePicker`函数触发对话框，并返回用户选择的`DateTime`对象。
+
+![](https://docs.flutter.dev/assets/images/docs/widget-catalog/material-3-date-picker.png)
+
+### 使用场景
+- 用户注册或表单填写(如生日、预约日期)。
+- 日历类应用(如日程安排、提醒功能)。
+- 数据筛选(如选择查询时间范围)。
+
+
+## 示例
+### 基础日期选择
+```dart
+import 'package:flutter/material.dart';
+
+class BasicDatePicker extends StatefulWidget {
+  @override
+  _BasicDatePickerState createState() => _BasicDatePickerState();
+}
+
+class _BasicDatePickerState extends State<BasicDatePicker> {
+  DateTime? _selectedDate;
+
+  Future<void> _selectDate() async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2030),
+    );
+    if (picked != null && picked != _selectedDate) {
+      setState(() {
+        _selectedDate = picked;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(_selectedDate == null
+                ? '未选择日期'
+                : '选中日期: ${_selectedDate!.toString().split(' ')[0]}'),
+            ElevatedButton(
+              onPressed: _selectDate,
+              child: Text('选择日期'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+```
+
+
+### 时间选择和日期结合
+```dart
+Future<void> _selectDateTime() async {
+  // 先选择日期
+  DateTime? date = await showDatePicker(
+    context: context,
+    initialDate: DateTime.now(),
+    firstDate: DateTime.now(),
+    lastDate: DateTime(2025),
+  );
+  if (date != null) {
+    // 再选择时间
+    TimeOfDay? time = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.now(),
+    );
+    if (time != null) {
+      setState(() {
+        _selectedDate = DateTime(
+          date.year,
+          date.month,
+          date.day,
+          time.hour,
+          time.minute,
+        );
+      });
+    }
+  }
+}
+```
+
+
+### 自定义主题与本地化
+```dart
+Future<void> _selectDateWithTheme() async {
+  final DateTime? picked = await showDatePicker(
+    context: context,
+    initialDate: DateTime.now(),
+    firstDate: DateTime(2020),
+    lastDate: DateTime(2025),
+    builder: (context, child) {
+      return Theme(
+        data: ThemeData.light().copyWith(
+          primaryColor: Colors.orange, // 主色调
+          colorScheme: ColorScheme.light(primary: Colors.orange),
+          buttonTheme: ButtonThemeData(textTheme: ButtonTextTheme.primary),
+        ),
+        child: child!,
+      );
+    },
+  );
+  // 处理选择结果...
+}
+```
+
+
+## 注意点
+### 常见问题
+- 性能瓶颈: 在频繁触发的场景(如列表项中嵌套`DatePicker`)可能引起卡顿，建议通过`StatefulWidget`隔离状态。
+- 兼容性警告: 
+  - 在iOS设备上需依赖`Cupertino`风格的日期选择器(需单独导入`cupertino_icons`)。
+  - 部分旧版本Flutter中`firstDate/lastDate`范围过大可能导致渲染异常。
+
+### 优化技巧
+- 使用`initialDate`预设合理默认值，减少用户操作步骤。
+- 通过`builder`参数自定义主题，确保与App设计风格一致。
+
+### 最佳实践
+- 始终校验返回的`DateTime`是否为null(用户可能取消选择)。
+- 对于国际化需求，使用`MaterialLocalizations.delegate`支持多语言。
+
+
+## 构造函数
+```dart
+Future<DateTime?> showDatePicker({
+  required BuildContext context,
+  required DateTime initialDate,      // 初始显示日期
+  required DateTime firstDate,        // 可选最早日期
+  required DateTime lastDate,         // 可选最晚日期
+  DatePickerEntryMode initialEntryMode = DatePickerEntryMode.calendar, // 初始模式（日历或输入框）
+  SelectableDayPredicate? selectableDayPredicate, // 自定义日期可用性校验
+  String? helpText,                   // 对话框标题文本
+  CancelText? cancelText,             // 取消按钮文本
+  ConfirmText? confirmText,           // 确认按钮文本
+  Locale? locale,                     // 本地化设置
+  bool useRootNavigator = true,       // 导航器行为
+  RouteSettings? routeSettings,
+  TextDirection? textDirection,
+  TransitionBuilder? builder,         // 自定义UI主题
+})
+```
+
+
+## 属性
+| 属性名                | 属性类型                  | 说明                                                                 |
+|----------------------|--------------------------|----------------------------------------------------------------------|
+| `initialDate`        | `DateTime`               | 弹窗初始显示的日期，通常设为当前日期或表单预设值。                   |
+| `firstDate`          | `DateTime`               | 用户可选择的最早日期，禁止选择此日期之前的日期。                     |
+| `lastDate`           | `DateTime`               | 用户可选择的最晚日期，禁止选择此日期之后的日期。                     |
+| `initialEntryMode`   | `DatePickerEntryMode`    | 初始界面模式，默认为日历（`calendar`），可选输入框（`input`）。       |
+| `selectableDayPredicate` | `SelectableDayPredicate` | 回调函数，用于禁用特定日期（如周末返回`false`则不可选）。           |
+
+
+### 关键属性解析：
+- `firstDate/lastDate`: 必须合理设置范围，避免用户选择无效日期(如过去日期用于未来预约)。
+- `selectableDayPredicate`: 可通过此属性实现业务逻辑限制(如仅允许选择工作日)。示例:
+```dart
+selectableDayPredicate: (DateTime day) {
+  // 禁用周末
+  return day.weekday != DateTime.saturday && day.weekday != DateTime.sunday;
+},
+```
