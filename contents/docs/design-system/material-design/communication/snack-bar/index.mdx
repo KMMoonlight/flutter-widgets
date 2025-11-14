@@ -1,0 +1,101 @@
+---
+title: SnackBar
+description: 用于显示短暂消息的轻量级组件
+---
+
+`SnackBar`是Flutter中用于显示短暂消息的轻量级组件，通常位于屏幕底部，用于向用户提供操作反馈(如成功提示、错误警告或撤销操作)。其核心逻辑是: 通过`ScaffoldMessenger`或`Scaffold`的上下文触发显示，自动在指定时间后消失，支持添加操作按钮。
+
+![](https://docs.flutter.dev/assets/images/docs/widget-catalog/material-3-snackbar.png)
+
+### 使用场景: 
+- 确认用户操作(如“已删除项目”)。
+- 提示错误或警告(如“网络连接失败”)。
+- 提供可交互的临时选项(如“撤销删除”)。
+
+
+## 示例
+### 基础消息提示
+```dart
+ScaffoldMessenger.of(context).showSnackBar(
+  SnackBar(
+    content: Text('操作成功！'),
+    duration: Duration(seconds: 2),
+  ),
+);
+```
+
+### 带操作按钮的交互提示
+```dart
+ScaffoldMessenger.of(context).showSnackBar(
+  SnackBar(
+    content: Text('项目已删除'),
+    duration: Duration(seconds: 4),
+    action: SnackBarAction(
+      label: '撤销',
+      onPressed: () {
+        // 执行撤销逻辑
+      },
+    ),
+  ),
+);
+```
+
+
+### 自定义样式与行为
+```dart
+ScaffoldMessenger.of(context).showSnackBar(
+  SnackBar(
+    content: Text('自定义样式'),
+    backgroundColor: Colors.blue,
+    behavior: SnackBarBehavior.floating, // 悬浮样式
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+    duration: Duration(seconds: 3),
+  ),
+);
+```
+
+
+## 注意点
+- 常见问题: 
+  - 上下文错误: 必须确保`context`来自`Scaffold`或`ScaffoldMessenger`，否则抛出`ScaffoldMessengerException`。
+  - 重叠显示: 默认新`SnackBar`会替换旧内容，需手动处理队列逻辑以实现连续提示。
+- 性能优化: 
+  - 避免频繁触发(如循环中调用)，可结合`debounce`逻辑减少渲染压力。
+  - 使用`ScaffoldMessenger`(而非弃用的`Scaffold.of`)确保在路由切换时仍能正确显示。
+- 最佳实践:
+  - 消息文本简洁明了，操作按钮标签需明确(如“重试”“取消”）。
+  - 测试不同屏幕尺寸下布局(如使用`behavior: SnackBarBehavior.floating`适配大屏）。
+
+
+## 构造函数
+```dart
+SnackBar({
+  Key? key,
+  required Widget content,          // 主要内容（通常为 Text）
+  Color? backgroundColor,           // 背景颜色
+  double? elevation,                // 阴影高度
+  ShapeBorder? shape,               // 形状（如圆角）
+  SnackBarBehavior? behavior,       // 行为（固定或悬浮）
+  Duration duration: Duration(seconds: 4), // 显示时长
+  SnackBarAction? action,           // 操作按钮
+})
+```
+
+
+
+## 属性
+| 属性名           | 类型                 | 说明                                                                 |
+|------------------|---------------------|----------------------------------------------------------------------|
+| `content`        | `Widget`            | **必需**，SnackBar 的内容（如文本或图标）。                         |
+| `duration`       | `Duration`          | 显示时长，默认 4 秒。                                               |
+| `action`         | `SnackBarAction?`   | 可选操作按钮，需指定标签和回调函数。                               |
+| `backgroundColor`| `Color?`            | 背景色，默认使用主题的 `snackBarTheme.backgroundColor`。            |
+| `behavior`       | `SnackBarBehavior?` | 显示行为：`fixed`（固定于底部）或 `floating`（悬浮适配屏幕）。      |
+| `elevation`      | `double?`           | 阴影高度，影响视觉层次。                                           |
+| `shape`          | `ShapeBorder?`      | 自定义形状（如圆角矩形）。                                         |
+
+
+### 关键属性说明：
+- `action`: 通过`SnackBarAction`添加交互，但需注意回调中避免耗时操作(因`SnackBar`消失后上下文可能失效)。
+- `behavior`: 在全面屏设备中建议使用`floating`避免被底部导航栏遮挡。
+- `duration`: 若需永久显示(如等待网络请求)，可设为极长时长，但需手动控制消失。
