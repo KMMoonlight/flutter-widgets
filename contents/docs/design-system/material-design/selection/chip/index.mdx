@@ -1,0 +1,239 @@
+---
+title: Chip
+description: 用于显示简洁的信息、选择项或操作入口
+---
+
+`Chip`是Flutter中的一个小型交互式元素，用于显示简洁的信息、选择项或操作入口。它通常表现为一个圆角矩形，包含标签文本和可选的
+前导/后导图标。`Chip`组件基于Material Design设计规范，广泛应用于标签系统、过滤选项、联系人显示等场景。
+
+### 核心逻辑
+- 视觉表现: 紧凑的容器布局，支持文本、图标和交互反馈
+- 交互能力: 支持点击、删除等手势操作
+- 主题适配: 自动继承Material主题的颜色和样式
+- 类型变体: 提供多种预设样式(`InputChip`、`ChoiceChip`、`FilterChip`、`ActionChip`)
+
+## 示例
+### 基础标签展示
+```dart
+import 'package:flutter/material.dart';
+
+class BasicChipExample extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('基础 Chip 示例')),
+      body: Center(
+        child: Wrap(
+          spacing: 8.0,
+          children: [
+            Chip(label: Text('标签一')),
+            Chip(label: Text('标签二')),
+            Chip(
+              label: Text('带图标'),
+              avatar: CircleAvatar(
+                backgroundColor: Colors.blue.shade800,
+                child: Text('A'),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+```
+
+
+### 交互式选择`Chip`
+```dart
+import 'package:flutter/material.dart';
+
+class InteractiveChipExample extends StatefulWidget {
+  @override
+  _InteractiveChipExampleState createState() => _InteractiveChipExampleState();
+}
+
+class _InteractiveChipExampleState extends State<InteractiveChipExample> {
+  bool _isSelected = false;
+  List<String> _selectedFilters = [];
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('交互式 Chip')),
+      body: Column(
+        children: [
+          // 可切换的 FilterChip
+          Wrap(
+            spacing: 8.0,
+            children: ['科技', '体育', '娱乐', '财经'].map((category) {
+              return FilterChip(
+                label: Text(category),
+                selected: _selectedFilters.contains(category),
+                onSelected: (bool selected) {
+                  setState(() {
+                    if (selected) {
+                      _selectedFilters.add(category);
+                    } else {
+                      _selectedFilters.remove(category);
+                    }
+                  });
+                },
+              );
+            }).toList(),
+          ),
+          
+          SizedBox(height: 20),
+          
+          // 可删除的 InputChip
+          InputChip(
+            label: Text('可删除标签'),
+            onDeleted: () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('标签已删除'))
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+}
+```
+
+
+### 主题化`Chip`集合
+```dart
+import 'package:flutter/material.dart';
+
+class ThemedChipExample extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('主题化 Chip')),
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('不同样式的 Chip:'),
+          Wrap(
+            spacing: 8.0,
+            runSpacing: 8.0,
+            children: [
+              // 默认样式
+              Chip(label: Text('默认')),
+              
+              // 选中状态
+              Chip(
+                label: Text('选中'),
+                backgroundColor: Colors.blue.withOpacity(0.1),
+              ),
+              
+              // 带删除功能
+              Chip(
+                label: Text('可删除'),
+                deleteIcon: Icon(Icons.cancel),
+                onDeleted: () {},
+              ),
+              
+              // 自定义颜色
+              Chip(
+                label: Text('自定义'),
+                backgroundColor: Colors.green,
+                labelStyle: TextStyle(color: Colors.white),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+```
+
+
+## 注意点
+### 常见问题
+1. 性能考虑: 大量`Chip`组件时使用`Wrap`而非`Row/Column`避免溢出
+2. 触摸反馈: 确保`Chip`有足够的触摸区域(最小48x48像素)
+3. 文本溢出: 长文本可能导致布局问题，考虑使用`Tooltip`或限制文本长度
+4. 主题一致性: 自定义样式时保持与整体应用主题协调
+
+### 优化技巧
+- 使用`Wrap`组件自动换行处理多个`Chip`
+- 为交互式`Chip`提供明确的视觉反馈(颜色变化、阴影等)
+- 在列表中使用`ListView.builder`优化大量`Chip`的性能
+
+### 最佳实践
+- 保持`Chip`内容的简洁性(通常2-3个单词)
+- 为重要操作提供图标增强可识别性
+- 在表单中使用`ChoiceChip/FilterChip`替代`Radio/Checkbox`节省空间
+
+
+
+## 构造函数
+```dart
+Chip({
+  Key? key,
+  Widget? avatar,                    // 前导图标/头像
+  required Widget label,             // 必需：标签文本
+  TextStyle? labelStyle,             // 标签文本样式
+  EdgeInsetsGeometry? labelPadding,  // 标签内边距
+  Widget? deleteIcon,                // 删除图标
+  VoidCallback? onDeleted,           // 删除回调
+  Color? deleteIconColor,            // 删除图标颜色
+  String? deleteButtonTooltipMessage, // 删除按钮提示信息
+  ShapeBorder? shape,                // 形状定义
+  Clip clipBehavior = Clip.none,     // 裁剪行为
+  FocusNode? focusNode,              // 焦点节点
+  bool autofocus = false,            // 自动聚焦
+  Color? backgroundColor,            // 背景颜色
+  EdgeInsetsGeometry? padding,       // 内边距
+  VisualDensity? visualDensity,      // 视觉密度
+  MaterialTapTargetSize? materialTapTargetSize, // 触摸目标大小
+  double? elevation,                 // 阴影高度
+  Color? shadowColor,                // 阴影颜色
+})
+```
+
+
+## 属性
+| 属性名 | 属性类型 | 说明 |
+|--------|----------|------|
+| `label` | `Widget` | **必需**，Chip 的主要文本内容 |
+| `avatar` | `Widget` | 可选的前导图标，通常为圆形头像 |
+| `backgroundColor` | `Color` | Chip 的背景颜色 |
+| `labelStyle` | `TextStyle` | 标签文本的样式配置 |
+| `padding` | `EdgeInsetsGeometry` | Chip 内容的内边距 |
+| `shape` | `ShapeBorder` | 定义 Chip 的形状（圆角、边框等） |
+| `elevation` | `double` | 阴影高度，影响立体感 |
+| `onDeleted` | `VoidCallback` | 删除按钮点击时的回调函数 |
+| `deleteIcon` | `Widget` | 自定义删除图标组件 |
+| `visualDensity` | `VisualDensity` | 控制 Chip 的视觉紧凑程度 |
+
+
+### 关键属性详解
+- `label`(必需属性)
+  - 类型: `Widget`(通常为`Text`组件)
+  - 作用: 定义`Chip`显示的主要文本内容
+  - 注意: 必须提供，是`Chip`的核心内容
+
+- `backgroundColor`
+  - 类型: `Color`
+  - 作用: 设置`Chip`的背景颜色
+  - 技巧: 使用`withOpacity`创建半透明效果，保持主题协调
+
+- `onDeleted`
+  - 类型: `VoidCallback`
+  - 作用: 启用删除功能并处理删除事件
+  - 注意: 设置此属性会自动显示删除图标
+
+- `visualDensity`
+  - 类型: `VisualDensity`
+  - 作用: 控制`Chip`的紧凑程度(-4到4)
+  - 用途: 适配不同屏幕密度或设计需求
+
+- `shape`
+  - 类型: `ShapeBorder`
+  - 作用: 自定义`Chip`的形状
+  - 示例: `RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))`
+
