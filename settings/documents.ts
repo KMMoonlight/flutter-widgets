@@ -645,7 +645,6 @@ export const Documents: Paths[] = [
     items: [
       {
         title: "Material Design",
-        href: '/material-design',
         items: [
           {
             title: "Actions",
