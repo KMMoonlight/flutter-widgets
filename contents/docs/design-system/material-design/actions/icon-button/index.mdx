@@ -1,0 +1,120 @@
+---
+title: IconButton
+description: 交互式图标按钮组件
+---
+
+`IconButton`是Flutter中的一个交互式图标按钮组件，常用于工具栏、对话框或布局中，通过点击触发特定操作。其核心逻辑是封装了Material Design风格的图标按钮，支持点击、悬停(Web/桌面)、禁用等交互状态，并自动应用主题样式(如颜色和点击水波纹效果)。
+
+### 使用场景
+- 工具栏操作: 如应用栏中的搜索、删除图标。
+- 表单交互: 输入框旁的清除按钮。
+- 列表项控制: 如购物车商品的增加/删除图标。
+- 自定义导航: 替代文字按钮，节省空间并提升视觉一致性。
+
+
+## 示例
+### 基础图标按钮
+```dart
+IconButton(
+  icon: Icon(Icons.info_outline), // 使用 Material 图标
+  color: Colors.blue,
+  onPressed: () {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text("提示"),
+        content: Text("这是一个图标按钮触发的对话框。"),
+      ),
+    );
+  },
+)
+```
+
+### 带禁用状态的交互按钮
+```dart
+bool _isLoading = false;
+
+IconButton(
+  icon: _isLoading 
+      ? CircularProgressIndicator() // 加载时显示进度条
+      : Icon(Icons.cloud_upload),
+  onPressed: _isLoading 
+      ? null // 禁用点击
+      : () async {
+          setState(() => _isLoading = true);
+          await uploadData(); // 模拟上传操作
+          setState(() => _isLoading = false);
+        },
+)
+```
+
+
+### 自定义主题与尺寸
+```dart
+IconButton(
+  icon: Icon(Icons.favorite),
+  iconSize: 32, // 增大图标尺寸
+  color: Colors.red,
+  splashColor: Colors.pinkAccent, // 自定义点击水波纹颜色
+  padding: EdgeInsets.all(12), // 调整内边距
+  onPressed: () => print("收藏触发"),
+)
+```
+
+
+## 注意点
+### 常见问题与优化
+- 性能陷阱: 避免在`onPressed`中执行重型计算，必要时使用`debounce`防抖(如频繁点击)。
+- 兼容性警告: 在旧版Flutter中，Web平台可能缺少悬停效果，需测试多平台表现。
+- 无障碍支持: 始终设置`tooltip`参数(如`tooltip: "保存"`)，方便屏幕阅读器识别功能。
+
+### 最佳实践
+- 优先使用`Icons`库中的Material图标以确保一致性。
+- 通过`ThemeData.iconButtonTheme`全局统一按钮样式，减少重复代码。
+- 禁用状态时设置`onPressed: null`，按钮会自动变为灰色并忽略点击。
+
+
+## 构造函数
+```dart
+IconButton({
+  Key? key,
+  required this.icon,           // 必选，图标组件（通常为 Icon）
+  this.iconSize,               // 图标尺寸，默认继承 ThemeData.iconButtonTheme
+  this.color,                  // 图标颜色，默认继承主题
+  this.focusColor,             // 聚焦时的颜色
+  this.hoverColor,             // 鼠标悬停颜色（Web/桌面）
+  this.highlightColor,         // 按下时高亮颜色
+  this.splashColor,            // 点击水波纹颜色
+  this.disabledColor,          // 禁用状态颜色
+  this.onPressed,              // 点击回调（null 时按钮禁用）
+  this.mouseCursor,            // 鼠标指针样式
+  this.focusNode,              // 控制焦点逻辑
+  this.autofocus = false,      // 是否自动聚焦
+  this.tooltip,                // 长按或悬停提示文本
+  this.enableFeedback = true,  // 是否启用触觉反馈（Android/iOS）
+  this.constraints,            // 按钮尺寸约束
+  this.padding,                // 内边距，默认 EdgeInsets.all(8)
+  this.alignment,              // 图标对齐方式
+  this.splashRadius,            // 水波纹效果半径
+})
+```
+
+
+## 属性
+| 属性名             | 属性类型                  | 说明                                                                 |
+|--------------------|--------------------------|----------------------------------------------------------------------|
+| `icon`             | `Widget`                 | **必选**，图标组件（如 `Icon(Icons.add)`）。                         |
+| `onPressed`        | `VoidCallback?`          | 点击回调函数，设为 `null` 时按钮禁用。                               |
+| `iconSize`         | `double?`                | 图标尺寸，未设置时默认使用 `ThemeData.iconButtonTheme.iconSize`。    |
+| `color`            | `Color?`                 | 图标颜色，未设置时继承主题的 `IconThemeData.color`。                 |
+| `splashColor`      | `Color?`                 | 点击时的水波纹颜色。                                                 |
+| `disabledColor`    | `Color?`                 | 禁用状态下的图标颜色。                                               |
+| `tooltip`          | `String?`                | 无障碍提示文本，长按或悬停时显示。                                   |
+| `padding`          | `EdgeInsetsGeometry?`     | 内边距，默认 `EdgeInsets.all(8)`。                                   |
+| `splashRadius`     | `double?`                | 水波纹扩散半径，默认继承主题设置。                                   |
+
+
+### 关键属性解析
+- `onPressed`: 核心交互属性。若需异步操作(如网络请求)，务必结合状态管理避免重复触发。
+- `splashRadius`: 调整水波纹范围，过大可能影响相邻组件，建议根据设计规范设置(通常 20-30)。
+- `enableFeedback`: 启用后，在移动设备上会触发轻微震动反馈，提升交互体验。
