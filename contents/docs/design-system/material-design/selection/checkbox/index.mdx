@@ -1,0 +1,106 @@
+---
+title: Checkbox
+description: 用于布尔选择逻辑的组件
+---
+
+`Checkbox`是Flutter中的基础UI组件，用于实现二进制选择逻辑(如“开启/关闭”或“选中/未选中”)。其核心通过`value`属性管理状态，`onChanged`回调处理用户交互，适用于表单、设置项或列表多选场景。
+
+![](https://docs.flutter.dev/assets/images/docs/widget-catalog/material-3-checkbox.png)
+
+
+### 使用场景
+- 表单中的条款同意勾选
+- 任务列表的完成状态标记
+- 筛选器的多选条件控制
+
+
+
+## 示例
+### 基础状态控制
+```dart
+bool _isChecked = false;
+
+Checkbox(
+  value: _isChecked,
+  onChanged: (bool? newValue) {
+    setState(() {
+      _isChecked = newValue ?? false;
+    });
+  },
+)
+```
+
+
+### 带标签的复选框
+```dart
+CheckboxListTile(
+  title: Text("接受协议"),
+  value: _isChecked,
+  onChanged: (bool? value) {
+    setState(() => _isChecked = value ?? false);
+  },
+  secondary: Icon(Icons.policy),
+)
+```
+
+### 主题适配与禁用状态
+```dart
+Checkbox(
+  value: _isChecked,
+  onChanged: _isChecked ? null : (bool? value) { 
+    // 禁用时回调为 null
+    setState(() => _isChecked = value ?? true);
+  },
+  activeColor: Colors.blue,
+  checkColor: Colors.white,
+)
+```
+
+
+## 注意点
+### 常见问题
+- 状态未更新: 忘记在`onChanged`中调用`setState()`导致UI不刷新
+- 空值处理: `onChanged`参数为`bool?`类型，需处理`null`情况(如禁用状态)
+
+### 性能优化
+- 在列表中使用时，将`Checkbox`与`StatefulWidget`分离，避免不必要的全局重建
+- 优先使用`Checkbox.adaptive`实现平台自适应(iOS风格切换)
+
+### 最佳实践
+- 关联标签时用`CheckboxListTile`替代手动组合，提升可访问性
+- 通过`tristate: true`支持三态(true/false/null)用于“部分选中”场景
+
+
+
+## 构造函数
+```dart
+Checkbox({
+  Key? key,
+  required bool? value,
+  required ValueChanged<bool?>? onChanged,
+  Color? activeColor,
+  Color? checkColor,
+  Color? focusColor,
+  Color? hoverColor,
+  MaterialTapTargetSize? materialTapTargetSize,
+  bool tristate = false,
+})
+```
+
+
+## 属性
+| 属性名 | 类型 | 说明 |
+|--------|------|------|
+| `value` | `bool?` | 当前选中状态（true=选中，false=未选中，null=三态时的部分选中） |
+| `onChanged` | `ValueChanged<bool?>?` | 状态变更回调，为 null 时组件禁用 |
+| `activeColor` | `Color?` | 选中时的背景色（默认主题色） |
+| `checkColor` | `Color?` | 选中标记 ✓ 的颜色（默认白色） |
+| `tristate` | `bool` | 是否支持三态（默认 false） |
+| `focusColor` | `Color?` | 聚焦时的颜色 |
+| `hoverColor` | `Color?` | 悬停时的颜色 |
+
+
+### 关键属性说明
+- `value`与`onChanged`: 必须成对使用且非空(禁用时`onChanged`可为null)，这是`Checkbox`交互的核心逻辑。
+- `tristate`: 设置为true时，`value`可为null表示“部分选中”，适用于层级选择(如文件夹全选/半选)。
+- 颜色控制: 通过`activeColor`和`checkColor`快速适配品牌色，无需自定义主题。
