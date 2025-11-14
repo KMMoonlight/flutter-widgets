@@ -1,0 +1,121 @@
+---
+title: Card
+description: 用于以卡片形式展示信息的Material Design风格容器组件
+---
+
+`Card`是Flutter中的一个Material Design风格容器组件，主要用于以卡片形式展示信息。卡片通常包含内容(如文本、图像、按钮)和可选的阴影、圆角效果，适用
+于列表项、详情面板或分组UI元素。其核心逻辑是提供一个轻量级、可定制的矩形区域，通过阴影和形状增强视觉层次感。
+
+![](https://docs.flutter.dev/assets/images/docs/widget-catalog/material-3-card.png)
+
+### 使用场景
+- 信息展示: 在列表或网格中显示商品、文章或用户资料。
+- 交互式元素: 作为可点击的条目(如设置选项、新闻卡片)。
+- 内容分组: 将相关控件(如文本和按钮)组合在一个视觉单元内。
+- 对话框替代: 用于轻量级弹层内容，避免过度使用对话框。
+
+
+
+## 示例
+### 基础文本卡片
+```dart
+Card(
+  child: ListTile(
+    leading: Icon(Icons.person),
+    title: Text('用户姓名'),
+    subtitle: Text('这是一个用户简介示例'),
+  ),
+)
+```
+
+
+### 带图像和按钮的交互卡片
+```dart
+Card(
+  elevation: 5, // 阴影深度
+  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+  child: Column(
+    children: [
+      Image.network('https://example.com/image.jpg'),
+      Padding(
+        padding: EdgeInsets.all(8),
+        child: Row(
+          children: [
+            Text('商品名称'),
+            Spacer(),
+            IconButton(icon: Icon(Icons.shopping_cart), onPressed: () {}),
+          ],
+        ),
+      ),
+    ],
+  ),
+)
+```
+
+### 可适应主题的卡片
+```dart
+Card(
+  color: Theme.of(context).colorScheme.surfaceVariant, // 适配主题色
+  shadowColor: Theme.of(context).colorScheme.shadow,
+  child: Padding(
+    padding: EdgeInsets.all(16),
+    child: Text('根据主题自动调整样式的卡片'),
+  ),
+)
+```
+
+
+## 注意点
+### 常见问题
+- 性能瓶颈: 避免在`Card`内嵌套过深或复杂的布局(如多个动画控件)，可能导致渲染延迟。优先使用`const`构造函数或拆分子树。
+- 阴影性能: `elevation`值过高(如\>25)可能在低端设备上影响性能，建议根据设备能力调整。
+- 兼容性警告: `Card`依赖`Material`祖先组件，若未在`MaterialApp`子树中使用，可能导致样式异常。
+
+### 优化技巧
+- 使用`ClipBehavior`控制裁剪行为(如`Clip.none`避免不必要的裁剪开销)。
+- 对于静态内容，将`Card`包裹在`const`表达式中以减少重建开销。
+- 通过`shape`属性自定义边框时，确保圆角半径与阴影效果协调。
+
+### 最佳实践
+- 保持卡片内容简洁，避免信息过载。
+- 在可滚动视图中(如`ListView`)，为`Card`添加`margin`或`padding`以避免视觉拥挤。
+- 交互式卡片应明确视觉反馈(如`InkWell`包裹)。
+
+
+## 构造函数
+```dart
+Card({
+  Key? key,
+  this.color, // 背景色
+  this.shadowColor, // 阴影颜色
+  this.surfaceTintColor, // Material 3 风格的表面色调
+  this.elevation, // 阴影深度
+  this.shape, // 形状（如圆角）
+  this.borderOnForeground = true, // 是否在内容前绘制边框
+  this.margin, // 外边距
+  this.clipBehavior, // 裁剪行为
+  this.child, // 子组件
+  this.semanticContainer = true, // 是否作为语义容器
+})
+```
+
+
+## 属性
+| 属性名               | 属性类型                  | 说明                                                                 |
+|----------------------|---------------------------|----------------------------------------------------------------------|
+| `color`              | `Color?`                  | 卡片背景颜色，默认使用主题的 `cardColor`。                           |
+| `shadowColor`        | `Color?`                  | 阴影颜色，默认使用主题的 `shadowColor`。                             |
+| `surfaceTintColor`   | `Color?`                  | Material 3 风格的表层色调，影响阴影和高光效果。                      |
+| `elevation`          | `double?`                 | 阴影深度（单位：逻辑像素），值越大阴影越明显，默认为 1.0。           |
+| `shape`              | `ShapeBorder?`            | 卡片形状（如圆角矩形），默认为圆角半径 4.0 的矩形。                 |
+| `borderOnForeground` | `bool`                    | 是否在子组件前绘制边框（仅当 shape 有边框时生效），默认为 true。     |
+| `margin`             | `EdgeInsetsGeometry?`     | 卡片外边距，用于与其他组件间隔。                                     |
+| `clipBehavior`       | `Clip`                    | 内容裁剪方式（如 `Clip.hardEdge`），默认为 `Clip.none`。             |
+| `child`              | `Widget?`                 | 卡片的子组件，通常为布局容器（如 Column、ListTile）。                |
+| `semanticContainer`  | `bool`                    | 是否将整个卡片作为语义化容器（用于无障碍功能），默认为 true。        |
+
+
+### 关键属性详解
+- `elevation`: 控制阴影深度，是影响视觉层次的核心属性。值范围通常为0~10，超过10可能显得不自然。在Material 3设计中，推荐使用1~3实现轻量级层次感。
+- `shape`: 允许自定义边框形状(如`CircleBorder`或`StadiumBorder`)，常用于非矩形卡片设计。修改时需注意与阴影的兼容性。
+- `clipBehavior`: 当子内容可能溢出卡片边界时(如圆角卡片包含图像)，设置为`Clip.antiAlias`可平滑边缘，但可能增加渲染开销。
