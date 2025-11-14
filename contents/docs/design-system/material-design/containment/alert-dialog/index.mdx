@@ -1,0 +1,154 @@
+---
+title: AlertDialog
+description: 用于显示模态对话框的核心组件
+---
+
+`AlertDialog`是Flutter中用于显示模态对话框的核心组件，常用于向用户传达重要信息、确认操作或请求输入。它提供了一个标准化的UI结构，包括标题、内容区域和操作按钮(如“确定”或“取消”)，帮助开发者快速构建
+一致的用户交互体验。其核心逻辑基于`showDialog`函数触发显示，并通过`Navigator`管理对话框的打开和关闭，确保界面层级清晰。
+
+![](https://docs.flutter.dev/assets/images/docs/widget-catalog/material-3-dialog.png)
+
+### 使用场景: 
+- 警告提示: 当应用发生错误或需要用户注意时(如网络连接失败)。
+- 操作确认: 在删除数据或提交表单前，要求用户二次确认。
+- 信息输入: 结合文本字段(如`TextField`)实现简单数据收集(例如输入备注)。
+- 权限请求: 在敏感操作(如访问相册)前解释原因并获取授权。
+
+
+## 示例
+### 基础信息提示对话框
+```dart
+import 'package:flutter/material.dart';
+
+void main() => runApp(MyApp());
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: Scaffold(
+        appBar: AppBar(title: Text('AlertDialog 示例')),
+        body: Center(
+          child: ElevatedButton(
+            child: Text('打开对话框'),
+            onPressed: () {
+              showDialog(
+                context: context,
+                builder: (BuildContext context) => AlertDialog(
+                  title: Text('提示'),
+                  content: Text('操作成功完成！'),
+                  actions: [
+                    TextButton(
+                      child: Text('关闭'),
+                      onPressed: () => Navigator.of(context).pop(),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+        ),
+      ),
+    );
+  }
+}
+```
+
+### 带确认逻辑的操作对话框
+```dart
+AlertDialog(
+  title: Text('确认删除'),
+  content: Text('您确定要删除这个项目吗？此操作不可撤销。'),
+  actions: [
+    TextButton(
+      child: Text('取消'),
+      onPressed: () => Navigator.of(context).pop(), // 关闭对话框
+    ),
+    TextButton(
+      child: Text('删除', style: TextStyle(color: Colors.red)),
+      onPressed: () {
+        // 执行删除逻辑
+        deleteItem();
+        Navigator.of(context).pop(); // 关闭对话框
+      },
+    ),
+  ],
+);
+```
+
+### 适配深色主题的输入对话框
+```dart
+AlertDialog(
+  title: Text('添加备注'),
+  content: TextField(
+    decoration: InputDecoration(hintText: '请输入备注内容'),
+  ),
+  actions: [
+    TextButton(
+      child: Text('取消'),
+      onPressed: () => Navigator.of(context).pop(),
+    ),
+    TextButton(
+      child: Text('保存'),
+      onPressed: () {
+        // 保存输入内容
+        saveNote();
+        Navigator.of(context).pop();
+      },
+    ),
+  ],
+);
+```
+
+## 注意点
+- 性能问题
+  - 避免在频繁触发的操作(如列表滚动)中嵌套`showDialog`，可能导致页面卡顿。建议使用`StatefulWidget`控制对话框状态。
+  - 若对话框内容复杂(如长列表)，用`SingleChildScrollView`包裹内容防止溢出。
+
+- 兼容性警告
+  - 在窄屏幕设备上，默认样式可能占满全屏。通过`contentPadding`或`insetPadding`调整内边距优化显示。
+  - 对话框的按钮文本需适配国际化(如左对齐的阿拉伯语)。
+
+- 最佳实践
+  - 重要操作(如删除)的确认按钮应显眼(如红色文本)，并通过`BarrierDismissible: false`防止误触关闭。
+  - 使用`actionsAlignment`对齐按钮组，提升视觉一致性。
+
+
+## 构造函数
+```dart
+const AlertDialog({
+  Key? key,
+  Widget? icon, // 标题前的图标（可选）
+  EdgeInsetsGeometry? iconPadding, // 图标内边距
+  Color? iconColor, // 图标颜色
+  Widget? title, // 标题组件（通常为Text）
+  EdgeInsetsGeometry? titlePadding, // 标题内边距
+  TextStyle? titleTextStyle, // 标题文本样式
+  Widget? content, // 内容组件（文本、输入框等）
+  EdgeInsetsGeometry? contentPadding, // 内容内边距
+  TextStyle? contentTextStyle, // 内容文本样式
+  List<Widget>? actions, // 操作按钮组（如TextButton列表）
+  EdgeInsetsGeometry? actionsPadding, // 按钮组内边距
+  MainAxisAlignment? actionsAlignment, // 按钮对齐方式（如MainAxisAlignment.end）
+  ...
+})
+```
+
+
+
+## 属性
+| 属性名             | 属性类型               | 说明                                                                 |
+|--------------------|------------------------|----------------------------------------------------------------------|
+| `title`            | `Widget?`              | 对话框标题，通常为 `Text` 组件。                                     |
+| `content`          | `Widget?`              | 对话框主要内容区域，支持任意组件（如文本、输入框）。                 |
+| `actions`          | `List<Widget>?`        | 底部操作按钮列表，需自行实现点击逻辑（如 `TextButton`）。            |
+| `icon`             | `Widget?`              | 标题左侧的图标（如 `Icon(Icons.warning)`），增强视觉提示。          |
+| `actionsAlignment` | `MainAxisAlignment?`   | 控制按钮组的对齐方式（默认靠右），可选值如 `MainAxisAlignment.start`。 |
+| `contentPadding`   | `EdgeInsetsGeometry?`  | 内容区域的内边距，用于调整布局紧凑性（如 `EdgeInsets.all(20)`）。    |
+
+
+
+### 关键属性详解
+- `actions`: 这是最常用的属性，用于定义用户交互行为。每个按钮需包裹`TextButton`并绑定`onPressed`事件，注意通过`Navigator.of(context).pop()`关闭对话框。
+- `contentPadding`: 若内容包含输入框或长文本，调整内边距可避免内容紧贴边框，提升可读性。例如设置为`EdgeInsets.symmetric(horizontal: 20)`。
+- `actionsAlignment`: 在需要左对齐按钮(如符合某些语言习惯)时特别有用，直接设置为`MainAxisAlignment.start`即可覆盖默认样式。
