@@ -799,7 +799,253 @@ export const Documents: Paths[] = [
       },
       {
         title: "Cupertino Design",
-        href: '/cupertino-design'
+        href: '/cupertino-design',
+        items: [
+          {
+            title: "CupertinoActionSheet",
+            href: '/cupertino-action-sheet'
+          },
+          {
+            title: "CupertinoActionSheetAction",
+            href: '/cupertino-action-sheet-action'
+          },
+          {
+            title: "CupertinoActivityIndicator",
+            href: '/cupertino-activity-indicator'
+          },
+          {
+            title: "CupertinoAdaptiveTextSelectionToolbar",
+            href: '/cupertino-adaptive-text-selection-toolbar'
+          },
+          {
+            title: "CupertinoAlertDialog",
+            href: '/cupertino-alert-dialog'
+          },
+          {
+            title: "CupertinoApp",
+            href: '/cupertino-app'
+          },
+          {
+            title: "CupertinoButton",
+            href: '/cupertino-button'
+          },
+          {
+            title: "CupertinoCheckBox",
+            href: '/cupertino-check-box'
+          },
+          {
+            title: "CupertinoColors",
+            href: '/cupertino-colors'
+          },
+          {
+            title: "CupertinoContextMenu",
+            href: '/cupertino-context-menu'
+          },
+          {
+            title: "CupertinoContextMenuAction",
+            href: '/cupertino-context-menu-action'
+          },
+          {
+            title: "CupertinoDatePicker",
+            href: '/cupertino-date-picker'
+          },
+          {
+            title: "CupertinoDesktopTextSelectionControls",
+            href: '/cupertino-desktop-text-selection-controls'
+          },
+          {
+            title: "CupertinoDesktopTextSelectionToolbar",
+            href: '/cupertino-desktop-text-selection-toolbar'
+          },
+          {
+            title: "CupertinoDesktopTextSelectionToolbarButton",
+            href: '/cupertino-desktop-text-selection-toolbar-button'
+          },
+          {
+            title: "CupertinoDialogAction",
+            href: '/cupertino-dialog-action'
+          },
+          {
+            title: "CupertinoDialogRoute",
+            href: '/cupertino-dialog-route'
+          },
+          {
+            title: "CupertinoDynamicColor",
+            href: '/cupertino-dynamic-color'
+          },
+          {
+            title: "CupertinoFormRow",
+            href: '/cupertino-form-row'
+          },
+          {
+            title: "CupertinoFormSelection",
+            href: '/cupertino-form-selection'
+          },
+          {
+            title: "CupertinoFullscreenDialogTransition",
+            href: '/cupertino-fullscreen-dialog-transition'
+          },
+          {
+            title: "CupertinoThemeData",
+            href: '/cupertino-theme-data'
+          },
+          {
+            title: "CupertinoListSelection",
+            href: '/cupertino-list-selection'
+          },
+          {
+            title: "CupertinoListTile",
+            href: '/cupertino-list-tile'
+          },
+          {
+            title: "CupertinoListTileChevron",
+            href: '/cupertino-list-tile-chevron'
+          },
+          {
+            title: "CupertinoLocalizations",
+            href: '/cupertino-localizations'
+          },
+          {
+            title: "CupertinoMagnifier",
+            href: '/cupertino-magnifier'
+          },
+          {
+            title: "CupertinoModalPopupRoute",
+            href: '/cupertino-modal-popup-route'
+          },
+          {
+            title: "CupertinoNavigationBar",
+            href: '/cupertino-navigation-bar'
+          },
+          {
+            title: "CupertinoNavigationBarBackButton",
+            href: '/cupertino-navigation-bar-back-button'
+          },
+          {
+            title: "CupertinoPage",
+            href: '/cupertino-page'
+          },
+          {
+            title: "CupertinoPageRoute",
+            href: '/cupertino-page-route'
+          },
+          {
+            title: "CupertinoPageScaffold",
+            href: '/cupertino-page-scaffold'
+          },
+          {
+            title: "CupertinoPageTransition",
+            href: '/cupertino-page-transition'
+          },
+          {
+            title: "CupertinoPicker",
+            href: '/cupertino-picker'
+          },
+          {
+            title: "CupertinoPickerDefaultSelectionOverlay",
+            href: '/cupertino-picker-default-selection-overlay'
+          },
+          {
+            title: "CupertinoPopupSurface",
+            href: '/cupertino-popup-surface'
+          },
+          {
+            title: "CupertinoRadio",
+            href: '/cupertino-radio'
+          },
+          {
+            title: "CupertinoScrollbar",
+            href: '/cupertino-scrollbar'
+          },
+          {
+            title: "CupertinoScrollBehavior",
+            href: '/cupertino-scroll-behavior'
+          },
+          {
+            title: "CupertinoSearchTextField",
+            href: '/cupertino-search-text-field'
+          },
+          {
+            title: "CupertinoSlider",
+            href: '/cupertino-slider'
+          },
+          {
+            title: "CupertinoSlidingSegmentedControl",
+            href: '/cupertino-sliding-segmented-control'
+          },
+          {
+            title: "CupertinoSliverNavigationBar",
+            href: '/cupertino-sliver-navigation-bar'
+          },
+          {
+            title: "CupertinoSliverRefreshControl",
+            href: '/cupertino-sliver-refresh-control'
+          },
+          {
+            title: "CupertinoSpellCheckSuggestionsToolbar",
+            href: '/cupertino-spell-check-suggestions-toolbar'
+          },
+          {
+            title: "CupertinoSwitch",
+            href: '/cupertino-switch'
+          },
+          {
+            title: "CupertinoTabBar",
+            href: '/cupertino-tab-bar'
+          },
+          {
+            title: "CupertinoTabController",
+            href: '/cupertino-tab-controller'
+          },
+          {
+            title: "CupertinoTabScaffold",
+            href: '/cupertino-tab-scaffold'
+          },
+          {
+            title: "CupertinoTabView",
+            href: '/cupertino-tab-view'
+          },
+          {
+            title: "CupertinoTextField",
+            href: '/cupertino-text-field'
+          },
+          {
+            title: "CupertinoTextFormFieldRow",
+            href: '/cupertino-text-form-field-row'
+          },
+          {
+            title: "CupertinoTextMagnifier",
+            href: '/cupertino-text-magnifier'
+          },
+          {
+            title: "CupertinoTextSelectionControls",
+            href: '/cupertino-text-selection-controls'
+          },
+          {
+            title: "CupertinoTextSelectionToolbar",
+            href: '/cupertino-text-selection-toolbar'
+          },
+          {
+            title: "CupertinoTextSelectionToolbarButton",
+            href: '/cupertino-text-selection-toolbar-button'
+          },
+          {
+            title: "CupertinoTextThemeData",
+            href: '/cupertino-text-theme-data'
+          },
+          {
+            title: "CupertinoTheme",
+            href: '/cupertino-theme'
+          },
+          {
+            title: "CupertinoThumbPainter",
+            href: '/cupertino-thumb-painter'
+          },
+          {
+            title: "CupertinoTimerPicker",
+            href: '/cupertino-timer-picker'
+          }
+        ]
       }
     ]
   }
