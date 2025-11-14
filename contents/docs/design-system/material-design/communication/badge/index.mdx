@@ -1,0 +1,134 @@
+---
+title: Badge
+description: 在图标、文本或其他组件上显示的小徽章组件
+---
+
+`Badge`是Flutter中的一个UI组件，用于在图标、文本或其他小部件上显示小徽章(如数字、小红点或自定义标签)，常用于消息通知、状态提示或计数场景。其核
+心逻辑是: 通过叠加布局(如`Stack`)将徽章内容(如文本或图标)定位到子组件的右上角或其他角落，并支持自定义样式(颜色、大小、位置等)。`Badge`组件基于Material Design规范，但也可灵活适配自定义设计需求。
+
+![](https://docs.flutter.dev/assets/images/docs/widget-catalog/material-3-badge.png)
+
+### 典型使用场景:
+- 应用图标上显示未读消息数量(如聊天应用)。
+- 购物车图标旁展示商品添加数量。
+- 状态标记(如“新”标签或小红点提示)。
+- 导航栏选项卡中突出显示活动状态。
+
+## 示例
+### 基础徽章
+```dart
+import 'package:flutter/material.dart';
+
+class BasicBadgeExample extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Badge(
+      label: Text('3'), // 徽章内容
+      child: Icon(Icons.notifications), // 目标组件
+    );
+  }
+}
+```
+
+### 交互式徽章
+```dart
+import 'package:flutter/material.dart';
+
+class InteractiveBadgeExample extends StatefulWidget {
+  @override
+  _InteractiveBadgeExampleState createState() => _InteractiveBadgeExampleState();
+}
+
+class _InteractiveBadgeExampleState extends State<InteractiveBadgeExample> {
+  int _count = 0;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Badge(
+          label: Text('$_count'),
+          child: Icon(Icons.shopping_cart),
+        ),
+        ElevatedButton(
+          onPressed: () => setState(() => _count++),
+          child: Text('添加商品'),
+        ),
+      ],
+    );
+  }
+}
+```
+
+### 自定义样式徽章
+```dart
+import 'package:flutter/material.dart';
+
+class CustomBadgeExample extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Badge(
+      label: Text('New', style: TextStyle(fontSize: 10)),
+      backgroundColor: Colors.green, // 自定义背景色
+      textColor: Colors.white, // 文本颜色
+      alignment: Alignment.bottomRight, // 徽章位置
+      child: Container(
+        padding: EdgeInsets.all(20),
+        color: Colors.grey[200],
+        child: Text('商品卡片'),
+      ),
+    );
+  }
+}
+```
+
+
+
+## 注意点
+- 常见问题: 
+  - 性能影响: 频繁更新徽章内容(如动画)可能导致重绘开销，建议对动态数据使用`const`构造或`ValueNotifier`优化。
+  - 布局溢出: 徽章内容过长时可能遮挡子组件，需通过`padding`或约束父容器尺寸控制。
+  - 兼容性: `Badge`组件需Flutter 2.0+版本，旧项目需升级SDK。
+
+- 优化技巧：
+  - 使用`smallSize`属性减少徽章尺寸，避免在密集UI中显得突兀。
+  - 对于无数字的纯提示徽章(如小红点)，用`Badge.dot()`替代文本标签以节省空间。
+  - 在列表项中复用`Badge`组件时，通过`Key`避免不必要的重建。
+
+- 最佳实践: 
+  - 徽章文本应简洁(如“99+”替代长数字)。
+  - 遵循平台规范: `iOS`中徽章常为圆形，`Android`可略作方形适配。
+  - 测试无障碍功能: 为徽章添加`semanticsLabel`方便屏幕阅读器识别。
+
+
+## 构造函数
+```dart
+Badge({
+  Key? key,
+  Widget? child, // 目标子组件（如图标）
+  Widget? label, // 徽章内容（文本/图标）
+  Color? backgroundColor, // 背景色（默认主题色）
+  Color? textColor, // 文本色（默认白色）
+  AlignmentGeometry? alignment, // 位置（默认 topRight）
+  EdgeInsetsGeometry? padding, // 内边距
+  double? smallSize, // 小尺寸徽章直径
+  // ... 其他样式参数
+})
+```
+
+## 属性
+| 属性名             | 属性类型           | 说明                                                                 |
+|--------------------|--------------------|----------------------------------------------------------------------|
+| `label`            | `Widget?`          | 徽章显示的内容（如 `Text('1')`），为 `null` 时隐藏徽章。               |
+| `child`            | `Widget?`          | 目标子组件（如 `Icon`），徽章将叠加在其上。                            |
+| `backgroundColor`  | `Color?`           | 徽章背景颜色，默认使用主题的 `primaryColor`。                         |
+| `textColor`        | `Color?`           | 徽章文本颜色，默认白色。                                             |
+| `alignment`        | `AlignmentGeometry?`| 徽章相对于子组件的位置，默认 `Alignment.topRight`（右上角）。        |
+| `padding`          | `EdgeInsetsGeometry?`| 徽章内容的内边距，控制标签与边缘的间距。                             |
+| `smallSize`        | `double?`          | 小红点模式下的直径尺寸（无文本时），默认 6.0。                       |
+
+
+### 关键属性详解: 
+- `label`: 最常用属性，支持任意`Widget`(如`Icon`)，但需注意内容过长会导致布局问题。动态更新时建议配合`StatefulWidget`。
+- alignment：通过`Alignment`类(如`Alignment.bottomLeft`)灵活控制徽章位置，适应不同设计需求。
+- smallSize：在纯提示场景(如小红点)中优化空间占用，设置过大会影响子组件可点击区域。
