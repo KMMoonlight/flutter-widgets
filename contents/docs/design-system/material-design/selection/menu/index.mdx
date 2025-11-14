@@ -1,0 +1,174 @@
+---
+title: Menu
+description: 在不通过修改布局、大小或位置的情况下，对子组件施加虚拟效果的组件
+---
+
+`Menu`是Flutter中的一个菜单组件，用于在用户交互(如点击按钮)时显示一个下拉或弹出式菜单列表。它基于`MenuAnchor`和`MenuItemButton`构建，支持嵌套子菜单、快捷键、图标集成等功能，适用于
+应用栏、上下文菜单或自定义界面中的选项选择。`Menu`的核心逻辑是动态管理菜单的打开/关闭状态，并通过回调处理用户选择。
+
+![](https://docs.flutter.dev/assets/images/docs/widget-catalog/material-3-menu.png)
+
+### 使用场景
+- 应用栏菜单: 在`AppBar`的`actions`中提供设置、帮助等选项。
+- 上下文菜单: 长按某区域时弹出编辑、删除等操作。
+- 嵌套菜单: 用于复杂工作流(如设计工具中的多级菜单)。
+- 快捷键集成: 为菜单项绑定键盘快捷键(如`Ctrl+S`保存)。
+
+
+## 示例
+### 基础菜单
+```dart
+import 'package:flutter/material.dart';
+
+void main() => runApp(const MyApp());
+
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: Scaffold(
+        appBar: AppBar(
+          title: const Text('Menu 示例'),
+          actions: [
+            MenuAnchor(
+              child: IconButton(
+                icon: const Icon(Icons.more_vert),
+                onPressed: () {}, // 由 MenuAnchor 自动处理点击
+              ),
+              menuChildren: [
+                MenuItemButton(
+                  child: const Text('设置'),
+                  onPressed: () => print('打开设置'),
+                ),
+                MenuItemButton(
+                  child: const Text('帮助'),
+                  onPressed: () => print('打开帮助'),
+                ),
+              ],
+            ),
+          ],
+        ),
+        body: const Center(child: Text('点击右上角菜单图标试试！')),
+      ),
+    );
+  }
+}
+```
+
+### 嵌套子菜单
+```dart
+MenuAnchor(
+  child: TextButton(
+    child: const Text('文件'),
+    onPressed: () {},
+  ),
+  menuChildren: [
+    MenuItemButton(
+      child: const Text('新建'),
+      onPressed: () => print('新建文件'),
+    ),
+    SubmenuButton(
+      menuChildren: [
+        MenuItemButton(
+          child: const Text('保存'),
+          onPressed: () => print('保存文件'),
+        ),
+        MenuItemButton(
+          child: const Text('另存为'),
+          onPressed: () => print('另存为'),
+        ),
+      ],
+      child: const Text('保存选项'),
+    ),
+  ],
+)
+```
+
+
+### 带图标和快捷键的菜单
+```dart
+MenuAnchor(
+  child: const Icon(Icons.settings),
+  menuChildren: [
+    MenuItemButton(
+      leadingIcon: const Icon(Icons.save),
+      child: const Text('保存'),
+      onPressed: () => print('保存操作'),
+      shortcut: const SingleActivator(LogicalKeyboardKey.keyS, control: true),
+    ),
+    MenuItemButton(
+      leadingIcon: const Icon(Icons.exit_to_app),
+      child: const Text('退出'),
+      onPressed: () => print('退出应用'),
+    ),
+  ],
+)
+```
+
+## 注意点
+### 常见问题
+- 状态管理: 菜单的打开状态由`MenuController`控制，需避免在多个组件中冲突。
+- 性能影响: 嵌套过深或菜单项过多可能导致渲染延迟，建议使用`ConstrainedBox`限制菜单大小。
+- 兼容性: `Menu`需要Flutter 3.10+版本，旧项目需升级SDK。
+
+### 优化技巧
+- 为频繁使用的菜单添加`Key`以避免不必要的重建。
+- 使用`MenuStyle`自定义主题，确保与应用风格一致。
+- 在窄屏幕设备上测试菜单的响应式布局(如自动调整位置)。
+
+### 最佳实践
+- 菜单项文本应简洁明了，配合图标提升可读性。
+- 禁用当前不可用的菜单项(通过`MenuItemButton`的`enabled`参数)。
+- 优先使用`SubmenuButton`而非手动嵌套，以保持逻辑清晰。
+
+
+
+## 构造函数
+### `MenuAnchor`构造函数
+```dart
+const MenuAnchor({
+  Key? key,
+  required this.child, // 触发菜单的控件（如按钮）
+  required this.menuChildren, // 菜单项列表
+  this.onOpen, // 菜单打开回调
+  this.onClose, // 菜单关闭回调
+  this.controller, // 控制菜单状态的 MenuController
+  this.style, // 自定义菜单样式（MenuStyle）
+})
+```
+
+### `MenuItemButton`构造函数
+```dart
+const MenuItemButton({
+  Key? key,
+  required this.onPressed, // 菜单项点击回调
+  this.child, // 菜单项文本或自定义控件
+  this.leadingIcon, // 前置图标
+  this.trailingIcon, // 后置图标
+  this.shortcut, // 键盘快捷键
+  this.enabled = true, // 是否启用
+})
+```
+
+
+## 属性
+| 属性名           | 属性类型         | 说明                                                                 |
+|------------------|------------------|----------------------------------------------------------------------|
+| `child`          | `Widget`         | 触发菜单的控件（必选）。                                               |
+| `menuChildren`   | `List<Widget>`   | 菜单项列表（通常为 `MenuItemButton` 或 `SubmenuButton`）。             |
+| `onOpen`         | `VoidCallback?`  | 菜单打开时触发的回调。                                                 |
+| `onClose`        | `VoidCallback?`  | 菜单关闭时触发的回调。                                                 |
+| `controller`     | `MenuController?`| 用于编程控制菜单状态（如主动打开/关闭）。                              |
+| `style`          | `MenuStyle?`     | 自定义菜单的外观（背景色、阴影等）。                                   |
+| `onPressed`      | `VoidCallback?`  | `MenuItemButton` 的点击事件回调（若为 null，菜单项显示为禁用状态）。    |
+| `leadingIcon`    | `Widget?`        | `MenuItemButton` 的前置图标（如 Icons.save）。                         |
+| `shortcut`       | `Shortcut?`      | 绑定键盘快捷键（如 `SingleActivator(LogicalKeyboardKey.keyS)`）。     |
+| `enabled`        | `bool`           | 控制 `MenuItemButton` 是否可交互（默认 true）。                       |
+
+
+### 关键属性解释
+- `menuChildren`: 必须包含有效的菜单项组件，否则菜单无法显示内容。支持动态生成列表(如基于数据循环生成)。
+- `controller`: 通过`MenuController`可实现跨组件控制菜单(如点击其他区域关闭菜单)，适合复杂交互场景。
+- `shortcut`: 快捷键需在父级配置`Shortcuts`组件才能生效，是提升专业应用体验的核心功能。
