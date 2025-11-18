@@ -1,0 +1,318 @@
+---
+title: CupertinoContextMenu
+description: Flutter中实现iOS风格上下文菜单的组件，当用户长按某个元素时，会显示一个半透明的模态菜单
+---
+
+`CupertinoContextMenu`是Flutter中实现iOS风格上下文菜单的组件，当用户长按某个元素时，会显示一个半透明的模态菜单。该组件遵循苹果的Human Interface Guidelines，提供与原生iOS应用一致的交互体验。
+
+**核心逻辑**: 通过手势检测(长按)触发菜单显示，菜单以动画形式从触发点展开，包含多个操作选项，用户可以选择其中一个选项或通过点击外部区域取消。
+
+![](https://docs.flutter.dev/assets/images/docs/widget-catalog/cupertino-context-menu.png)
+
+### 使用场景
+- 图片预览与操作: 长按图片显示分享、保存等选项
+- 列表项操作: 在聊天列表中对消息进行删除、转发等操作
+- 内容编辑: 文本选中后的复制、粘贴菜单
+- 导航快捷方式: 快速跳转到特定功能页面
+
+## 示例
+### 基础图片上下文菜单
+```dart
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+
+class BasicImageContextMenu extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return CupertinoPageScaffold(
+      navigationBar: CupertinoNavigationBar(
+        middle: Text('图片上下文菜单'),
+      ),
+      child: Center(
+        child: CupertinoContextMenu(
+          actions: [
+            CupertinoContextMenuAction(
+              child: Text('分享'),
+              onPressed: () {
+                Navigator.pop(context);
+                print('分享图片');
+              },
+            ),
+            CupertinoContextMenuAction(
+              child: Text('保存到相册'),
+              onPressed: () {
+                Navigator.pop(context);
+                print('保存图片');
+              },
+            ),
+            CupertinoContextMenuAction(
+              child: Text('删除', style: TextStyle(color: CupertinoColors.destructiveRed)),
+              onPressed: () {
+                Navigator.pop(context);
+                print('删除图片');
+              },
+            ),
+          ],
+          child: Container(
+            width: 200,
+            height: 200,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12),
+              image: DecorationImage(
+                image: NetworkImage('https://picsum.photos/200'),
+                fit: BoxFit.cover,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+```
+
+### 带预览功能的交互式菜单
+```dart
+class PreviewContextMenu extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return CupertinoPageScaffold(
+      navigationBar: CupertinoNavigationBar(
+        middle: Text('预览上下文菜单'),
+      ),
+      child: Center(
+        child: CupertinoContextMenu(
+          actions: [
+            CupertinoContextMenuAction(
+              child: Text('设为封面'),
+              onPressed: () {
+                Navigator.pop(context);
+                _showSuccessDialog(context, '封面设置成功');
+              },
+            ),
+            CupertinoContextMenuAction(
+              child: Text('编辑信息'),
+              onPressed: () {
+                Navigator.pop(context);
+                _showEditDialog(context);
+              },
+            ),
+          ],
+          previewBuilder: (context, animation, child) {
+            return Container(
+              width: 300,
+              height: 200,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [Colors.blue, Colors.purple],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Center(
+                child: Icon(
+                  CupertinoIcons.photo_fill,
+                  size: 60,
+                  color: Colors.white,
+                ),
+              ),
+            );
+          },
+          child: Container(
+            width: 150,
+            height: 150,
+            decoration: BoxDecoration(
+              color: CupertinoColors.activeBlue,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(CupertinoIcons.photo, size: 50, color: Colors.white),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showSuccessDialog(BuildContext context, String message) {
+    showCupertinoDialog(
+      context: context,
+      builder: (context) => CupertinoAlertDialog(
+        title: Text('操作成功'),
+        content: Text(message),
+        actions: [
+          CupertinoDialogAction(
+            child: Text('确定'),
+            onPressed: () => Navigator.pop(context),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showEditDialog(BuildContext context) {
+    // 编辑对话框实现
+  }
+}
+```
+
+
+### 动态生成菜单项
+```dart
+class DynamicContextMenu extends StatefulWidget {
+  @override
+  _DynamicContextMenuState createState() => _DynamicContextMenuState();
+}
+
+class _DynamicContextMenuState extends State<DynamicContextMenu> {
+  List<String> items = ['项目A', '项目B', '项目C'];
+  int selectedIndex = -1;
+
+  @override
+  Widget build(BuildContext context) {
+    return CupertinoPageScaffold(
+      navigationBar: CupertinoNavigationBar(
+        middle: Text('动态上下文菜单'),
+      ),
+      child: ListView.builder(
+        itemCount: items.length,
+        itemBuilder: (context, index) {
+          return Padding(
+            padding: EdgeInsets.all(8.0),
+            child: CupertinoContextMenu(
+              actions: _buildActions(index),
+              child: Container(
+                height: 80,
+                decoration: BoxDecoration(
+                  color: CupertinoColors.systemGrey6,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Center(
+                  child: Text(
+                    items[index],
+                    style: CupertinoTheme.of(context).textTheme.textStyle,
+                  ),
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  List<Widget> _buildActions(int index) {
+    return [
+      CupertinoContextMenuAction(
+        child: Text('选择'),
+        onPressed: () {
+          Navigator.pop(context);
+          setState(() {
+            selectedIndex = index;
+          });
+        },
+      ),
+      CupertinoContextMenuAction(
+        child: Text('重命名'),
+        onPressed: () {
+          Navigator.pop(context);
+          _renameItem(index);
+        },
+      ),
+      CupertinoContextMenuAction(
+        child: Text('删除', style: TextStyle(color: CupertinoColors.destructiveRed)),
+        onPressed: () {
+          Navigator.pop(context);
+          _deleteItem(index);
+        },
+      ),
+    ];
+  }
+
+  void _renameItem(int index) {
+    // 重命名逻辑
+  }
+
+  void _deleteItem(int index) {
+    setState(() {
+      items.removeAt(index);
+    });
+  }
+}
+```
+
+
+## 注意点
+### 常见问题
+- 手势冲突: 在可滚动的容器中使用时，可能与滚动手势产生冲突，需要合理设置手势识别优先级
+- 菜单项过多: iOS设计指南建议菜单项不超过5个，过多选项影响用户体验
+- 嵌套使用: 避免在另一个`CupertinoContextMenu`内嵌套使用，会导致手势识别异常
+
+### 性能优化
+- 预览构建优化: `previewBuilder`中的内容应尽量轻量，避免复杂计算
+- 菜单项复用: 对于列表中的多个相似菜单，考虑使用`const`构造函数或缓存菜单项
+- 动画性能: 在低端设备上，可考虑减少动画复杂度
+
+### 基础实践
+```dart
+// ✅ 推荐做法
+CupertinoContextMenu(
+  actions: [
+    CupertinoContextMenuAction(
+      child: Text('操作1'),
+      onPressed: () {
+        Navigator.pop(context); // 必须调用 pop
+        // 执行操作
+      },
+    ),
+  ],
+  child: YourContentWidget(),
+)
+
+// ❌ 避免做法
+CupertinoContextMenu(
+  actions: [
+    CupertinoContextMenuAction(
+      child: Text('操作1'),
+      onPressed: () {
+        // 忘记调用 Navigator.pop(context)
+      },
+    ),
+  ],
+)
+```
+
+
+
+## 构造函数
+```dart
+CupertinoContextMenu({
+  Key? key,
+  required List<Widget> actions,
+  Widget Function(BuildContext, Animation<double>, Widget)? previewBuilder,
+  required Widget child,
+})
+```
+
+
+
+## 属性
+| 属性名 | 类型 | 说明 |
+|--------|------|------|
+| `actions` | `List<Widget>` | 菜单操作项列表，必须包含至少一个操作项 |
+| `previewBuilder` | `Widget Function(BuildContext, Animation<double>, Widget)?` | 构建预览内容的回调函数，接收上下文、动画和子组件 |
+| `child` | `Widget` | 触发菜单显示的子组件，用户长按此组件显示菜单 |
+
+### 关键属性详解
+- `actions`属性: 
+  - 重要性: 核心属性，定义菜单的功能选项
+  - 使用要点: 每个操作项必须是`CupertinoContextMenuAction`或其子类
+  - 性能影响: 列表长度直接影响菜单渲染性能，建议控制在5个以内
+
+- `previewBuilder`属性: 
+  - 功能: 提供自定义预览内容，在菜单完全展开前显示
+  - 动画利用: 可以通过`Animation<double>`参数实现平滑的过渡动画
+  - 内存考虑: 避免在`builder`中创建重资源对象
+
+- `child`属性: 
+  - 交互要求: 必须能够响应长按手势，通常为`Container`、`Image`等可视化组件
+  - 样式建议: 应有明确的视觉反馈，如阴影、边框等，提示用户可长按操作
