@@ -1,0 +1,100 @@
+---
+title: CupertinoButton
+description: 实现iOS风格按钮的组件
+---
+
+`CupertinoButton`是Flutter中用于实现iOS风格按钮的组件，基于Cupertino设计语言。它提供圆角、按压动画和标准配色，模拟iOS原生按钮的交互体验。核心逻辑是封装手势检测和视觉反馈，适用于
+需要与iOS界面风格一致的应用场景。
+
+![](https://docs.flutter.dev/assets/images/docs/widget-catalog/cupertino-button.png)
+
+### 使用场景
+- 在iOS平台或跨平台应用中保持界面统一性。
+- 需要按钮具有按压缩放动画或高亮反馈的交互场景。
+- 作为导航栏操作、表单提交或对话框中的动作按钮。
+
+
+## 示例
+### 基础按钮
+```dart
+CupertinoButton(
+  onPressed: () {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('按钮已点击')),
+    );
+  },
+  child: Text('点击我'),
+)
+```
+
+
+### 带颜色的禁用按钮
+```dart
+CupertinoButton(
+  onPressed: isEnabled ? () { /* 操作逻辑 */ } : null, // 禁用时设为 null
+  color: CupertinoColors.activeBlue,
+  disabledColor: CupertinoColors.inactiveGray,
+  child: Text(isEnabled ? '可操作' : '已禁用'),
+)
+```
+
+
+### 自定义边框与内边距的按钮
+```dart
+CupertinoButton(
+  onPressed: () {},
+  padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+  borderRadius: BorderRadius.circular(8),
+  color: CupertinoColors.destructiveRed,
+  child: Row(
+    mainAxisSize: MainAxisSize.min,
+    children: [Icon(CupertinoIcons.delete), Text('删除')],
+  ),
+)
+```
+
+
+## 注意点
+### 常见问题与优化
+- 性能瓶颈: 避免在`onPressed`中执行耗时操作(如网络请求)，否则会阻塞动画反馈。建议使用异步操作(如`Future`)并添加加载状态。
+- 兼容性警告: 在Android平台使用时，需确保整体设计语言一致，否则可能产生体验割裂。可通过条件渲染切换Material组件。
+- 嵌套限制: `child`仅接受单个组件，如需复杂布局(如图标+文字)，需用`Row`或`Column`包裹。
+
+### 最佳实践
+- 始终为禁用状态设置`disabledColor`，避免用户困惑。
+- 通过`minSize`控制按钮最小触控区域，提升无障碍访问体验。
+- 在深色主题下测试颜色对比度，确保文字可读性。
+
+
+## 构造函数
+```dart
+const CupertinoButton({
+  Key? key,
+  required this.child,
+  this.padding,
+  this.color,
+  this.disabledColor,
+  this.minSize = kMinInteractiveDimensionCupertino,
+  this.pressedOpacity = 0.1,
+  this.borderRadius = const BorderRadius.all(Radius.circular(8.0)),
+  this.alignment = Alignment.center,
+  required this.onPressed,
+})
+```
+
+
+## 属性
+| 属性名           | 属性类型               | 说明                                                                 |
+|------------------|------------------------|----------------------------------------------------------------------|
+| `color`          | `Color?`               | 按钮背景色，默认使用 iOS 系统蓝色。                                 |
+| `disabledColor`  | `Color?`               | 禁用状态背景色，通常为灰色。                                        |
+| `minSize`        | `double`               | 按钮最小触控尺寸（默认 44.0，符合 iOS 人机指南）。                 |
+| `pressedOpacity` | `double`               | 按压时内容的透明度降低值（默认 0.1）。                              |
+| `borderRadius`   | `BorderRadiusGeometry` | 圆角边框半径，默认 8.0。                                           |
+| `alignment`      | `AlignmentGeometry`    | 子组件的对齐方式（如 `Alignment.center`）。                          |
+
+
+### 关键属性解析
+- `minSize`: 直接影响无障碍交互。若自定义值小于44.0，可能导致触控困难。
+- `pressedOpacity`: 调整按压动画的视觉强度，值越大按压效果越明显。
+- `color`: 建议使用`CupertinoColors`中的预设颜色(如`activeBlue`)以保持设计一致性。
