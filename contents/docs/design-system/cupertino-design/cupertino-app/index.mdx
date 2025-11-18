@@ -1,0 +1,150 @@
+---
+title: CupertinoApp
+description: Flutter中用于构建iOS风格应用的根组件
+---
+
+`CupertinoApp`是Flutter中用于构建iOS风格应用的根组件，基于Cupertino Design Language（苹果设计语言）。它封装了iOS主题、导航、本地化等核心功能，确保应用在视觉和交互上符合iOS标准。其核心
+逻辑是通过MaterialApp的底层实现(但独立定制)，自动注入CupertinoTheme等基础服务。
+
+![](https://docs.flutter.dev/assets/images/docs/widget-catalog/CupertinoApp.png)
+
+### 使用场景
+- 开发纯iOS风格的应用(如面向App Store的独立应用)。
+- 在混合开发中，为iOS平台单独定制界面(与MaterialApp共存)。
+- 快速原型设计，需模拟iOS原生外观(如按钮、弹窗、导航栏)。
+
+
+## 示例
+### 基础iOS风格应用
+```dart
+import 'package:flutter/cupertino.dart';
+
+void main() {
+  runApp(const CupertinoApp(
+    home: CupertinoPageScaffold(
+      navigationBar: CupertinoNavigationBar(middle: Text('首页')),
+      child: Center(child: Text('Hello iOS!')),
+    ),
+  ));
+}
+```
+
+### 带路由和交互的完整应用
+```dart
+import 'package:flutter/cupertino.dart';
+
+void main() => runApp(const MyApp());
+
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const CupertinoApp(
+      initialRoute: '/',
+      routes: {
+        '/': (context) => CupertinoTabScaffold(
+              tabBar: CupertinoTabBar(items: const [
+                BottomNavigationBarItem(icon: Icon(CupertinoIcons.home), label: '主页'),
+                BottomNavigationBarItem(icon: Icon(CupertinoIcons.settings), label: '设置'),
+              ]),
+              tabBuilder: (context, index) {
+                return CupertinoTabView(
+                  builder: (context) => index == 0 
+                    ? const HomePage() 
+                    : const SettingsPage(),
+                );
+              },
+            ),
+      },
+    );
+  }
+}
+```
+
+### 适配深色模式与本地化
+```dart
+CupertinoApp(
+  theme: const CupertinoThemeData(brightness: Brightness.dark), // 深色主题
+  localizationsDelegates: const [
+    DefaultMaterialLocalizations.delegate,
+    DefaultCupertinoLocalizations.delegate,
+    DefaultWidgetsLocalizations.delegate,
+  ],
+  home: CupertinoPageScaffold(
+    child: CupertinoButton(
+      child: Text('切换主题'),
+      onPressed: () => /* 动态主题逻辑 */,
+    ),
+  ),
+);
+```
+
+## 注意点
+### 常见问题
+- 性能瓶颈: 若嵌套过多全局提供者(如`Provider`)，可能影响应用启动速度。建议按需懒加载路由。
+- 兼容性警告: 在Android设备上使用CupertinoApp时，部分组件(如`CupertinoNavigationBar`)可能无法完美适配Material Design交互规范。
+- 路由冲突: 与MaterialApp共存时，避免共用`Navigator`实例，需通过`Platform.isIOS`动态选择根组件。
+
+### 优化技巧
+- 使用`CupertinoApp.router`构造函数(Flutter 2.0+)可基于`Router API`实现更高效的路由管理。
+- 通过`theme`统一配置颜色和字体，减少重复代码。
+- 在`localizationsDelegates`中优先加载自定义本地化委托，提升多语言响应速度。
+
+### 最佳实践
+- 优先使用`CupertinoApp`而非`MaterialApp`构建纯iOS应用，以保持设计一致性。
+- 利用`builder`参数注入全局状态管理(如`BlocProvider`)，避免在组件树中多次嵌套。
+- 测试时注意iOS特定手势(如滑动返回)，确保交互逻辑符合预期。
+
+
+
+## 构造函数
+```dart
+CupertinoApp({
+  Key? key,
+  GlobalKey<NavigatorState>? navigatorKey,
+  Widget? home,
+  Map<String, WidgetBuilder> routes = const {},
+  String? initialRoute,
+  RouteFactory? onGenerateRoute,
+  InitialRouteListFactory? onGenerateInitialRoutes,
+  RouteFactory? onUnknownRoute,
+  List<NavigatorObserver> navigatorObservers = const [],
+  String? title,
+  GenerateAppTitle? onGenerateTitle,
+  ThemeData? theme,
+  CupertinoThemeData? cupertinoOverrideTheme,
+  Locale? locale,
+  Iterable<LocalizationsDelegate<dynamic>>? localizationsDelegates,
+  LocaleListResolutionCallback? localeListResolutionCallback,
+  LocaleResolutionCallback? localeResolutionCallback,
+  Iterable<Locale> supportedLocales = const [Locale('en', 'US')],
+  bool debugShowMaterialGrid = false,
+  bool showPerformanceOverlay = false,
+  bool checkerboardRasterCacheImages = false,
+  bool checkerboardOffscreenLayers = false,
+  bool showSemanticsDebugger = false,
+  bool debugShowCheckedModeBanner = true,
+  Color? color,
+})
+```
+
+
+## 属性
+| 属性名                  | 属性类型                           | 说明                                                                 |
+|--------------------------|------------------------------------|----------------------------------------------------------------------|
+| `navigatorKey`           | `GlobalKey<NavigatorState>?`      | 导航器的全局键，用于控制路由堆栈。                                   |
+| `home`                   | `Widget?`                         | 应用的默认首页组件。                                                 |
+| `routes`                 | `Map<String, WidgetBuilder>`      | 命名路由表，键为路由名称，值为页面构建器。                           |
+| `theme`                  | `CupertinoThemeData?`             | 覆盖默认 iOS 主题（如颜色、字体）。                                  |
+| `locale`                 | `Locale?`                         | 设置应用当前语言区域。                                               |
+| `localizationsDelegates` | `List<LocalizationsDelegate>?`    | 本地化代理列表，支持多语言资源加载。                                |
+| `supportedLocales`       | `Iterable<Locale>`                | 应用支持的语言区域列表，默认为 `[Locale('en', 'US')]`。              |
+| `debugShowCheckedModeBanner` | `bool`                        | 调试模式下是否显示右上角调试横幅，默认为 `true`。                   |
+
+
+
+### 关键属性解析
+- `theme`: 通过`CupertinoThemeData`定制全局外观(如`primaryColor`、`textTheme`)，对性能影响极小，但需避免频繁动态更新。
+- `routes`: 命名路由可提升大型应用的可维护性，但需注意路由名称冲突问题。
+- `localizationsDelegates`: 必须包含`DefaultCupertinoLocalizations.delegate`以确保iOS组件文本正确本地化(如日期选择器)。
