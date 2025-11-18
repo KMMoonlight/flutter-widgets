@@ -1,0 +1,145 @@
+---
+title: CupertinoContextMenuAction
+description: 作为CupertinoContextMenu的子项，提供单个操作选项，支持文本标签、图标以及各种交互状态
+---
+
+`CupertinoContextMenuAction`是Flutter Cupertino设计语言中的上下文菜单操作项组件，专门用于iOS风格的上下文菜单。它作为`CupertinoContextMenu`的子项，提供单个操作选项，支持文本标签、图标以及各种交互状态。
+
+**核心逻辑**: 当用户长按或使用其他手势触发上下文菜单时，该组件呈现一个可点击的操作项，执行特定的回调函数。
+
+![](https://docs.flutter.dev/assets/images/docs/widget-catalog/CupertinoContextMenuAction.png)
+
+### 使用场景
+- 在表格行或列表项中提供快速操作(如删除、分享、编辑)
+- 图片或媒体内容的上下文操作菜单
+- 消息应用中的消息操作选项
+- 文件管理应用中的文件操作菜单
+
+
+## 示例
+### 基础文本操作项
+```dart
+CupertinoContextMenuAction(
+  onPressed: () {
+    // 删除操作
+    print('删除项目');
+  },
+  child: const Text('删除'),
+)
+```
+
+
+### 带图标的完整操作项
+```dart
+CupertinoContextMenuAction(
+  onPressed: () {
+    // 分享操作
+    print('分享内容');
+  },
+  isDefaultAction: true, // 默认操作（粗体显示）
+  trailingIcon: CupertinoIcons.share, // 尾部图标
+  child: const Text('分享'),
+)
+```
+
+
+### 危险操作与自定义样式
+```dart
+CupertinoContextMenuAction(
+  onPressed: () {
+    // 危险操作确认
+    showCupertinoDialog(
+      context: context,
+      builder: (context) => CupertinoAlertDialog(
+        title: Text('确认删除？'),
+        actions: [
+          CupertinoDialogAction(
+            child: Text('取消'),
+            onPressed: () => Navigator.pop(context),
+          ),
+          CupertinoDialogAction(
+            isDestructiveAction: true,
+            child: Text('删除'),
+            onPressed: () {
+              Navigator.pop(context);
+              // 执行删除逻辑
+            },
+          ),
+        ],
+      ),
+    );
+  },
+  isDestructiveAction: true, // 危险操作（红色显示）
+  child: const Text(
+    '删除',
+    style: TextStyle(color: CupertinoColors.destructiveRed),
+  ),
+)
+```
+
+## 注意点
+### 常见问题
+- 性能考虑: 避免在`onPressed`回调中执行耗时操作，应使用异步处理
+- 嵌套限制: 必须作为`CupertinoContextMenu`的直接子组件使用
+- 手势冲突: 在可滚动的容器中使用时，注意长按手势的冲突处理
+
+### 优化技巧
+- 对于频繁使用的操作项，考虑使用`const`构造函数优化性能
+- 使用`isDefaultAction`标记最常用的操作
+- 为危险操作明确设置`isDestructiveAction`属性
+
+
+### 最佳实践
+```dart
+// 推荐：清晰的回调处理和状态管理
+CupertinoContextMenuAction(
+  onPressed: () async {
+    // 异步操作处理
+    final result = await _performAsyncAction();
+    if (result) {
+      // 成功处理
+    }
+  },
+  child: Text('异步操作'),
+)
+```
+
+
+## 构造函数
+```dart
+const CupertinoContextMenuAction({
+  Key? key,
+  required this.onPressed,
+  this.isDefaultAction = false,
+  this.isDestructiveAction = false,
+  this.trailingIcon,
+  required this.child,
+})
+```
+
+
+## 属性
+| 属性名 | 类型 | 说明 |
+|--------|------|------|
+| onPressed | VoidCallback | 点击操作项时触发的回调函数 |
+| isDefaultAction | bool | 是否为默认操作（粗体显示） |
+| isDestructiveAction | bool | 是否为危险操作（红色显示） |
+| trailingIcon | IconData? | 操作项尾部显示的图标 |
+| child | Widget | 操作项的主要内容部件 |
+
+
+### 关键属性详解
+- `onPressed`(最重要的属性):
+  - 必须提供有效的回调函数
+  - 支持异步操作，但需注意UI响应性
+  - 通常用于执行具体的业务逻辑
+
+- `isDestructiveAction`(安全相关): 
+  - 设置为true时，文本显示为红色
+  - 用于删除、注销等危险操作
+  - 帮助用户识别潜在的危险操作
+
+- `trailingIcon`(用户体验优化):
+  - 提供直观的视觉提示
+  - 使用`CupertinoIcons`中的图标保持一致性
+  - 增强操作的可识别性
