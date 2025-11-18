@@ -1,0 +1,151 @@
+---
+title: CupertinoActionSheet
+description: 用于实现iOS风格操作表的组件
+---
+
+`CupertinoActionSheet`是Flutter中用于实现iOS风格操作表的组件，通常用于展示一组操作选项(如确认、取消、删除等)。其核心逻辑是: 通过模态弹窗从屏幕底部滑出，提供清晰的选项列表，用户点击后自
+动关闭并触发对应操作。适用于需要用户从多个动作中快速选择的场景，如删除确认、分享操作或内容筛选。
+
+![](https://docs.flutter.dev/assets/images/docs/widget-catalog/cupertino-action-sheet.png)
+
+### 使用场景
+- 危险操作确认: 例如删除项目时弹出二次确认。
+- 多操作选择: 如分享到不同平台或选择文件处理方式。
+- 上下文菜单: 在用户触发特定元素(如按钮)后展示相关操作。
+
+
+## 示例
+### 基础操作表
+```dart
+// 场景：删除项目前的确认弹窗
+void _showBasicActionSheet(BuildContext context) {
+  showCupertinoModalPopup<void>(
+    context: context,
+    builder: (BuildContext context) => CupertinoActionSheet(
+      title: const Text('确认删除'),
+      message: const Text('删除后数据将无法恢复，请谨慎操作。'),
+      actions: <CupertinoActionSheetAction>[
+        CupertinoActionSheetAction(
+          onPressed: () {
+            Navigator.pop(context);
+            // 执行删除逻辑
+            print('项目已删除');
+          },
+          isDefaultAction: true,
+          child: const Text('删除'),
+        ),
+      ],
+      cancelButton: CupertinoActionSheetAction(
+        onPressed: () {
+          Navigator.pop(context); // 关闭弹窗
+        },
+        child: const Text('取消'),
+      ),
+    ),
+  );
+}
+// 触发方式：在按钮的onPressed中调用_showBasicActionSheet(context)
+```
+
+### 多操作选择
+```dart
+// 场景：分享内容到多个平台
+void _showShareActionSheet(BuildContext context) {
+  showCupertinoModalPopup<void>(
+    context: context,
+    builder: (BuildContext context) => CupertinoActionSheet(
+      message: const Text('选择分享方式'),
+      actions: <CupertinoActionSheetAction>[
+        CupertinoActionSheetAction(
+          onPressed: () {
+            Navigator.pop(context);
+            // 分享到微信
+          },
+          child: const Text('微信'),
+        ),
+        CupertinoActionSheetAction(
+          onPressed: () {
+            Navigator.pop(context);
+            // 分享到微博
+          },
+          child: const Text('微博'),
+        ),
+      ],
+      cancelButton: CupertinoActionSheetAction(
+        onPressed: Navigator.of(context).pop,
+        child: const Text('取消'),
+      ),
+    ),
+  );
+}
+```
+
+### 适配暗色主题与自定义样式
+```dart
+// 场景：在暗色主题下保持iOS风格一致性
+void _showThemedActionSheet(BuildContext context) {
+  showCupertinoModalPopup<void>(
+    context: context,
+    builder: (BuildContext context) => CupertinoTheme(
+      data: CupertinoThemeData(brightness: Brightness.dark), // 强制暗色主题
+      child: CupertinoActionSheet(
+        title: const Text('主题设置'),
+        message: const Text('选择界面主题偏好'),
+        actions: [
+          CupertinoActionSheetAction(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('浅色主题'),
+          ),
+          CupertinoActionSheetAction(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('深色主题'),
+          ),
+        ],
+        cancelButton: CupertinoActionSheetAction(
+          onPressed: Navigator.of(context).pop,
+          child: const Text('关闭'),
+        ),
+      ),
+    ),
+  );
+}
+```
+
+
+## 注意点
+### 性能瓶颈
+- 避免在`actions`列表中嵌套复杂组件(如动态生成大量选项)，可能导致渲染延迟。建议对超过5个操作项使用滚动容器(如`CupertinoScrollbar`)。
+
+### 兼容性警告
+- 此组件专为iOS设计，在Android设备上需通过`ThemeData.platform`统一风格或使用条件判断切换为`AlertDialog`。
+
+### 最佳实践
+- 优先级顺序: 将默认操作(如“删除”)放在顶部，取消按钮始终由`cancelButton`单独处理。
+- 用户引导: 用`message`解释操作后果，避免用户误触。
+- 关闭逻辑: 每个`CupertinoActionSheetAction`的`onPressed`中必须调用`Navigator.pop(context)`关闭弹窗。
+
+
+## 构造函数
+```dart
+const CupertinoActionSheet({
+  Key? key,
+  Widget? title,          // 顶部标题（可选）
+  Widget? message,        // 说明文本（可选）
+  List<Widget>? actions,  // 操作按钮列表
+  Widget? cancelButton,   // 底部取消按钮（单独样式）
+})
+```
+
+
+## 属性
+| 属性名        | 属性类型         | 说明                                                                 |
+|---------------|------------------|----------------------------------------------------------------------|
+| `title`       | `Widget?`        | 操作表的标题，通常为 `Text` 组件，显示在顶部。                       |
+| `message`     | `Widget?`        | 详细说明文本，用于解释操作背景或后果。                               |
+| `actions`     | `List<Widget>?`  | 主操作按钮列表，每个元素应为 `CupertinoActionSheetAction`。         |
+| `cancelButton`| `Widget?`        | 底部取消按钮，iOS风格中始终单独显示。                                |
+
+### 关键属性解释
+- `actions`: 核心交互属性，用于定义主要操作选项。每个按钮需包裹为`CupertinoActionSheetAction`，其`isDefaultAction`参数可标记高亮选项(如危险操作)。
+- `cancelButton`: 取消按钮独立于操作列表，始终显示在最底部。用户点击后通常仅关闭弹窗，不触发业务逻辑。
+- `message`: 用于增强可访问性，通过文本提示降低用户误操作概率，例如在删除操作前添加警告说明。
