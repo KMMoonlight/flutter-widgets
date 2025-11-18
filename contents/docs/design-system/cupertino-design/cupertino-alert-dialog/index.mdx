@@ -1,0 +1,125 @@
+---
+title: CupertinoAlertDialog
+description: iOS风格对话框的组件
+---
+
+`CupertinoAlertDialog`是Flutter中用于实现iOS风格对话框的组件，遵循Apple的Human Interface Guidelines。它通常用于关键决策场景(如确认删除操作)或重要信息提示，通过模态窗口中断用户当前流程，确保注意力集中。其核心逻辑包括:
+- 模态交互: 强制用户响应后方可关闭，防止意外操作。
+- 自适应样式: 自动匹配iOS系统的视觉规范(如圆角、字体、动效)。
+- 动作按钮管理: 通过`actions`列表提供可选操作，按钮按需垂直排列。
+
+![](https://docs.flutter.dev/assets/images/docs/widget-catalog/cupertino-alert-dialog.png)
+
+### 典型使用场景
+- 确认高风险操作(如退出编辑、删除数据)。
+- 显示错误或警告信息(如网络连接失败)。
+- 请求用户权限(如访问相册、位置)。
+
+
+
+## 示例
+### 基础确认对话框
+```dart
+CupertinoAlertDialog(
+  title: Text("删除确认"),
+  content: Text("确定要删除此项目吗？此操作不可撤销。"),
+  actions: [
+    CupertinoDialogAction(
+      child: Text("取消"),
+      onPressed: () => Navigator.pop(context), // 关闭对话框
+    ),
+    CupertinoDialogAction(
+      isDestructiveAction: true, // 标记为危险操作（红色文本）
+      child: Text("删除"),
+      onPressed: () {
+        _deleteItem(); // 执行删除逻辑
+        Navigator.pop(context);
+      },
+    ),
+  ],
+)
+```
+
+
+### 带输入框的复杂对话框
+```dart
+CupertinoAlertDialog(
+  title: Text("重命名文件"),
+  content: CupertinoTextField(
+    placeholder: "输入新名称",
+    onChanged: (value) => _newName = value,
+  ),
+  actions: [
+    CupertinoDialogAction(
+      child: Text("取消"),
+      onPressed: () => Navigator.pop(context),
+    ),
+    CupertinoDialogAction(
+      child: Text("确认"),
+      onPressed: _newName.isEmpty ? null : () { // 空值时禁用按钮
+        _renameFile(_newName);
+        Navigator.pop(context);
+      },
+    ),
+  ],
+)
+```
+
+
+### 适配深色主题的警告对话框
+```dart
+CupertinoAlertDialog(
+  title: Text("存储空间不足", style: TextStyle(color: CupertinoColors.systemRed)),
+  content: Text("请清理空间后重试。"),
+  actions: [
+    CupertinoDialogAction(
+      isDefaultAction: true, // 标记为默认操作（粗体）
+      child: Text("设置"),
+      onPressed: () => _openSettings(),
+    ),
+    CupertinoDialogAction(
+      child: Text("稍后"),
+      onPressed: () => Navigator.pop(context),
+    ),
+  ],
+)
+```
+
+
+## 注意点
+### 性能与兼容性
+- 避免在`actions`中嵌套过多按钮(iOS规范建议不超过3个)，否则可能引起滚动性能问题。
+- 在非iOS平台使用时，需测试字体和动效的兼容性(可通过CupertinoApp统一风格)。
+
+### 用户体验优化
+- 危险操作(如删除)应使用`isDestructiveAction: true`突出显示。
+- 通过`isDefaultAction: true`标记用户最可能选择的选项，提升操作效率。
+
+### 常见问题
+- 对话框内容过长时，系统会自动启用滚动，但需避免极端高度导致渲染异常。
+- 使用`Navigator.pop(context)`关闭对话框时，需确保`context`属于当前对话框层级。
+
+
+
+## 构造函数
+```dart
+const CupertinoAlertDialog({
+  Key? key,
+  Widget? title,          // 标题组件（通常为Text）
+  Widget? content,        // 内容区域组件
+  List<Widget>? actions,  // 操作按钮列表
+})
+```
+
+
+## 属性
+| 属性名       | 属性类型            | 说明                                                                 |
+|--------------|---------------------|----------------------------------------------------------------------|
+| `title`      | `Widget?`           | 对话框标题，通常显示为加粗文本。                                     |
+| `content`    | `Widget?`           | 主要内容区域，支持任意组件（如Text、Column嵌套多行内容）。           |
+| `actions`    | `List<Widget>?`     | 操作按钮列表，需使用`CupertinoDialogAction`组件。                   |
+
+
+### 关键属性深度解析
+- `actions`: 此属性接收一个`CupertinoDialogAction`组件列表，按钮按声明顺序垂直排列。若需实现“取消按钮在底部”的iOS标准样式，应将取消按钮声明在列表末尾(示例1所示)。
+- `title`与`content`的协作: 当同时设置`title`和`content`时，系统会自动添加间距和分割线。若仅设置`content`，对话框会自适应内容高度，避免空白区域。
