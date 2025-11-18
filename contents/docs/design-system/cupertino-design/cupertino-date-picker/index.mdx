@@ -1,0 +1,210 @@
+---
+title: CupertinoDatePicker
+description: iOS风格设计的日期和时间选择器组件
+---
+
+`CupertinoDatePicker`是Flutter中专门为iOS风格设计的日期和时间选择器组件。它遵循Apple的Human Interface Guidelines，提供与原生iOS应用一致的日期选择体验。该组件通过滚轮式交互让用户轻松选择日期、时间或日期时间组合。
+
+![](https://docs.flutter.dev/assets/images/docs/widget-catalog/CupertinoDatePicker.png)
+
+### 使用场景
+- **iOS风格应用**: 需要与iOS原生界面保持一致性的应用
+- **日期选择需求**: 用户需要选择生日、预约时间、日程安排等场景
+- **时间设置**: 设置闹钟、定时任务等时间相关功能
+- **表单输入**: 在需要日期输入的注册表单或设置页面中使用
+
+
+## 示例
+### 基础日期选择器
+```dart
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+
+class BasicDatePickerExample extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return CupertinoApp(
+      home: CupertinoPageScaffold(
+        navigationBar: CupertinoNavigationBar(
+          middle: Text('基础日期选择器'),
+        ),
+        child: SafeArea(
+          child: Column(
+            children: [
+              SizedBox(height: 20),
+              Container(
+                height: 200,
+                child: CupertinoDatePicker(
+                  mode: CupertinoDatePickerMode.date,
+                  initialDateTime: DateTime.now(),
+                  onDateTimeChanged: (DateTime newDateTime) {
+                    print('选择的日期: $newDateTime');
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+```
+
+### 日期时间选择器与状态管理
+```dart
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+
+class DateTimePickerWithState extends StatefulWidget {
+  @override
+  _DateTimePickerWithStateState createState() => _DateTimePickerWithStateState();
+}
+
+class _DateTimePickerWithStateState extends State<DateTimePickerWithState> {
+  DateTime _selectedDateTime = DateTime.now();
+
+  @override
+  Widget build(BuildContext context) {
+    return CupertinoPageScaffold(
+      navigationBar: CupertinoNavigationBar(
+        middle: Text('日期时间选择器'),
+      ),
+      child: SafeArea(
+        child: Column(
+          children: [
+            SizedBox(height: 20),
+            Text(
+              '当前选择: ${_selectedDateTime.toString()}',
+              style: CupertinoTheme.of(context).textTheme.textStyle,
+            ),
+            SizedBox(height: 20),
+            Expanded(
+              child: CupertinoDatePicker(
+                mode: CupertinoDatePickerMode.dateAndTime,
+                initialDateTime: _selectedDateTime,
+                minimumDate: DateTime.now().subtract(Duration(days: 365)),
+                maximumDate: DateTime.now().add(Duration(days: 365)),
+                onDateTimeChanged: (DateTime newDateTime) {
+                  setState(() {
+                    _selectedDateTime = newDateTime;
+                  });
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+```
+
+
+### 自定义主题和限制范围
+```dart
+import 'package:flutter/cupertino.dart';
+
+class CustomizedDatePicker extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return CupertinoApp(
+      theme: CupertinoThemeData(
+        brightness: Brightness.dark,
+        textTheme: CupertinoTextThemeData(
+          dateTimePickerTextStyle: TextStyle(
+            fontSize: 18,
+            color: CupertinoColors.activeOrange,
+          ),
+        ),
+      ),
+      home: CupertinoPageScaffold(
+        navigationBar: CupertinoNavigationBar(
+          middle: Text('自定义日期选择器'),
+          backgroundColor: CupertinoColors.systemGrey6,
+        ),
+        child: SafeArea(
+          child: CupertinoDatePicker(
+            mode: CupertinoDatePickerMode.time,
+            initialDateTime: DateTime.now(),
+            use24hFormat: true,
+            minuteInterval: 15,
+            onDateTimeChanged: (DateTime newTime) {
+              print('选择的时间: ${newTime.hour}:${newTime.minute}');
+            },
+          ),
+        ),
+      ),
+    );
+  }
+}
+```
+
+
+## 注意点
+### 常见问题
+1. **性能考虑**: 在低端设备上，频繁更新日期选择器可能导致性能问题，建议使用防抖处理
+2. **时区处理**: `DateTime`对象包含时区信息，需要确保时区一致性
+3. **最小/最大日期限制**: 设置合理的日期范围，避免用户选择无效日期
+
+### 优化技巧
+- 使用`minuteInterval`限制时间选择的精度(如每15分钟一个选项)
+- 合理设置`minimumDate`和`maximumDate`避免无效选择
+- 对于表单提交场景，可以添加确认按钮而不是实时提交
+
+### 最佳实践
+```dart
+// 最佳实践示例：结合表单验证
+CupertinoDatePicker(
+  mode: CupertinoDatePickerMode.date,
+  initialDateTime: DateTime(2000),
+  minimumDate: DateTime(1900),
+  maximumDate: DateTime.now(),
+  onDateTimeChanged: (date) {
+    // 添加验证逻辑
+    if (date.isAfter(DateTime.now().subtract(Duration(days: 365 * 18)))) {
+      // 提示用户必须年满18岁
+    }
+  },
+)
+```
+
+
+## 构造函数
+```dart
+CupertinoDatePicker({
+  Key? key,
+  required this.mode,
+  required this.onDateTimeChanged,
+  DateTime? initialDateTime,
+  DateTime? minimumDate,
+  DateTime? maximumDate,
+  int? minuteInterval,
+  bool? use24hFormat,
+  CupertinoDatePickerDateOrder? dateOrder,
+  CupertinoDatePickerDateTimeOrder? dateTimeOrder,
+})
+```
+
+## 属性
+| 属性名 | 属性类型 | 说明 |
+|--------|----------|------|
+| mode | CupertinoDatePickerMode | 选择器模式：date/time/dateAndTime |
+| onDateTimeChanged | `ValueChanged<DateTime>` | 日期时间变化时的回调函数 |
+| initialDateTime | DateTime | 初始显示的日期时间 |
+| minimumDate | DateTime | 允许选择的最小日期 |
+| maximumDate | DateTime | 允许选择的最大日期 |
+| minuteInterval | int | 分钟选择间隔（1-60） |
+| use24hFormat | bool | 是否使用24小时制格式 |
+| dateOrder | CupertinoDatePickerDateOrder | 日期显示顺序（月日年等） |
+| dateTimeOrder | CupertinoDatePickerDateTimeOrder | 日期时间显示顺序 |
+
+
+### 关键属性详解
+- `mode`属性: 最重要的属性，决定选择器的类型：
+  - `CupertinoDatePickerMode.date`: 仅选择日期(年、月、日)
+  - `CupertinoDatePickerMode.time`: 仅选择时间(时、分)
+  - `CupertinoDatePickerMode.dateAndTime`: 同时选择日期和时间
+
+- `minuteInterval`属性: 设置时间选择的精度，如设置为15，则分钟选项为00、15、30、45，有效避免用户选择不精确的时间。
+- `minimumDate/maximumDate`属性: 必须合理设置，特别是对于生日选择等场景，需要限制选择范围以确保数据有效性。
