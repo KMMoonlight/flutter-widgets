@@ -1,0 +1,112 @@
+---
+title: CupertinoDesktopTextSelectionControls
+description: 模拟iOS风格文本选择控件的组件
+---
+
+`CupertinoDesktopTextSelectionControls`是Flutter中用于在桌面端(如macOS或Windows)模拟iOS风格文本选择控件的组件。它继承自`TextSelectionControls`，主要用途是管理文本选择时的
+工具栏行为(如复制、剪切、粘贴等)，并在桌面环境下提供与`Cupertino`设计语言一致的用户交互体验。其核心逻辑是适配桌面端鼠标和键盘事件，同时保持iOS风格的视觉反馈。
+
+### 使用场景
+- 在桌面应用中需要实现iOS风格的文本选择交互(如跨平台应用需统一UI)。
+- 针对macOS平台开发时，希望文本选择控件与系统原生行为接近但保留Cupertino视觉风格。
+- 需要自定义文本选择工具栏的布局或功能，但基础逻辑需遵循Cupertino设计规范。
+
+
+## 示例
+### 基础文本选择控件
+```dart
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/services.dart';
+
+class BasicTextSelectionExample extends StatelessWidget {
+  final TextEditingController _controller = TextEditingController(text: '选中这段文本试试');
+
+  @override
+  Widget build(BuildContext context) {
+    return CupertinoTextField(
+      controller: _controller,
+      selectionControls: CupertinoDesktopTextSelectionControls(), // 应用桌面端控件
+    );
+  }
+}
+```
+
+
+### 自定义工具栏选项
+```dart
+class CustomToolbarExample extends StatefulWidget {
+  @override
+  _CustomToolbarExampleState createState() => _CustomToolbarExampleState();
+}
+
+class _CustomToolbarExampleState extends State<CustomToolbarExample> {
+  final TextEditingController _controller = TextEditingController();
+
+  // 自定义选择控件，重写工具栏按钮
+  final CupertinoDesktopTextSelectionControls _customControls = CupertinoDesktopTextSelectionControls();
+
+  @override
+  Widget build(BuildContext context) {
+    return CupertinoTextField(
+      controller: _controller,
+      selectionControls: _customControls,
+    );
+  }
+}
+```
+
+
+### 适配暗色主题
+```dart
+class ThemedSelectionExample extends StatelessWidget {
+  final TextEditingController _controller = TextEditingController();
+
+  @override
+  Widget build(BuildContext context) {
+    return CupertinoApp(
+      theme: CupertinoThemeData(brightness: Brightness.dark), // 暗色主题
+      home: CupertinoPageScaffold(
+        child: CupertinoTextField(
+          controller: _controller,
+          selectionControls: CupertinoDesktopTextSelectionControls(),
+        ),
+      ),
+    );
+  }
+}
+```
+
+
+## 注意点
+1. 平台兼容性:
+  - 该组件专为桌面端设计，在移动端(iOS/Android)可能无法正常触发工具栏事件。
+  - 在非桌面平台使用时，建议回退到`CupertinoTextSelectionControls`(移动端版本)。
+
+2. 性能优化:
+  - 文本选择控件的渲染依赖平台通道(如鼠标事件监听)，避免在频繁重建的`Widget`(如动画中)内使用，防止不必要的资源消耗。
+  - 若自定义工具栏选项过多，可能影响文本选择响应速度，建议优先使用系统默认操作。
+
+3. 最佳实践:
+  - 结合`TextSelectionToolbar`自定义按钮时，需确保操作符合桌面端交互习惯(如支持右键菜单)。
+  - 在macOS上测试时，注意与系统快捷键(如Cmd+C)的冲突处理。
+
+
+## 构造函数
+`CupertinoDesktopTextSelectionControls`为无参数构造函数:
+```dart
+const CupertinoDesktopTextSelectionControls()
+```
+- **初始化描述**: 直接创建实例，无需额外配置。其内部逻辑通过重写父类(`TextSelectionControls`)的方法实现桌面端适配。
+
+
+## 属性
+| 属性名               | 属性类型                     | 说明                                                                 |
+|----------------------|-----------------------------|----------------------------------------------------------------------|
+| `copyButton`         | `TextSelectionToolbarButton` | 复制按钮的配置，默认使用 Cupertino 风格的图标和文本。               |
+| `cutButton`          | `TextSelectionToolbarButton` | 剪切按钮的配置，仅在文本可编辑时显示。                              |
+| `pasteButton`        | `TextSelectionToolbarButton` | 粘贴按钮的配置，依赖剪贴板内容可用性。                              |
+| `selectAllButton`    | `TextSelectionToolbarButton` | 全选按钮的配置，默认包含在桌面端工具栏中。                          |
+
+### 关键属性解析
+- `copyButton`: 最常用的工具栏选项，其样式和事件绑定直接影响用户操作体验。桌面端会自动适配鼠标悬停效果。
+- `selectAllButton`: 在桌面端文本选择中尤为重要，因桌面用户更依赖键盘/鼠标组合操作(如Ctrl+A)。若自定义此按钮，需确保与系统行为一致。
