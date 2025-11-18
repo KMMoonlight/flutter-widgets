@@ -1,0 +1,127 @@
+---
+title: CupertinoAdaptiveTextSelectionToolbar
+description: 用于文本选择上下文菜单的组件
+---
+
+`CupertinoAdaptiveTextSelectionToolbar`是Flutter中用于文本选择上下文菜单的组件，专为iOS和macOS设计。它根据平台自动适配外观：在iOS上使用原生风格的工具栏(如剪切、复制、粘贴等选项)，而在其他平台(如 Android 或 Web)上回
+退到Material Design风格的菜单。其核心逻辑是简化跨平台文本处理的一致性，同时保持平台原生体验。
+
+![](https://docs.flutter.dev/assets/images/docs/widget-catalog/CupertinoAdaptiveTextSelectionToolbar.png)
+
+### 使用场景
+- 在支持文本选择的组件(如`TextField`或`TextSpan`)中，长按文本时弹出上下文菜单。
+- 适用于需要跨平台适配的Flutter应用，确保iOS用户获得熟悉的界面。
+- 常用于富文本编辑器、聊天输入框或文档查看器等场景。
+
+
+## 示例
+### 基础文本选择菜单
+```dart
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+
+class AdaptiveTextSelectionExample extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return CupertinoPageScaffold(
+      child: Center(
+        child: TextField(
+          toolbarOptions: ToolbarOptions(
+            copy: true,
+            cut: true,
+            paste: true,
+            selectAll: true,
+          ),
+          // 使用 CupertinoAdaptiveTextSelectionToolbar 自动适配
+          contextMenuBuilder: (context, editableTextState) {
+            return CupertinoAdaptiveTextSelectionToolbar(
+              anchors: editableTextState.contextMenuAnchors,
+              children: editableTextState.contextMenuButtonItems,
+            );
+          },
+        ),
+      ),
+    );
+  }
+}
+```
+
+
+### 自定义菜单选项
+```dart
+CupertinoAdaptiveTextSelectionToolbar(
+  anchors: editableTextState.contextMenuAnchors,
+  children: [
+    ...editableTextState.contextMenuButtonItems,
+    CupertinoTextSelectionToolbarButton(
+      onPressed: () {
+        // 处理分享逻辑
+        print("分享文本");
+      },
+      child: Text('分享'),
+    ),
+  ],
+);
+```
+
+
+### 强制使用Cupertino风格，忽略平台适配
+```dart
+Builder(
+  builder: (context) {
+    return CupertinoTheme(
+      data: CupertinoThemeData(),
+      child: CupertinoAdaptiveTextSelectionToolbar(
+        anchors: anchors,
+        children: buttonItems,
+      ),
+    );
+  },
+);
+```
+
+
+## 注意点
+- **常见问题**
+  - **平台检测逻辑**: 组件依赖`defaultTargetPlatform`检测平台，在模拟器或特定设备上可能需手动测试。
+  - **依赖父组件**: 必须与`EditableText`或`TextField`的`contextMenuBuilder`结合使用，单独使用无效。
+  - **样式冲突**: 在非`Cupertino`主题的应用中，可能需要额外包装`CupertinoTheme`以确保视觉一致。
+
+- **优化技巧**
+  - 使用`ToolbarOptions`精确控制显示的按钮(如禁用剪切功能)。
+  - 通过`contextMenuButtonItems`动态生成子项，避免硬编码菜单选项。
+  - 在`dispose`生命周期中清理菜单状态，防止内存泄漏。
+
+- **最佳实践**
+  - 优先依赖默认适配逻辑，仅在需要自定义时覆盖`children`属性。
+  - 测试时覆盖`defaultTargetPlatform`以验证多平台表现: 
+
+
+  ```dart
+  import 'package:flutter/foundation.dart';
+
+  void main() {
+    debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
+    runApp(MyApp());
+  }
+  ```
+
+## 构造函数
+```dart
+const CupertinoAdaptiveTextSelectionToolbar({
+  Key? key,
+  required this.anchors,           // 菜单定位锚点（通常来自 editableTextState.contextMenuAnchors）
+  required this.children,          // 工具栏按钮列表（如复制、粘贴等 CupertinoTextSelectionToolbarButton）
+}) 
+```
+
+## 属性
+| 属性名       | 属性类型                      | 说明                                                                 |
+|--------------|-------------------------------|----------------------------------------------------------------------|
+| `anchors`    | `TextSelectionToolbarAnchors` | 工具栏的定位锚点，依赖文本选择的位置信息（如光标坐标）。             |
+| `children`   | `List<Widget>`                | 工具栏的子组件列表，通常为 `CupertinoTextSelectionToolbarButton` 实例。 |
+
+
+### 关键属性解释
+- `anchors`: 必须从`EditableTextState.contextMenuAnchors`获取，确保菜单位置与文本选择区域对齐。错误传递可能导致菜单显示错位。
+- `children`: 通常通过`editableTextState.contextMenuButtonItems`生成默认按钮，但可扩展自定义按钮(如示例 2)。注意按钮顺序影响用户体验。
