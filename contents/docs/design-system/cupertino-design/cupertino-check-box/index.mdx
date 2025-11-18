@@ -1,0 +1,121 @@
+---
+title: CupertinoCheckBox
+description: 基于iOS设计语言(Cupertino)的复选框组件
+---
+
+`CupertinoCheckbox`是Flutter中基于iOS设计语言(Cupertino)的复选框组件，主要用于在列表、表单或设置页面中提供二进制选择功能(如开启/关闭、同意条款等)。其核心逻
+辑基于`value`和`onChanged`属性: 当用户点击时，通过`onChanged`回调更新`value`值(true/false)，触发UI状态切换（选中或未选中）。
+
+![](https://docs.flutter.dev/assets/images/docs/widget-catalog/CupertinoCheckbox.png)
+
+
+### 典型使用场景
+- 设置页面的开关选项(如“通知权限”)。
+- 表单中的多选项目(如选择兴趣标签)。
+- 任务列表中的完成状态标记(如待办事项)。
+
+
+## 示例
+### 基础开关控制
+```dart
+import 'package:flutter/cupertino.dart';
+
+class BasicCheckboxExample extends StatefulWidget {
+  @override
+  _BasicCheckboxExampleState createState() => _BasicCheckboxExampleState();
+}
+
+class _BasicCheckboxExampleState extends State<BasicCheckboxExample> {
+  bool _isSelected = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return CupertinoPageScaffold(
+      navigationBar: CupertinoNavigationBar(middle: Text('基础复选框')),
+      child: Center(
+        child: CupertinoCheckbox(
+          value: _isSelected,
+          onChanged: (bool? newValue) {
+            setState(() {
+              _isSelected = newValue ?? false;
+            });
+          },
+        ),
+      ),
+    );
+  }
+}
+```
+
+### 结合标签的交互
+```dart
+CupertinoListTile(
+  title: Text('启用定位服务'),
+  trailing: CupertinoCheckbox(
+    value: _locationEnabled,
+    onChanged: (bool? value) {
+      setState(() => _locationEnabled = value ?? false);
+    },
+  ),
+)
+```
+
+
+### 适配主题色
+```dart
+CupertinoCheckbox(
+  value: _isChecked,
+  activeColor: CupertinoColors.activeGreen, // 自定义选中颜色
+  onChanged: (bool? value) {
+    setState(() => _isChecked = value ?? false);
+  },
+)
+```
+
+
+## 注意点
+- 常见问题
+  - 状态管理: 必须将`value`与状态变量绑定，否则UI不会更新。
+  - 空安全处理: `onChanged`回调参数可能为null(如禁用时)，需使用??提供默认值。
+  - 平台一致性: 在Android应用中过度使用可能破坏用户体验，建议优先使用`Checkbox`。
+
+- 性能优化
+  - 若复选框在长列表中，配合`ListView.builder`避免重复渲染。
+  - 避免在`onChanged`中执行耗时操作(如网络请求)，以免阻塞UI。
+
+- 最佳实践
+  - 禁用时设置`onChanged: null`，复选框会自动变为灰色不可点状态。
+  - 通过`activeColor`自定义颜色时，需符合iOS设计规范。
+
+
+## 构造函数
+```dart
+const CupertinoCheckbox({
+  Key? key,
+  required this.value,           // 当前选中状态（必填）
+  this.onChanged,                // 状态变更回调
+  this.activeColor,              // 选中颜色（默认系统蓝色）
+  this.inactiveColor,            // 未选中颜色（默认灰色）
+  this.checkColor,               // 勾选图标颜色（默认白色）
+  this.focusNode,                // 焦点控制
+  this.autofocus = false,        // 是否自动获取焦点
+})
+```
+
+
+## 属性
+| 属性名         | 类型                      | 说明                                                                 |
+|----------------|---------------------------|----------------------------------------------------------------------|
+| `value`        | `bool`                    | **必填**。当前是否选中（true/false）。                               |
+| `onChanged`    | `ValueChanged<bool?>`     | 状态变更回调函数；设置为 `null` 时复选框禁用。                        |
+| `activeColor`  | `Color?`                  | 选中状态下的背景色（默认 `CupertinoColors.activeBlue`）。            |
+| `inactiveColor`| `Color?`                  | 未选中时的边框颜色（默认 `CupertinoColors.inactiveGray`）。         |
+| `checkColor`   | `Color?`                  | 勾选图标（✓）的颜色（默认白色）。                                    |
+| `focusNode`    | `FocusNode?`              | 用于控制焦点（如键盘导航）。                                         |
+| `autofocus`    | `bool`                    | 是否在初始化时自动获取焦点（默认 false）。                           |
+
+
+### 关键属性说明：
+- `value`与`onChanged`: 必须配合使用，构成受控组件的核心逻辑。
+- `activeColor`: 自定义主题色时需确保对比度符合可访问性标准。
+- `inactiveColor`: 在深色模式下可能需调整以避免可视性问题。
