@@ -1,0 +1,116 @@
+---
+title: CupertinoActivityIndicator
+description: 模仿iOS设计风格的加载指示器组件
+---
+
+`CupertinoActivityIndicator`是Flutter中模仿iOS设计风格的加载指示器组件，用于表示应用正在处理任务或加载数据。其核心逻辑是通过一个旋转的圆形动画来提供视觉反馈，适用于需要
+非阻塞式等待的场景。该组件默认采用iOS系统的标准外观和动画节奏，确保在Cupertino设计语言下的一致性。
+
+![](https://docs.flutter.dev/assets/images/docs/widget-catalog/cupertino-activity-indicator.png)
+
+### 主要使用场景
+- 数据加载过程中(如网络请求)显示等待状态。
+- 表单提交时避免用户重复操作。
+- 在列表滚动加载更多内容时作为底部指示器。
+
+## 示例
+### 基础加载指示器
+```dart
+import 'package:flutter/cupertino.dart';
+
+class SimpleLoadingScreen extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return const CupertinoPageScaffold(
+      navigationBar: CupertinoNavigationBar(middle: Text('加载中...')),
+      child: Center(child: CupertinoActivityIndicator()),
+    );
+  }
+}
+```
+
+
+### 条件性显示指示器
+```dart
+import 'package:flutter/cupertino.dart';
+
+class ConditionalIndicator extends StatefulWidget {
+  @override
+  _ConditionalIndicatorState createState() => _ConditionalIndicatorState();
+}
+
+class _ConditionalIndicatorState extends State<ConditionalIndicator> {
+  bool _isLoading = false;
+
+  void _simulateLoad() {
+    setState(() => _isLoading = true);
+    Future.delayed(const Duration(seconds: 2), () {
+      setState(() => _isLoading = false);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return CupertinoPageScaffold(
+      child: Center(
+        child: _isLoading
+            ? const CupertinoActivityIndicator(radius: 20)
+            : CupertinoButton(
+                onPressed: _simulateLoad,
+                child: const Text('开始加载'),
+              ),
+      ),
+    );
+  }
+}
+```
+
+### 自定义颜色与大小的指示器
+```dart
+import 'package:flutter/cupertino.dart';
+
+class ThemedIndicator extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: CupertinoColors.systemGrey6,
+      padding: const EdgeInsets.all(20),
+      child: const CupertinoActivityIndicator(
+        radius: 15,
+        animating: true,
+      ),
+    );
+  }
+}
+```
+
+
+## 注意点
+- 性能考虑: 该组件使用轻量级动画，但若在多个页面同时显示大量指示器，可能增加GPU负载。建议通过条件渲染(如`Visibility`组件)控制显示时机。
+- 兼容性警告: 在非iOS风格的界面中过度使用可能破坏设计一致性。若需跨平台适配，可配合`Theme`组件或改用`CircularProgressIndicator`。
+- 最佳实践: 
+  - 在长时间加载时添加文字提示(如“加载中...”)以提升用户体验。
+  - 通过`animating`属性控制动画启停，避免后台不必要的资源消耗。
+  - 使用`radius`属性调整尺寸时，确保与周围元素的比例协调(iOS规范推荐默认半径为10逻辑像素)。
+
+
+## 构造函数
+```dart
+const CupertinoActivityIndicator({
+  Key? key,
+  this.animating = true,    // 控制动画是否播放
+  this.radius = 10.0,       // 指示器的视觉半径
+}) : super(key: key);
+```
+
+
+## 属性
+| 属性名       | 属性类型     | 说明                                                                 |
+|--------------|-------------|----------------------------------------------------------------------|
+| `animating`  | `bool`      | 控制指示器是否执行旋转动画。默认开启，设为 `false` 可节省资源。       |
+| `radius`     | `double`    | 定义指示器的显示半径（单位：逻辑像素），直接影响组件尺寸和视觉比重。 |
+
+
+### 关键属性详解
+- `animating`: 该属性是性能优化的关键。在页面不可见时(如跳转至其他页面)，建议设置为false以停止动画，减少不必要的渲染开销。
+- `radius`: 虽然Flutter会自动适配分辨率，但需注意过大的半径(如超过30)可能导致动画锯齿感。建议根据iOS设计指南保持半径在10-20范围内。
