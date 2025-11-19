@@ -878,8 +878,8 @@ export const Documents: Paths[] = [
             href: '/cupertino-form-row'
           },
           {
-            title: "CupertinoFormSelection",
-            href: '/cupertino-form-selection'
+            title: "CupertinoFormSection",
+            href: '/cupertino-form-section'
           },
           {
             title: "CupertinoFullscreenDialogTransition",
