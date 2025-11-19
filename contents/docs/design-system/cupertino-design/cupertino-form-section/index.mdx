@@ -1,0 +1,128 @@
+---
+title: CupertinoFormSection
+description: Cupertino设计风格(iOS风格)的表单选择组件，主要用于在表单中展示可选项，并允许用户通过点击触发选择操作(如打开弹窗或跳转页面)
+---
+
+`CupertinoFormSection`是Flutter Cupertino设计风格中的表单分组组件，用于在iOS风格应用中创建结构清晰的表单区域。它通过视觉分隔(如背景色和间距)将相关输入
+控件(如`CupertinoTextField`、`CupertinoSwitch`)组织成逻辑区块，提升表单的可读性和用户体验。其核心逻辑是自动管理子组件的布局(如添加内边距、分隔线)，并支持头部和尾部说明文本。
+
+![](https://docs.flutter.dev/assets/images/docs/widget-catalog/CupertinoFormSection.png)
+
+### 使用场景
+- 设置页面: 例如应用中的“账户设置”或“通知偏好”分组。
+- 数据收集表单: 如用户注册时划分“基本信息”和“隐私选项”区块。
+- 动态表单: 与状态管理结合，根据用户输入动态显示或隐藏特定字段组。
+
+
+## 示例
+### 基础表单分组
+```dart
+CupertinoFormSection(
+  header: const Text('基本信息'),
+  children: [
+    CupertinoTextFormFieldRow(
+      prefix: const Text('姓名'),
+      placeholder: '请输入姓名',
+      onChanged: (value) => print('姓名: $value'),
+    ),
+    CupertinoTextFormFieldRow(
+      prefix: const Text('邮箱'),
+      placeholder: 'example@email.com',
+      keyboardType: TextInputType.emailAddress,
+    ),
+  ],
+)
+```
+
+
+### 带交互控件的设置组
+```dart
+CupertinoFormSection(
+  header: const Text('通知设置'),
+  footer: const Text('开启后接收应用推送通知'),
+  children: [
+    CupertinoSwitchFormFieldRow(
+      prefix: const Text('消息通知'),
+      initialValue: true,
+      onChanged: (bool? value) => print('通知状态: $value'),
+    ),
+    CupertinoSliderFormFieldRow(
+      prefix: const Text('音量'),
+      min: 0,
+      max: 100,
+      divisions: 10,
+      onChanged: (double value) => print('音量: $value'),
+    ),
+  ],
+)
+```
+
+
+### 适配深色主题的动态表单
+```dart
+// 在 CupertinoApp 主题中配置深色样式
+CupertinoFormSection(
+  backgroundColor: CupertinoColors.systemBackground,
+  decoration: BoxDecoration(
+    borderRadius: BorderRadius.circular(10),
+  ),
+  children: [
+    CupertinoTextFormFieldRow(
+      prefix: Icon(CupertinoIcons.person, color: CupertinoColors.label),
+      placeholder: '用户名',
+    ),
+    CupertinoTextFormFieldRow(
+      prefix: Icon(CupertinoIcons.lock, color: CupertinoColors.label),
+      placeholder: '密码',
+      obscureText: true,
+    ),
+  ],
+)
+```
+
+
+## 注意点
+### 常见问题与解决方案
+- 性能瓶颈: 当表单包含大量动态字段时，避免在`children`中直接构建复杂控件。使用`ListView.builder`嵌套或分页加载。
+- 兼容性警告: 在非Cupertino主题(如 MaterialApp)中使用时，需确保父级为CupertinoApp或通过CupertinoTheme包裹，否则样式异常。
+- 溢出错误: 内容过长可能导致布局溢出，通过`SingleChildScrollView`包裹整个表单解决。
+
+### 优化技巧
+- 使用`footer`属性添加辅助说明文本，减少用户困惑。
+- 通过`decoration`自定义边框圆角，匹配应用设计风格。
+- 对于必填字段，在`prefix`中添加星号(如`Text('姓名*')`)提升表单友好性。
+
+### 最佳实践
+- 分组标题(header)应简洁明了，避免超过一行。
+- 在表单元数据变化时(如验证失败)，结合`CupertinoFormRow`的`error`属性显示错误提示。
+- 测试时注意iOS真机上的交互反馈（如滑动控件的流畅性）。
+
+
+## 构造函数
+```dart
+CupertinoFormSection({
+  Key? key,
+  Widget? header, // 分组头部标题组件
+  Widget? footer, // 分组尾部说明组件
+  Color? backgroundColor, // 背景色（默认 CupertinoColors.secondarySystemGroupedBackground）
+  Decoration? decoration, // 自定义装饰（如边框、圆角）
+  EdgeInsetsGeometry? margin, // 外边距（默认 EdgeInsets.all(16)）
+  List<Widget> children = const <Widget>[], // 子控件列表（通常为 CupertinoFormRow 或其变体）
+})
+```
+
+## 属性
+| 属性名             | 属性类型               | 说明                                                                 |
+|--------------------|------------------------|----------------------------------------------------------------------|
+| `header`           | `Widget?`              | 分组的头部标题，常使用 `Text` 组件。                                |
+| `footer`           | `Widget?`              | 分组的尾部说明文本，用于详细描述或提示。                            |
+| `backgroundColor`   | `Color?`               | 分组背景色，默认适配 iOS 系统主题。                                 |
+| `decoration`       | `Decoration?`          | 自定义装饰效果（如边框、阴影），会覆盖 `backgroundColor`。           |
+| `margin`           | `EdgeInsetsGeometry?`  | 分组与外部容器的边距，控制整体位置。                                |
+| `children`         | `List<Widget>`         | 子控件列表，需使用表单行组件（如 `CupertinoTextFormFieldRow`）。     |
+
+
+### 关键属性详解
+- `children`: 必须包含`Cupertino`表单行组件(如`CupertinoFormRow`)，否则失去分组意义。子组件数量过多时需考虑滚动性能。
+- `decoration`: 优先级高于`backgroundColor`，可用于创建自定义圆角表单(如`BorderRadius.circular(12)`)，但需避免过度设计影响用户体验。
+- `footer`: 适合放置验证规则或隐私声明链接，通过`GestureDetector`可实现交互式提示。
