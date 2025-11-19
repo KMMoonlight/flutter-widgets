@@ -1,0 +1,104 @@
+---
+title: CupertinoFormRow
+description: Cupertino设计风格的表单行组件，用于在iOS风格的表单中组织标签、输入控件或提示信息
+---
+
+`CupertinoFormRow`是Flutter Cupertino设计风格的表单行组件，用于在iOS风格的表单中组织标签、输入控件或提示信息。其核心逻辑是提供一致的
+对齐和间距，确保表单元件(如文本标签、输入框、开关)在垂直布局中保持视觉协调，类似于iOS系统设置页面的表单行样式。
+
+![](https://docs.flutter.dev/assets/images/docs/widget-catalog/CupertinoFormRow.png)
+
+### 使用场景
+- 设置页面: 例如应用内的“账户设置”中，用于排列“用户名”、“通知开关”等表单元件。
+- 数据输入表单: 如登录/注册页面中，将标签与输入框组合成规范的行结构。
+- 信息展示: 静态信息(如用户资料)的标签-值对排列，保持整体UI统一。
+
+
+## 示例
+### 基础文本输入行
+```dart
+CupertinoFormRow(  
+  prefix: Text('用户名'),  
+  child: CupertinoTextField(  
+    placeholder: '请输入用户名',  
+  ),  
+)  
+```
+
+### 带交互控制的行
+```dart
+CupertinoFormRow(  
+  prefix: Text('启用通知'),  
+  child: CupertinoSwitch(  
+    value: isEnabled,  
+    onChanged: (bool value) => setState(() => isEnabled = value),  
+  ),  
+)
+```
+
+
+### 自定义样式与错误提示
+```dart
+CupertinoFormRow(  
+  prefix: Text('邮箱', style: TextStyle(color: CupertinoColors.systemRed)),  
+  child: CupertinoTextField(  
+    placeholder: '输入邮箱',  
+    decoration: BoxDecoration(  
+      border: Border.all(color: CupertinoColors.systemRed),  
+    ),  
+  ),  
+  error: Text('邮箱格式错误', style: TextStyle(color: CupertinoColors.systemRed)),  
+) 
+```
+
+
+## 注意点
+### 常见问题
+- 对齐问题: 当`prefix`或`child`高度不一致时，内容可能垂直偏移，建议使用固定高度组件(如`SizedBox`)包裹。
+- 溢出警告: 在窄屏幕中，长文本可能导致布局溢出，可为`prefix`设置`flex`参数或使用`Expanded`组件包裹。
+
+### 性能与兼容性
+- 性能影响: 组件本身轻量，但嵌套复杂子组件(如动态列表)时需避免不必要的重建。
+- 平台适配: 仅适用于iOS风格界面，若需跨平台，可配合`Platform.isIOS`条件渲染。
+
+### 最佳实践
+- 使用`padding`参数调整间距，而非额外包裹`Padding`组件以简化代码。
+- 通过`error`属性统一管理错误提示，避免手动布局错误信息。
+
+
+
+## 构造函数
+```dart
+CupertinoFormRow({  
+  Key? key,  
+  Widget? prefix,  
+  Widget? child,  
+  Widget? error,  
+  EdgeInsetsGeometry? padding,  
+  Color? backgroundColor,  
+  Color? borderColor,  
+}) 
+```
+
+
+## 属性
+| 属性名 | 类型 | 说明 |  
+|--------|------|------|  
+| `prefix` | `Widget?` | 行首标签组件，如 `Text('标签')`。 |  
+| `child` | `Widget?` | 行主体内容组件，如输入框或开关。 |  
+| `error` | `Widget?` | 错误提示组件，显示在行底部。 |  
+| `padding` | `EdgeInsetsGeometry?` | 内容区域的内边距，控制整体间距。 |  
+| `backgroundColor` | `Color?` | 背景色，用于高亮特定行。 |  
+| `borderColor` | `Color?` | 底部边框颜色，默认 `CupertinoColors.systemGrey4`。 |
+
+
+### 关键属性解析
+- `child`与`prefix`的协作:
+  - 两者非必选，但至少需设置一个。若仅设置`prefix`，标签左对齐；若仅设置`child`，内容占满整行。
+  - 空间分配逻辑: `prefix`固定宽度，`child`自动扩展剩余空间。
+
+- `error`的优先级: 
+  - 当`error`非空时，组件高度增加以容纳错误信息，避免布局跳跃。
+
+- `padding`的默认值: 
+  - 默认`EdgeInsets.all(16.0)`符合iOS设计规范，修改时需保持视觉一致性。
