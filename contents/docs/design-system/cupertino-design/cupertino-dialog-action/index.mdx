@@ -1,0 +1,119 @@
+---
+title: CupertinoDialogAction
+description: 用于构建iOS风格对话框操作按钮的组件
+---
+
+`CupertinoDialogAction`是Flutter中用于构建 iOS 风格对话框操作按钮的组件。它遵循Apple的Human Interface Guidelines，提供简洁、直观的交互体验。该组件通常作为子元
+素嵌入到`CupertinoAlertDialog`或`CupertinoActionSheet`中，用于触发对话框的确认、取消或其他操作。
+
+![](https://docs.flutter.dev/assets/images/docs/widget-catalog/cupertino-dialog-action.png)
+
+### 主要用途
+- 在iOS风格的对话框中创建标准操作按钮(如“确定”“取消”)。
+- 处理用户交互逻辑(如点击后关闭对话框或执行回调函数)。
+
+### 核心逻辑
+- 按钮样式自动适配iOS设计规范(如颜色、字体、按压效果)。
+- 通过`onPressed`回调响应点击事件，可自定义行为(如导航、数据提交)。
+
+### 使用场景
+- 弹出确认对话框(如删除操作前的二次确认)。
+- 展示选择项(如“拍照”或“从相册选择”)。
+- 在操作表中(`ActionSheet`)提供多个选项按钮。
+
+
+## 示例
+### 基础确认对话框
+```dart
+CupertinoAlertDialog(
+  title: Text("确认删除"),
+  content: Text("删除后数据无法恢复，请谨慎操作！"),
+  actions: [
+    CupertinoDialogAction(
+      child: Text("取消"),
+      onPressed: () {
+        Navigator.pop(context); // 关闭对话框
+      },
+    ),
+    CupertinoDialogAction(
+      child: Text("确认", style: TextStyle(color: CupertinoColors.destructiveRed)),
+      onPressed: () {
+        // 执行删除逻辑
+        deleteItem();
+        Navigator.pop(context);
+      },
+    ),
+  ],
+)
+```
+
+
+### 带禁用状态的操作按钮
+```dart
+CupertinoDialogAction(
+  child: Text("提交"),
+  isDefaultAction: true, // 默认高亮样式
+  onPressed: isFormValid ? () => submitForm() : null, // 禁用状态下按钮变灰
+),
+CupertinoDialogAction(
+  child: Text("重置"),
+  isDestructiveAction: true, // 红色警示样式
+  onPressed: () => resetForm(),
+),
+```
+
+
+### 适配暗色主题
+```dart
+CupertinoDialogAction(
+  child: Text("高级选项"),
+  textStyle: CupertinoTheme.of(context).textTheme.textStyle.copyWith(
+    fontWeight: FontWeight.w600,
+  ),
+  onPressed: () => showAdvancedOptions(),
+),
+```
+
+
+## 注意点
+### 常见问题
+- 性能瓶颈: 避免在`onPressed`中执行耗时操作(如网络请求)，否则会阻塞UI线程。建议使用异步操作(如`Future`)并添加加载状态。
+- 兼容性警告: 在非iOS平台使用时，需确保整体UI风格一致(可配合`CupertinoApp`主题)。
+
+### 优化技巧
+- 若对话框需要动态更新按钮状态(如表单验证)，可将`CupertinoDialogAction`包裹在`StatefulBuilder`中实现局部重绘。
+- 使用`const`构造函数优化性能(如`const CupertinoDialogAction()`)，避免不必要的重建。
+
+### 最佳实践
+- 重要操作(如删除)使用`isDestructiveAction: true`突出显示。
+- 默认操作按钮(如“确认”)设置为`isDefaultAction: true`以便用户快速识别。
+
+
+
+## 构造函数
+```dart
+const CupertinoDialogAction({
+  Key? key,
+  this.onPressed, // 点击回调函数
+  this.isDefaultAction = false, // 是否为默认操作（粗体样式）
+  this.isDestructiveAction = false, // 是否为破坏性操作（红色样式）
+  this.textStyle, // 自定义文字样式
+  required Widget child, // 按钮内容（如 Text 组件）
+})
+```
+
+
+## 属性
+| 属性名               | 属性类型                  | 说明                                                                 |
+|----------------------|---------------------------|----------------------------------------------------------------------|
+| `onPressed`          | `VoidCallback?`           | 点击按钮时的回调函数。若为 `null`，按钮表现为禁用状态。               |
+| `isDefaultAction`    | `bool`                    | 是否为默认操作（`true` 时文字加粗，通常用于重要操作）。默认 `false`。 |
+| `isDestructiveAction`| `bool`                    | 是否为破坏性操作（`true` 时文字显示为红色）。默认 `false`。          |
+| `textStyle`          | `TextStyle?`              | 自定义文字样式，覆盖默认主题样式。                                   |
+| `child`              | `Widget`                  | 按钮内容（必须提供，如 `Text('确认')`）。                            |
+
+
+### 关键属性解释
+- `onPressed`: 最核心的属性，用于处理交互逻辑。若未设置或值为null，按钮会自动变为灰色禁用状态。
+- `isDestructiveAction`: 设置为true时，按钮文字变为红色，适用于删除、重置等高风险操作，符合iOS设计规范。
+- `isDefaultAction`: 通常与主要操作绑定(如“确认”)，通过加粗样式引导用户注意力。
