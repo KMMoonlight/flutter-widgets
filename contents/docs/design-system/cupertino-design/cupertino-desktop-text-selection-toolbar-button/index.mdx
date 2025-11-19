@@ -1,0 +1,108 @@
+---
+title: CupertinoDesktopTextSelectionToolbarButton
+description: macOS桌面端文本选择工具栏的按钮组件，专为Cupertino设计风格优化
+---
+
+`CupertinoDesktopTextSelectionToolbarButton`是Flutter中用于macOS桌面端文本选择工具栏的按钮组件，专为Cupertino设计风格优化。它模拟了macOS原生文本编辑场景下的工具栏按钮行为，例如在选中文
+本后弹出的“复制”、“粘贴”或“查找”等操作按钮。该组件的主要逻辑是提供一个轻量级、符合Apple人机指南的交互元素，用于处理文本选择相关的操作，同时自动适配桌面端的光标和触控板交互。
+
+![](https://docs.flutter.dev/assets/images/docs/widget…og/CupertinoDesktopTextSelectionToolbarButton.png)
+
+### 使用场景
+- 在macOS桌面应用中，当用户选中文本时，显示一个浮动的工具栏，其中包含自定义操作按钮(如“高亮”、“翻译”)。
+- 作为文本编辑器的扩展功能，集成到Cupertino风格的UI中，确保与系统原生组件一致。
+- 用于替换默认文本选择工具栏按钮，以添加特定业务逻辑（如分享到社交平台）。
+
+
+## 示例
+### 基础文本操作按钮
+```dart
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/services.dart';
+
+class TextSelectionDemo extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return CupertinoDesktopTextSelectionToolbarButton(
+      onPressed: () {
+        // 模拟复制操作
+        Clipboard.setData(ClipboardData(text: "已复制文本"));
+      },
+      child: Text('复制'),
+    );
+  }
+}
+```
+
+
+
+### 带图标的自定义操作按钮
+```dart
+CupertinoDesktopTextSelectionToolbarButton(
+  onPressed: () {
+    print("文本已高亮");
+  },
+  child: Row(
+    mainAxisSize: MainAxisSize.min,
+    children: [
+      Icon(CupertinoIcons.highlighter, size: 16),
+      SizedBox(width: 4),
+      Text('高亮'),
+    ],
+  ),
+);
+```
+
+
+### 条件启用/禁用按钮
+```dart
+bool isTextSelected = false; // 假设根据文本选择状态更新
+
+CupertinoDesktopTextSelectionToolbarButton(
+  onPressed: isTextSelected
+      ? () {
+          // 仅当有文本选中时执行操作
+          print("执行自定义操作");
+        }
+      : null, // 禁用状态
+  child: Text('自定义操作'),
+);
+```
+
+
+## 注意点
+### 常见问题
+- 性能瓶颈: 如果工具栏中包含多个复杂子组件(如动态图标)，可能导致渲染延迟。建议使用`const`构造函数或缓存子组件。
+- 兼容性警告: 该组件主要针对macOS桌面端，在iOS或Android上可能表现不一致，需通过条件渲染避免跨平台问题。
+- 交互冲突: 在密集UI中，工具栏可能被其他元素遮挡，需确保`Overlay`或`Stack`的层级管理。
+
+### 优化技巧
+- 使用`Icon`而非自定义图像，以保持与Cupertino主题的一致性。
+- 通过`onPressed`的null值处理禁用状态，避免不必要的回调。
+
+### 最佳实践
+- 将按钮包裹在`CupertinoDesktopTextSelectionToolbar`容器内，以符合macOS设计规范。
+- 测试键盘快捷键(如Cmd+C)与按钮的协同工作，确保无障碍访问。
+
+
+## 构造函数
+```dart
+const CupertinoDesktopTextSelectionToolbarButton({
+  Key? key,
+  required VoidCallback? onPressed, // 按钮点击回调，为 null 时按钮禁用
+  required Widget child, // 按钮内容，通常为 Text 或 Row
+})
+```
+
+
+## 属性
+| 属性名       | 属性类型            | 说明                                                                 |
+|--------------|---------------------|----------------------------------------------------------------------|
+| `onPressed`  | `VoidCallback?`     | 按钮点击的回调函数；若为 `null`，按钮显示为禁用状态。                 |
+| `child`      | `Widget`            | 按钮的内容组件，通常使用 `Text` 或包含图标的 `Row`。                 |
+| `key`        | `Key?`              | 组件的唯一标识符，用于优化渲染和状态管理。                           |
+
+
+### 关键属性解释
+- `onPressed`: 这是核心交互属性，决定了按钮的可用性和行为。当设置为null时，按钮会自动应用禁用样式(如颜色变灰)，无需额外逻辑。在实际开发中，应结合文本选择状态动态更新此参数。
+- `child`: 由于该组件专注于功能而非样式，`child`的灵活性允许高度自定义。但需注意，过度复杂的`child`(如动画组件)可能影响工具栏性能，建议保持简洁。
