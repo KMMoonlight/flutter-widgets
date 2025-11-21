@@ -890,8 +890,8 @@ export const Documents: Paths[] = [
             href: '/cupertino-theme-data'
           },
           {
-            title: "CupertinoListSelection",
-            href: '/cupertino-list-selection'
+            title: "CupertinoListSection",
+            href: '/cupertino-list-section'
           },
           {
             title: "CupertinoListTile",
