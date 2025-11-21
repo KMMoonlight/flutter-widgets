@@ -1,0 +1,99 @@
+---
+title: CupertinoListTile
+description: 一个仿iOS风格(Cupertino 设计语言)的列表项组件，常用于构建与iOS原生应用一致的列表界面
+---
+
+`CupertinoListTile`是Flutter中一个仿iOS风格(Cupertino 设计语言)的列表项组件，常用于构建与iOS原生应用一致的列表界面。它提供标准化的布局结构，包括前导图标、标题、副标题和尾部
+控件，并自动适配iOS的交互效果(如点击高亮)。其核心逻辑是通过组合`Row`、`Padding`和`GestureDetector`等基础组件，模拟iOS的`UITableViewCell`行为，确保视觉和交互一致性。
+
+![](https://docs.flutter.dev/assets/images/docs/widget-catalog/cupertino-list-tile.png)
+
+### 使用场景
+- 在需要与iOS原生应用风格统一的列表中使用，例如设置页面、菜单列表或信息展示界面。
+- 适用于需要包含图标、文本描述和辅助操作(如开关、箭头)的列表项。
+- 作为`CupertinoListSection`的子组件，用于分组列表(类似iOS的`UITableView`分组样式)。
+
+
+## 示例
+### 基础列表项
+```dart
+CupertinoListTile(
+  title: Text('基础设置'),
+  onTap: () {
+    print('点击基础设置');
+  },
+)
+```
+
+### 完整功能的列表项
+```dart
+CupertinoListTile(
+  title: Text('基础设置'),
+  onTap: () {
+    print('点击基础设置');
+  },
+)
+```
+
+### 适配主题的列表项
+```dart
+CupertinoListSection(
+  children: [
+    CupertinoListTile.notched(
+      title: Text('通知'),
+      additionalInfo: Text('开启'),
+      trailing: Icon(CupertinoIcons.forward),
+    ),
+    CupertinoListTile.notched(
+      title: Text('隐私'),
+      trailing: Icon(CupertinoIcons.forward),
+    ),
+  ],
+)
+```
+
+
+
+## 注意点
+- **常见问题**:
+  - 性能: 避免在`onTap`回调中执行耗时操作(如网络请求)，否则会阻塞UI线程，导致列表滚动卡顿。
+  - 兼容性: 此组件专为iOS风格设计，在Android平台上可能显得不协调，建议通过`Platform.isIOS`条件渲染来切换组件。
+  - 嵌套限制: 不要将`CupertinoListTile`直接嵌套在`ListView`中，而应使用`CupertinoListSection`包裹以保持样式正确。
+
+- **优化技巧**:
+  - 使用`CupertinoListTile.notched`构造函数实现分组列表的圆角效果，避免手动设置边框。
+  - 为`leading`或`trailing`图标设置统一颜色(如`CupertinoColors.activeBlue`)以保持设计一致性。
+
+- **最佳实践**: 
+  - 在列表项中明确反馈用户交互(如点击时使用`HapticFeedback.lightImpact()`触发轻微震动)。
+  - 副标题(`subtitle`)文本应简洁，避免过长内容破坏布局。
+
+
+
+## 构造函数
+```dart
+CupertinoListTile({
+  Key? key,
+  Widget? leading,        // 前导图标或控件
+  required Widget title,  // 主标题（必需）
+  Widget? subtitle,       // 副标题
+  Widget? trailing,       // 尾部控件（如箭头、开关）
+  VoidCallback? onTap,    // 点击回调
+})
+```
+
+
+## 属性
+| 属性名       | 属性类型         | 说明                                                                 |
+|--------------|------------------|----------------------------------------------------------------------|
+| `leading`    | `Widget?`        | 前导元素（如图标），显示在标题左侧。                                 |
+| `title`      | `Widget`         | 主标题文本（必需），通常使用 `Text` 组件。                           |
+| `subtitle`   | `Widget?`        | 副标题文本，显示在主标题下方。                                       |
+| `trailing`   | `Widget?`        | 尾部元素（如开关、箭头），显示在右侧。                               |
+| `onTap`      | `VoidCallback?`  | 点击事件回调，为空时列表项不可点击。                                 |
+
+
+### 关键属性详解
+- `title`(必需): 是列表项的核心内容，需确保文本简洁且本地化(如使用`Text('设置'.tr)`支持多语言)。
+- `trailing`: 常用于交互控件(如`CupertinoSwitch`)或导航指示(如`Icon(CupertinoIcons.forward)`)，直接影响用户操作流程。
+- `onTap`: 若未设置，列表项将无点击效果，但仍可显示；若需禁用交互，可显式设置为null。
