@@ -1,0 +1,82 @@
+---
+title: CupertinoListTileChevron
+description: Cupertino设计风格(iOS风格)的组件，用于在列表项末尾显示标准化的“右向箭头”指示符
+---
+
+`CupertinoListTileChevron`是Flutter中Cupertino设计风格(iOS 风格)的组件，用于在列表项末尾显示标准化的“右向箭头”指示符。其核心功能是提供视觉导航提示，暗示用户点击后可能跳转到新页面或展开更多内容。
+
+![](https://docs.flutter.dev/assets/images/docs/widget-catalog/CupertinoListTileChevron.png)
+
+- **主要用途**: 在iOS风格的列表(如`CupertinoListSection`)中作为尾部装饰，保持界面一致性。
+- **核心逻辑**: 组件本身无交互逻辑，仅作为图标占位符，需配合`GestureDetector`或`CupertinoListTile`实现点击响应。
+
+### 典型使用场景
+- 设置页面的条目跳转(如“隐私设置” → 二级页面)。
+- 展示可展开的详情列表(如订单历史记录)。
+- 与`CupertinoListTile`组合构建符合iOS设计规范的界面。
+
+
+## 示例
+### 基础列表项
+```dart
+CupertinoListTile(
+  title: Text('隐私设置'),
+  trailing: CupertinoListTileChevron(), // 默认样式箭头
+  onTap: () => print('跳转到隐私设置页'),
+);
+```
+
+
+### 自定义颜色与动画
+```dart
+const CupertinoListTileChevron(
+  color: CupertinoColors.systemGrey, // 指定箭头颜色
+  // size: 20, // 可调整大小（需根据设计系统约束）
+);
+```
+
+
+### 动态控制显示条件
+```dart
+CupertinoListTile(
+  title: Text('消息通知'),
+  trailing: hasUnreadMessages 
+      ? const CupertinoListTileChevron(color: CupertinoColors.activeOrange)
+      : const CupertinoListTileChevron(), // 根据状态切换样式
+);
+```
+
+
+## 注意点
+1. 依赖关系
+  - 必须用于`Cupertino`组件生态(如`CupertinoApp`、`CupertinoListSection`)，在Material设计中使用可能破坏视觉统一性。
+
+2. 性能与兼容性
+  - 作为纯静态图标，无性能瓶颈，但需避免在大量动态列表中重复创建实例(可声明为const优化)。
+  - 兼容性：要求Flutter 2.0+，且需导入`cupertino_icons`包。
+
+3. 最佳实践
+  - 始终通过`CupertinoListTile.trailing`集成，而非单独放置。
+  - 若需高亮交互状态，可结合`AnimatedContainer`实现颜色渐变。
+
+
+## 构造函数
+```dart
+const CupertinoListTileChevron({
+  Key? key,
+  Color? color,    // 箭头颜色（默认 CupertinoColors.inactiveGray）
+  double? size,    // 图标尺寸（通常跟随系统标准，不建议修改）
+})
+```
+
+
+## 属性
+| 属性名 | 属性类型       | 说明 |
+|--------|---------------|------|
+| `color` | `Color?`      | 箭头颜色，默认 `CupertinoColors.inactiveGray` |
+| `size`  | `double?`     | 图标尺寸（通常由系统约束决定） |
+
+
+### 关键属性详解
+- `color`: 最常用的自定义属性，可通过主题系统统一管理(如`CupertinoTheme.of(context).primaryColor`)，确保整体风格一致。
+- `size`: 通常不推荐修改，因iOS设计指南对箭头尺寸有严格规范。如需调整，需测试不同屏幕密度的显示效果。
