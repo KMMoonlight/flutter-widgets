@@ -1,0 +1,232 @@
+---
+title: CupertinoLocalizations
+description: 用于支持iOS风格(Cupertino)组件本地化的核心抽象类
+---
+
+`CupertinoLocalizations`是Flutter中用于支持iOS风格(Cupertino)组件本地化的核心抽象类。它不直接渲染UI，而是为Cupertino组件(如`CupertinoDatePicker`、`CupertinoAlertDialog`)提供本地化文本资源(如日期格式、按钮标签)。其核心
+逻辑是：通过实现`CupertinoLocalizations`的子类，定义特定语言的字符串(如“OK”按钮的翻译)，使Cupertino组件能自适应不同语言环境(`Locale`)，提升应用国际化支持。
+
+### 使用场景
+- 多语言应用开发: 当应用需要支持iOS风格界面且适配多种语言(如中文、英文)时。
+- 自定义本地化资源: 当默认的本地化资源不满足需求(如特定地区方言)时，需自定义实现。
+- 与Material本地化共存: 在混合使用Material和Cupertino组件的应用中，确保Cupertino部分正确显示本地化文本。
+
+
+## 示例
+### 基础使用
+```dart
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      // 设置支持的语言环境
+      supportedLocales: [
+        Locale('en', 'US'), // 英语（美国）
+        Locale('zh', 'CN'), // 中文（中国）
+      ],
+      // 使用默认的 Cupertino 本地化代理（包含常见语言）
+      localizationsDelegates: [
+        ...GlobalCupertinoLocalizations.delegates, // 关键：加载 Cupertino 本地化
+      ],
+      home: MyHomePage(),
+    );
+  }
+}
+
+class MyHomePage extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return CupertinoPageScaffold(
+      navigationBar: CupertinoNavigationBar(
+        middle: Text('Cupertino 示例'),
+      ),
+      child: Center(
+        child: CupertinoButton(
+          child: Text('显示日期选择器'),
+          onPressed: () {
+            showCupertinoModalPopup(
+              context: context,
+              builder: (context) => CupertinoDatePicker(
+                // 日期选择器会自动使用当前 Locale 的格式（如中文环境显示“年/月/日”）
+                onDateTimeChanged: (date) {},
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+}
+```
+
+
+### 自定义本地化实现
+```dart
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
+
+// 自定义 CupertinoLocalizations 用于特定语言（如简体中文的变体）
+class CustomChineseCupertinoLocalizations extends CupertinoLocalizations {
+  const CustomChineseCupertinoLocalizations();
+
+  @override
+  String get datePickerMediumDate => 'yyyy年mm月dd日'; // 自定义日期格式
+
+  @override
+  String get alertDialogCancelButtonLabel => '取消'; // 标准翻译
+
+  @override
+  String get alertDialogDismissButtonLabel => '关闭'; // 自定义翻译（默认为“确定”）
+
+  // 必须实现其他抽象方法（此处省略部分，实际需完整实现）
+  // 完整接口参考：https://api.flutter.dev/flutter/cupertino/CupertinoLocalizations-class.html
+
+  static const List<LocalizationsDelegate<dynamic>> delegates = [
+    DefaultCupertinoLocalizations.delegate,
+  ];
+
+  static Future<CupertinoLocalizations> load(Locale locale) {
+    return SynchronousFuture<CupertinoLocalizations>(const CustomChineseCupertinoLocalizations());
+  }
+
+  static const LocalizationsDelegate<CupertinoLocalizations> delegate = _CustomChineseDelegate();
+}
+
+class _CustomChineseDelegate extends LocalizationsDelegate<CupertinoLocalizations> {
+  const _CustomChineseDelegate();
+
+  @override
+  bool isSupported(Locale locale) => locale.languageCode == 'zh';
+
+  @override
+  Future<CupertinoLocalizations> load(Locale locale) => CustomChineseCupertinoLocalizations.load(locale);
+
+  @override
+  bool shouldReload(_CustomChineseDelegate old) => false;
+}
+
+// 在 App 中注册自定义代理
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      supportedLocales: [Locale('zh', 'CN')],
+      localizationsDelegates: [
+        CustomChineseCupertinoLocalizations.delegate, // 使用自定义代理
+        ...GlobalMaterialLocalizations.delegates,
+      ],
+      home: MyHomePage(),
+    );
+  }
+}
+```
+
+
+### 与Material本地化混合使用
+```dart
+import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      supportedLocales: [Locale('en'), Locale('zh')],
+      localizationsDelegates: [
+        ...GlobalMaterialLocalizations.delegates, // Material 本地化
+        ...GlobalCupertinoLocalizations.delegates, // Cupertino 本地化
+      ],
+      home: Scaffold(
+        appBar: AppBar(title: Text('混合本地化示例')),
+        body: Center(
+          child: Column(
+            children: [
+              MaterialButton(
+                child: Text('Material 按钮'),
+                onPressed: () {},
+              ),
+              SizedBox(height: 20),
+              CupertinoButton(
+                child: Text('Cupertino 按钮'),
+                onPressed: () {
+                  // 此对话框会正确显示 Cupertino 风格的本地化文本（如按钮标签）
+                  showCupertinoDialog(
+                    context: context,
+                    builder: (context) => CupertinoAlertDialog(
+                      title: Text('提示'),
+                      actions: [
+                        CupertinoDialogAction(child: Text('取消'), onPressed: () {}),
+                        CupertinoDialogAction(child: Text('确认'), onPressed: () {}),
+                      ],
+                    ),
+                  );
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+```
+
+
+## 注意点
+### 常见问题
+- 资源缺失导致回退: 如果未提供当前`Locale`的本地化代理，Cupertino组件会回退到英语(美国)版本。务必检查`supportedLocales`和`localizationsDelegates`的匹配性。
+- 性能开销: 本地化代理在初始化时加载资源，避免在`build`方法中动态创建代理，防止重复初始化。
+- 兼容性警告: Flutter的Cupertino本地化包(`cupertino_localizations`)需单独引入。在`pubspec.yaml`中添加:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_localizations: ^0.1.4 # 检查最新版本
+```
+
+### 优化技巧
+- 预加载常用语言: 通过`precache()`方法提前加载本地化资源，减少首次渲染延迟。
+- 最小化自定义: 优先使用`GlobalCupertinoLocalizations.delegates`覆盖的常见语言(如en、zh)，减少自定义实现的工作量。
+- 测试多语言切换: 使用`WidgetsApp`的`localeResolutionCallback`处理`Locale`切换逻辑，确保动态更新。
+
+### 最佳实践
+- 统一代理列表: 在`localizationsDelegates`中先添加Cupertino代理，再添加Material代理，避免覆盖冲突。
+- 完整实现接口: 自定义`CupertinoLocalizations`时，必须实现所有抽象方法(约20个)，否则编译失败。
+- 使用ARB文件: 对于复杂多语言项目，结合`flutter_localizations`和ARB文件管理资源，提高可维护性。
+
+
+## 构造函数
+`CupertinoLocalizations`是抽象类，无公开构造函数。其子类(如`DefaultCupertinoLocalizations`)通过以下方式初始化: 
+- **默认实现**: 通过`GlobalCupertinoLocalizations.delegates`自动加载，无需手动构造。
+- **自定义子类**: 需实现`const`构造函数(如`const CustomLocalizations()`)，并通过`LocalizationsDelegate`注册。
+
+
+## 属性
+| 属性名 | 属性类型 | 说明 |
+|--------|----------|------|
+| `datePickerYear` | `String` | 日期选择器中“年”的标签（如 "Year"）。 |
+| `datePickerMonth` | `String` | 日期选择器中“月”的标签（如 "Month"）。 |
+| `datePickerDay` | `String` | 日期选择器中“日”的标签（如 "Day"）。 |
+| `alertDialogCancelButtonLabel` | `String` | 警告对话框的“取消”按钮文本（如 "Cancel"）。 |
+| `alertDialogDismissButtonLabel` | `String` | 警告对话框的“关闭”按钮文本（如 "OK"，注意与取消区别）。 |
+| `timerPickerHour` | `String` | 时间选择器中“小时”的标签（如 "Hour"）。 |
+| `timerPickerMinute` | `String` | 时间选择器中“分钟”的标签（如 "Minute"）。 |
+| `searchTextFieldPlaceholderLabel` | `String` | 搜索框的占位符文本（如 "Search"）。 |
+
+
+### 关键属性解释
+- **`alertDialogCancelButtonLabel`和`alertDialogDismissButtonLabel`**: 最常用属性，直接影响Cupertino对话框的按钮文本。若自定义实现不一致，可能导致用户体验混淆。
+- **日期/时间相关属性(如`datePickerYear`)**: 控制日期选择器的显示格式。若未正确本地化，用户可能看到英文标签，破坏界面一致性。
+- **性能提示**: 这些属性在组件构建时被频繁调用，避免在`getter`中执行复杂计算，建议直接返回常量字符串。
