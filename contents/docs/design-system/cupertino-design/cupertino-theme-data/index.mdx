@@ -1,0 +1,114 @@
+---
+title: CupertinoThemeData
+description: 用于定义iOS风格(Cupertino)主题数据的核心类
+---
+
+`CupertinoThemeData`是Flutter中用于定义iOS风格(Cupertino)主题数据的核心类。它基于苹果设计语言，提供了一套统一的视觉属性(如颜色、字体、图标样式)，帮助开发者快速构建符合iOS设计规范的界面。其核心逻辑
+是通过继承`ThemeExtension`实现主题数据的封装，并允许在组件树中通过`CupertinoTheme`组件向下传递主题配置，确保子组件的一致性。
+
+### 典型使用场景
+- 为整个应用或特定页面设置iOS风格的主题(如导航栏、按钮、文本颜色)。
+- 动态切换明暗主题模式(light/dark)，适配用户偏好。
+- 自定义品牌化设计(如主色调、字体)时保持iOS原生体验。
+
+
+## 示例
+### 基础主题设置
+```dart
+CupertinoApp(
+  theme: CupertinoThemeData(
+    primaryColor: CupertinoColors.systemBlue, // 主色调
+    scaffoldBackgroundColor: CupertinoColors.systemBackground, // 页面背景
+    textTheme: CupertinoTextThemeData(
+      textStyle: TextStyle(fontSize: 16, color: CupertinoColors.label),
+    ),
+  ),
+  home: MyHomePage(),
+);
+```
+
+
+### 动态主题切换
+```dart
+class ThemeManager with ChangeNotifier {
+  CupertinoThemeData _theme = CupertinoThemeData(brightness: Brightness.light);
+  
+  void toggleTheme() {
+    _theme = CupertinoThemeData(
+      brightness: _theme.brightness == Brightness.dark 
+          ? Brightness.light 
+          : Brightness.dark,
+    );
+    notifyListeners();
+  }
+}
+
+// 在组件树中使用
+ValueListenableBuilder<CupertinoThemeData>(
+  valueListenable: themeManager,
+  builder: (context, theme, child) {
+    return CupertinoTheme(
+      data: theme,
+      child: child!,
+    );
+  },
+);
+```
+
+
+### 局部主题覆盖
+```dart
+CupertinoTheme(
+  data: CupertinoTheme.of(context).copyWith(
+    primaryColor: CupertinoColors.destructiveRed, // 局部使用红色主题
+  ),
+  child: CupertinoButton(
+    child: Text("删除"),
+    onPressed: () {},
+  ),
+);
+```
+
+
+## 注意点
+- **性能优化**:
+  - 避免在频繁重建的组件(如动画)中创建新的`CupertinoThemeData`对象，优先使用`const`或缓存实例。
+  - 使用`CopyWith`方法局部更新主题，而非重新创建完整对象。
+
+- **兼容性问题**:
+  - 部分属性(如`barBackgroundColor`)仅对特定组件(如导航栏)生效，需确认目标组件支持。
+  - 在混合开发(Android/iOS)中，确保`CupertinoThemeData`与`MaterialTheme`不冲突。
+
+- **最佳实践**:
+  - 通过`CupertinoTheme.of(context)`获取当前主题，避免硬编码颜色值。
+  - 结合`MediaQuery.platformBrightnessOf(context)`自动适配系统明暗模式。
+
+
+## 构造函数
+```dart
+const CupertinoThemeData({
+  Brightness? brightness,           // 明暗模式（light/dark）
+  Color? primaryColor,              // 主色调（影响按钮、链接等）
+  Color? primaryContrastingColor,   // 与主色调对比的颜色（如按钮文字）
+  CupertinoTextThemeData? textTheme, // 文本样式集合
+  Color? barBackgroundColor,         // 导航栏/工具栏背景色
+  Color? scaffoldBackgroundColor,    // 页面背景色
+})
+```
+
+
+## 属性
+| 属性名                   | 属性类型                 | 说明                                                                 |
+|--------------------------|--------------------------|----------------------------------------------------------------------|
+| `brightness`             | `Brightness?`            | 主题明暗模式（`Brightness.light`/`dark`），影响默认颜色值。           |
+| `primaryColor`           | `Color?`                 | 主色调，用于按钮、开关、进度条等交互元素。                           |
+| `primaryContrastingColor`| `Color?`                 | 与主色调对比的颜色（如按钮上的文字颜色），默认为白色或黑色。         |
+| `textTheme`              | `CupertinoTextThemeData?`| 文本样式配置（字体大小、颜色等），覆盖默认的 iOS 文本风格。          |
+| `barBackgroundColor`     | `Color?`                 | 导航栏（`CupertinoNavigationBar`）和工具栏的背景颜色。                |
+| `scaffoldBackgroundColor`| `Color?`                 | 页面底层背景色（类似 `Scaffold` 的背景）。                           |
+
+
+### 关键属性详解
+- `primaryColor`: 最常用的属性，直接影响iOS风格组件的视觉重心。例如，设置`primaryColor: CupertinoColors.systemGreen`会将按钮和开关变为绿色。若未指定，默认使用系统蓝色。
+- `brightness`: 核心属性，用于自动适配明暗模式。设置`brightness: Brightness.dark`时，其他颜色属性(如背景色)会自动切换到深色版本，无需手动配置每个颜色。
+- `textTheme`: 通过`CupertinoTextThemeData`定制文本样式(如`textStyle`、`actionTextStyle`)，确保文字在不同模式下可读性一致。
