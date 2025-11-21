@@ -1,0 +1,172 @@
+---
+title: CupertinoFullscreenDialogTransition
+description: 用于实现iOS风格全屏对话框动画过渡的组件
+---
+
+`CupertinoFullscreenDialogTransition`是Flutter中用于实现iOS风格全屏对话框动画过渡的组件。它基于Cupertino设计规范，专门处理全屏模态对话框的打开和关闭动画效果，确保与iOS系统原生体验一致。该组件内部封装
+了动画控制器和过渡逻辑，适用于需要全屏呈现内容的场景，如设置页面或复杂表单。
+
+![](https://docs.flutter.dev/assets/images/docs/widget-catalog/cupertino-fullscreen-dialog-transition.png)
+
+### 使用场景
+- iOS风格的全屏模态对话框(例如“设置”页面从底部滑入)。
+- 需要平滑过渡动画的覆盖层界面。
+- 与`CupertinoPageRoute`结合使用，实现导航转场效果。
+
+
+
+## 示例
+### 基础全屏对话框过渡
+```dart
+import 'package:flutter/cupertino.dart';
+
+class FullscreenDialogExample extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return CupertinoApp(
+      home: CupertinoPageScaffold(
+        child: Center(
+          child: CupertinoButton(
+            child: Text('打开全屏对话框'),
+            onPressed: () {
+              Navigator.push(
+                context,
+                CupertinoPageRoute(
+                  fullscreenDialog: true, // 启用全屏过渡
+                  builder: (context) => SettingsPage(),
+                ),
+              );
+            },
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class SettingsPage extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return CupertinoPageScaffold(
+      navigationBar: CupertinoNavigationBar(
+        middle: Text('设置'),
+        leading: CupertinoButton(
+          child: Icon(CupertinoIcons.back),
+          onPressed: () => Navigator.pop(context),
+        ),
+      ),
+      child: SafeArea(child: Center(child: Text('全屏对话框内容'))),
+    );
+  }
+}
+```
+
+
+
+### 自定义动画曲线与持续时间
+```dart
+// 在CupertinoPageRoute中自定义过渡（需结合AnimationController）
+class CustomTransitionRoute extends CupertinoPageRoute {
+  CustomTransitionRoute({required WidgetBuilder builder})
+      : super(builder: builder, fullscreenDialog: true);
+
+  @override
+  Duration get transitionDuration => Duration(milliseconds: 800); // 延长动画时间
+
+  @override
+  Widget buildTransitions(
+    BuildContext context,
+    Animation<double> animation,
+    Animation<double> secondaryAnimation,
+    Widget child,
+  ) {
+    return CupertinoFullscreenDialogTransition(
+      animation: animation,
+      child: child,
+    );
+  }
+}
+```
+
+
+
+### 嵌套使用与状态管理
+```dart
+class NestedDialogExample extends StatefulWidget {
+  @override
+  _NestedDialogExampleState createState() => _NestedDialogExampleState();
+}
+
+class _NestedDialogExampleState extends State<NestedDialogExample> {
+  late AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: Duration(milliseconds: 500),
+      vsync: this,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return CupertinoFullscreenDialogTransition(
+      animation: _controller,
+      child: CupertinoPageScaffold(
+        child: Center(
+          child: CupertinoButton(
+            onPressed: () => _controller.forward(), // 手动触发动画
+            child: Text('启动过渡动画'),
+          ),
+        ),
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+}
+```
+
+
+### 注意点
+- **性能问题**:
+  - 避免在动画过程中构建复杂UI(如大量列表或图像)，可能导致帧率下降。建议使用`const`构造函数或`RepaintBoundary`优化重绘。
+
+- **兼容性警告**:
+  - 该组件仅适用于iOS风格界面。在Android平台使用时，需通过`ThemeData.platform`切换为Material设计或使用条件渲染。
+
+- **最佳实践**:
+  - 始终在`CupertinoPageRoute`中设置`fullscreenDialog: true`以激活过渡。
+  - 动画控制器必须通过`TickerProviderStateMixin`或单次`TickerProvider`提供`vsync`参数，防止内存泄漏。
+  - 关闭对话框时调用`Navigator.pop(context)`以确保动画反向执行。
+
+
+## 构造函数
+```dart
+const CupertinoFullscreenDialogTransition({
+  required Animation<double> animation, // 控制过渡动画的进度（0.0到1.0）
+  required Widget child, // 要执行过渡的子组件
+  Key? key,
+})
+```
+
+
+## 属性
+| 属性名       | 属性类型               | 说明                                                                 |
+|--------------|------------------------|----------------------------------------------------------------------|
+| `animation`  | `Animation<double>`    | **必需**。控制动画进度的对象，值范围从0.0（完全隐藏）到1.0（完全显示）。 |
+| `child`      | `Widget`               | **必需**。需要应用过渡动画的子组件。                                 |
+| `key`        | `Key?`                 | 组件的唯一标识键，用于状态管理或测试。                               |
+
+
+### 关键属性解析
+- `animation`: 这是核心属性，其值变化驱动子组件的位移和透明度动画。例如:
+  - 当`animation.value = 0.0`时，child从屏幕底部完全隐藏。
+  - 当`animation.value = 1.0`时，child完全覆盖屏幕。若动画曲线非线性(如`Curves.easeInOut`)，需通过`AnimationController`自定义。
+- `child`: 过渡效果会包装此组件，确保其尺寸适配全屏。避免在此组件内使用`Scaffold`，以免与`Cupertino`导航结构冲突。
+
