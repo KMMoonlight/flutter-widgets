@@ -1,0 +1,296 @@
+---
+title: CupertinoPageRoute
+description: 专门用于iOS风格页面导航的路由组件，它提供了符合苹果设计规范的页面转场动画效果
+---
+
+`CupertinoPageRoute`是Flutter中专门用于iOS风格页面导航的路由组件，它提供了符合苹果设计规范的页面转场动画效果。该组件继承自`PageRoute`类，主要用于实现全屏模态页面的导航过渡，特别适合在需要保持iOS原生体验的应用程序中使用。
+
+**核心逻辑**: `CupertinoPageRoute`通过封装页面构建器和转场动画，实现了从右侧滑入、从左侧滑出的标准iOS页面导航效果。它管理页面的生命周期，包括页面的创建、显示和销毁过程。
+
+### 使用场景
+- iOS风格应用: 为iOS平台开发具有原生体验的Flutter应用
+- 页面导航: 实现页面之间的跳转和返回操作
+- 模态对话框: 全屏模态页面的展示和隐藏
+- 导航栈管理: 配合`Navigator`管理页面导航栈
+- 转场动画定制: 需要自定义iOS风格页面过渡效果的场景
+
+
+## 示例
+### 基础页面导航
+```dart
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+
+class HomePage extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return CupertinoPageScaffold(
+      navigationBar: CupertinoNavigationBar(
+        middle: Text('首页'),
+      ),
+      child: Center(
+        child: CupertinoButton(
+          child: Text('跳转到详情页'),
+          onPressed: () {
+            Navigator.push(
+              context,
+              CupertinoPageRoute(
+                builder: (context) => DetailPage(),
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+}
+
+class DetailPage extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return CupertinoPageScaffold(
+      navigationBar: CupertinoNavigationBar(
+        middle: Text('详情页'),
+        leading: CupertinoButton(
+          child: Icon(CupertinoIcons.back),
+          onPressed: () => Navigator.pop(context),
+        ),
+      ),
+      child: Center(
+        child: Text('这是详情页面内容'),
+      ),
+    );
+  }
+}
+```
+
+
+
+### 带参数传递的页面导航
+```dart
+class UserListPage extends StatelessWidget {
+  final List<User> users = [
+    User(id: 1, name: '张三'),
+    User(id: 2, name: '李四'),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return CupertinoPageScaffold(
+      navigationBar: CupertinoNavigationBar(middle: Text('用户列表')),
+      child: ListView.builder(
+        itemCount: users.length,
+        itemBuilder: (context, index) {
+          return CupertinoListTile(
+            title: Text(users[index].name),
+            onTap: () {
+              Navigator.push(
+                context,
+                CupertinoPageRoute(
+                  builder: (context) => UserDetailPage(user: users[index]),
+                  settings: RouteSettings(
+                    name: '/user/${users[index].id}',
+                    arguments: users[index],
+                  ),
+                ),
+              );
+            },
+          );
+        },
+      ),
+    );
+  }
+}
+
+class UserDetailPage extends StatelessWidget {
+  final User user;
+
+  const UserDetailPage({Key? key, required this.user}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    final User? args = ModalRoute.of(context)?.settings.arguments as User?;
+    
+    return CupertinoPageScaffold(
+      navigationBar: CupertinoNavigationBar(middle: Text('用户详情')),
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text('用户ID: ${user.id}'),
+            Text('用户姓名: ${user.name}'),
+            if (args != null) Text('路由参数: ${args.name}'),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class User {
+  final int id;
+  final String name;
+  
+  User({required this.id, required this.name});
+}
+```
+
+
+### 自定义转场动画和全屏对话框
+```dart
+class CustomTransitionPage extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return CupertinoPageScaffold(
+      navigationBar: CupertinoNavigationBar(middle: Text('自定义转场')),
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            CupertinoButton(
+              child: Text('标准转场'),
+              onPressed: () => _navigateStandard(context),
+            ),
+            CupertinoButton(
+              child: Text('自定义转场'),
+              onPressed: () => _navigateCustom(context),
+            ),
+            CupertinoButton(
+              child: Text('全屏对话框'),
+              onPressed: () => _showFullScreenDialog(context),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _navigateStandard(BuildContext context) {
+    Navigator.push(
+      context,
+      CupertinoPageRoute(
+        builder: (context) => TargetPage(title: '标准转场'),
+      ),
+    );
+  }
+
+  void _navigateCustom(BuildContext context) {
+    Navigator.push(
+      context,
+      CupertinoPageRoute(
+        builder: (context) => TargetPage(title: '自定义转场'),
+        fullscreenDialog: false,
+        title: '自定义页面',
+      ),
+    );
+  }
+
+  void _showFullScreenDialog(BuildContext context) {
+    Navigator.push(
+      context,
+      CupertinoPageRoute(
+        builder: (context) => TargetPage(title: '全屏对话框'),
+        fullscreenDialog: true, // 启用全屏对话框模式
+      ),
+    );
+  }
+}
+
+class TargetPage extends StatelessWidget {
+  final String title;
+
+  const TargetPage({Key? key, required this.title}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return CupertinoPageScaffold(
+      navigationBar: CupertinoNavigationBar(middle: Text(title)),
+      child: Center(child: Text('目标页面: $title')),
+    );
+  }
+}
+```
+
+
+## 注意点
+### 常见问题
+1. 性能问题: 页面构建器在每次转场时都会调用，避免在`builder`中执行耗时操作
+2. 内存泄漏: 确保页面中的控制器和监听器在`dispose`时正确释放
+3. 转场卡顿: 页面内容过于复杂可能导致转场动画不流畅
+4. 路由冲突: 路由名称设置不当可能导致导航栈管理混乱
+
+### 优化技巧
+- 使用const构造函数创建静态部件提升性能
+- 对复杂页面使用`AutomaticKeepAliveClientMixin`保持状态
+- 合理使用`RouteSettings`传递参数，避免重建时数据丢失
+- 在页面跳转前预加载必要数据
+
+### 最佳实践
+```dart
+// 良好的实践示例
+CupertinoPageRoute(
+  builder: (context) => const MyPage(), // 使用 const 构造函数
+  settings: RouteSettings(
+    name: '/mypage',
+    arguments: {'id': 123}, // 使用路由参数传递数据
+  ),
+  fullscreenDialog: false, // 明确设置对话框模式
+);
+
+// 避免的实践
+CupertinoPageRoute(
+  builder: (context) {
+    // 避免在 builder 中执行复杂逻辑
+    final data = fetchData(); // 错误：耗时操作
+    return MyPage(data: data);
+  },
+);
+```
+
+
+## 构造函数
+```dart
+CupertinoPageRoute({
+  required WidgetBuilder builder,
+  RouteSettings? settings,
+  String? title,
+  bool maintainState = true,
+  bool fullscreenDialog = false,
+})
+```
+
+
+## 属性
+| 属性名 | 属性类型 | 说明 |
+|--------|----------|------|
+| builder | WidgetBuilder | 构建路由显示页面的回调函数 |
+| settings | RouteSettings | 路由的配置信息（名称、参数等） |
+| title | String | 路由的标题字符串 |
+| maintainState | bool | 当路由不可见时是否保留在内存中 |
+| fullscreenDialog | bool | 是否以全屏模态对话框的形式呈现 |
+| opaque | bool | 路由是否不透明（覆盖整个屏幕） |
+| barrierDismissible | bool | 是否可以通过点击屏障解散路由 |
+| transitionDuration | Duration | 转场动画的持续时间 |
+| reverseTransitionDuration | Duration | 反向转场动画的持续时间 |
+
+
+### 关键属性详解
+- **builder(核心属性):**
+  - 作用: 定义路由页面的内容构建逻辑
+  - 重要性: 必需参数，决定路由显示的具体界面
+  - 使用技巧: 尽量使用 const 构造函数，避免在 builder 中执行复杂逻辑
+
+- **maintainState(状态管理):**
+  - 默认值: true(保持状态)
+  - 影响: 设置为false时，页面弹出后会销毁并重建，适合静态内容页面
+  - 性能考虑: 对于内容频繁变化的页面，可设置为false节省内存
+
+- **fullscreenDialog(显示模式):**
+  - iOS特性: true时使用从底部滑入的对话框动画
+  - 使用场景: 适合用于登录、设置等模态界面
+  - 视觉差异: 与标准页面转场动画效果不同
+
+- **transitionDuration(动画控制):**
+  - 自定义能力: 可重写此属性来自定义转场动画时长
+  - 默认值: 使用Cupertino主题定义的默认时长
+  - 注意事项: 修改时长需考虑用户体验一致性
