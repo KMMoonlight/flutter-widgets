@@ -1,0 +1,157 @@
+---
+title: CupertinoPageTransition
+description: Flutter中用于实现iOS风格页面转场动画的组件，主要用于导航切换时的过渡效果
+---
+
+`CupertinoPageTransition`是Flutter中用于实现iOS风格页面转场动画的组件，主要用于导航切换时的过渡效果。它模拟了iOS系统的默认页面切换动画，包括从右向左滑入新页面、渐变透明度变化以及
+缩放效果，使应用更符合iOS设计规范。该组件通常与`PageRouteBuilder`或自定义路由结合使用，适用于需要原生iOS体验的Flutter应用。
+
+**核心逻辑**: `CupertinoPageTransition`通过动画控制器(如`Animation<double>`)管理转场过程，根据路由状态(如进入、退出)应用不同的变换(平移、缩放、透明度)。例如，新页面从屏幕右侧滑入，同时旧页面略微缩小并淡出，营造层次感。
+
+### 使用场景
+- 在iOS风格的Flutter应用中实现页面导航转场。
+- 替换默认的Material转场效果，以保持平台一致性。
+- 自定义路由动画时，作为基础过渡组件。
+
+
+## 示例
+### 基本页面转场
+```dart
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+
+void main() => runApp(MyApp());
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: FirstPage(),
+    );
+  }
+}
+
+class FirstPage extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('首页')),
+      body: Center(
+        child: CupertinoButton(
+          child: Text('跳转'),
+          onPressed: () {
+            Navigator.push(context, _createRoute());
+          },
+        ),
+      ),
+    );
+  }
+}
+
+class SecondPage extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('第二页')),
+      body: Center(child: Text('iOS 风格转场页面')),
+    );
+  }
+}
+
+// 创建自定义路由，使用 CupertinoPageTransition
+Route _createRoute() {
+  return PageRouteBuilder(
+    pageBuilder: (context, animation, secondaryAnimation) => SecondPage(),
+    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+      return CupertinoPageTransition(
+        primaryRouteAnimation: animation,
+        secondaryRouteAnimation: secondaryAnimation,
+        child: child,
+        linearTransition: false, // 默认非线性曲线
+      );
+    },
+  );
+}
+```
+
+
+### 交互逻辑
+```dart
+// 在 FirstPage 和 SecondPage 中定义 Hero 标签
+// FirstPage 部分：
+Hero(
+  tag: 'transition-hero',
+  child: Container(
+    width: 100,
+    height: 100,
+    color: CupertinoColors.activeBlue,
+  ),
+),
+
+// SecondPage 部分：
+Hero(
+  tag: 'transition-hero',
+  child: Container(
+    width: 200,
+    height: 200,
+    color: CupertinoColors.activeBlue,
+  ),
+),
+
+// 路由部分保持不变，CupertinoPageTransition 自动与 Hero 动画协作
+```
+
+
+### 适配主题
+```dart
+transitionsBuilder: (context, animation, secondaryAnimation, child) {
+  return CupertinoPageTransition(
+    primaryRouteAnimation: animation,
+    secondaryRouteAnimation: secondaryAnimation,
+    child: child,
+    linearTransition: true, // 使用线性曲线（如用于辅助功能）
+  );
+},
+```
+
+
+## 注意点
+- 常见问题:
+  - 性能瓶颈: 如果页面内容复杂(如大量图片或动画)，转场可能卡顿。建议使用`RepaintBoundary`包裹静态内容。
+  - 兼容性警告: 在非iOS平台过度使用可能破坏用户体验，应通过`ThemeData.platform`动态选择转场。
+  - 路由堆栈: 与`Navigator`深度集成，避免在转场中直接修改路由状态(如`pop`操作)。
+
+- 优化技巧:
+  - 对`primaryRouteAnimation`和`secondaryRouteAnimation`使用`CurvedAnimation`自定义缓动曲线(如`Curves.easeInOut`)。
+  - 在`PageRouteBuilder`中设置`transitionDuration`控制动画时长(默认约400ms)。
+
+- 最佳实践:
+  - 仅在iOS风格主题中使用，Android平台推荐Material转场。
+  - 测试转场在低端设备上的流畅性，必要时简化动画。
+
+
+
+## 构造函数
+```dart
+const CupertinoPageTransition({
+  Key? key,
+  required Animation<double> primaryRouteAnimation, // 主路由动画（当前页面）
+  required Animation<double> secondaryRouteAnimation, // 次路由动画（前一页面）
+  required Widget child, // 要显示的子组件
+  bool linearTransition = false, // 是否使用线性动画曲线
+}) 
+```
+
+
+## 属性
+| 属性名 (Property)          | 属性类型 (Type)               | 说明 (Description) |
+|---------------------------|-------------------------------|-------------------|
+| `primaryRouteAnimation`    | `Animation<double>`           | 主路由动画控制器，驱动新页面进入效果（如平移）。 |
+| `secondaryRouteAnimation`  | `Animation<double>`           | 次路由动画控制器，驱动旧页面退出效果（如缩放/透明度）。 |
+| `child`                    | `Widget`                      | 转场中渲染的子组件（通常为页面内容）。 |
+| `linearTransition`         | `bool`                        | 控制动画曲线类型（线性或非线性）。 |
+
+
+### 关键属性详解
+- `primaryRouteAnimation`: 这是转场的核心动画输入，其值范围通常为0.0(起始)到1.0(完成)。例如，当值为0.5时，新页面可能已滑入一半屏幕。务必通过`PageRouteBuilder`正确传递，否则转场失效。
+- `linearTransition`: 设置为true时，动画使用线性曲线(无缓动)，适合需要简化动画的场景(如辅助功能)。但会失去iOS默认的流畅感，一般保持默认值false。
