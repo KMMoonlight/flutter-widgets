@@ -1,0 +1,114 @@
+---
+title: CupertinoNavigationBar
+description: Flutter中用于实现iOS风格导航栏的组件
+---
+
+`CupertinoNavigationBar`是Flutter中用于实现iOS风格导航栏的组件，遵循苹果设计语言(Cupertino)。它通常作为页面顶部栏，提供标题、导航
+按钮(如返回)和操作项(如编辑、保存)。其核心逻辑是管理导航堆栈和用户操作，通过`CupertinoPageRoute`或`Navigator`实现页面切换。
+
+![](https://docs.flutter.dev/assets/images/docs/widget-catalog/cupertino-nav-bar.png)
+
+### 使用场景
+- iOS风格应用中的页面导航栏。
+- 需要显示标题、左侧返回按钮和右侧操作按钮的界面。
+- 与`CupertinoPageScaffold`配合使用，构建完整的iOS风格页面布局。
+
+
+## 示例
+### 基础导航栏
+```dart
+import 'package:flutter/cupertino.dart';
+
+class BasicNavBarExample extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return CupertinoPageScaffold(
+      navigationBar: CupertinoNavigationBar(
+        middle: Text('首页'),
+        // 自动在非首页显示返回按钮
+        automaticallyImplyLeading: true,
+      ),
+      child: Center(child: Text('内容区域')),
+    );
+  }
+}
+```
+
+
+### 定义操作按钮
+```dart
+CupertinoNavigationBar(
+  middle: Text('设置'),
+  trailing: CupertinoButton(
+    padding: EdgeInsets.zero,
+    child: Icon(CupertinoIcons.add),
+    onPressed: () => print('添加操作'),
+  ),
+)
+```
+
+
+### 适配主题与过渡动画
+```dart
+CupertinoPageScaffold(
+  navigationBar: CupertinoNavigationBar(
+    middle: Text('详情页'),
+    backgroundColor: CupertinoColors.systemGrey6, // 自定义背景色
+    border: null, // 移除底部边框
+  ),
+  child: SafeArea(
+    child: ListView(children: [/* 列表内容 */]),
+  ),
+)
+// 页面跳转时使用 CupertinoPageRoute 以启用 iOS 滑动返回手势
+Navigator.push(context, CupertinoPageRoute(builder: (context) => DetailsPage()));
+```
+
+
+## 注意点
+- **常见问题**:
+  - 滑动返回手势失效: 需使用`CupertinoPageRoute`而非`MaterialPageRoute`。
+  - 标题截断: 避免过长标题，可通过`middle`使用`Flexible`或自定义布局。
+  - 背景色透明: 默认背景色为半透明，需显式设置`backgroundColor`为不透明色以兼容Android。
+
+- **性能优化**: 
+  - 避免在`trailing`或`leading`中嵌套复杂组件，减少重建开销。
+  - 使用const修饰静态子组件(如图标)以优化渲染。
+
+- **最佳实践**:
+  - 在`CupertinoPageScaffold`内使用以确保布局正确。
+  - 通过`automaticallyImplyLeading: true`让框架自动处理返回按钮显示逻辑。
+
+
+## 构造函数
+```dart
+CupertinoNavigationBar({
+  Key? key,
+  Widget? leading,          // 左侧组件（如自定义返回按钮）
+  Widget? middle,          // 中间标题区域
+  Widget? trailing,        // 右侧操作组件
+  Color? backgroundColor,  // 背景色
+  Border? border,          // 底部边框
+  bool automaticallyImplyLeading = true, // 自动推断返回按钮
+  bool automaticallyImplyMiddle = true, // 自动调整中间布局
+  String? previousPageTitle, // 返回按钮旁显示的上一页标题
+})
+```
+
+
+## 属性
+| 属性名                  | 类型               | 说明                                                                 |
+|------------------------|--------------------|----------------------------------------------------------------------|
+| `leading`              | `Widget?`          | 左侧组件，默认为返回按钮（当 `automaticallyImplyLeading` 为 true 时）。 |
+| `middle`               | `Widget?`          | 中间主要标题区域，通常为 `Text` 或图标。                              |
+| `trailing`             | `Widget?`          | 右侧操作区，如菜单按钮。                                             |
+| `backgroundColor`      | `Color?`           | 导航栏背景色，默认遵循 iOS 系统主题。                                |
+| `border`               | `Border?`          | 底部边框，设置为 `null` 可移除边框。                                |
+| `automaticallyImplyLeading` | `bool`        | 是否自动显示返回按钮（非根页面时默认显示）。                         |
+| `previousPageTitle`    | `String?`          | 返回按钮旁的文字提示（如“返回”）。                                   |
+
+
+### 关键属性详解
+- `middle`: 最常用属性，用于显示页面标题。支持任何`Widget`，但推荐使用`Text`以确保风格统一。
+- `automaticallyImplyLeading`: 设置为true时可减少手动处理返回逻辑的代码量，提升开发效率。
+- `backgroundColor`: 若需深色模式适配，建议使用`CupertinoColors.systemGrey6`等系统颜色。
