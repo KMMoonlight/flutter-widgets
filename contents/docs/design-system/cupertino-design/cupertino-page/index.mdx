@@ -1,0 +1,171 @@
+---
+title: CupertinoPage
+description: Flutter中用于包装页面内容的容器组件，专门为iOS风格的页面过渡和外观设计
+---
+
+`CupertinoPage`是Flutter中用于包装页面内容的容器组件，专门为iOS风格的页面过渡和外观设计。它提供了符合苹果设计规范的页面容器，支持全屏手势和标准的页面动画效果。
+
+### 主要用途
+- 创建具有iOS原生页面过渡效果的页面容器
+- 支持全屏返回手势(边缘滑动返回)
+- 提供标准的iOS页面外观和动画
+- 作为页面路由的基础容器组件
+
+### 核心逻辑
+- `CupertinoPage`包装页面内容，为其提供iOS风格的页面容器特性，包括过渡动画、手势支持和视觉样式。
+
+
+### 使用场景
+1. **页面导航** - 在`CupertinoApp`中使用作为页面路由
+2. **自定义过渡** - 需要iOS风格页面切换效果的应用
+3. **手势支持** - 需要边缘滑动返回功能的页面
+
+
+## 示例
+### 基础页面定义
+```dart
+// 在路由配置中使用
+MaterialApp(
+  onGenerateRoute: (settings) {
+    return CupertinoPageRoute(
+      builder: (context) => CupertinoPage(
+        child: MyHomePage(),
+      ),
+    );
+  },
+)
+
+class MyHomePage extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return CupertinoPageScaffold(
+      navigationBar: CupertinoNavigationBar(
+        middle: Text('首页'),
+      ),
+      child: Center(
+        child: Text('这是 CupertinoPage 包装的页面'),
+      ),
+    );
+  }
+}
+```
+
+
+### 自定义页面过渡
+```dart
+class CustomTransitionPage extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return CupertinoPage(
+      child: CupertinoPageScaffold(
+        navigationBar: CupertinoNavigationBar(
+          middle: Text('自定义过渡'),
+        ),
+        child: Center(
+          child: CupertinoButton(
+            child: Text('返回'),
+            onPressed: () => Navigator.pop(context),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// 使用自定义过渡
+Navigator.push(
+  context,
+  CupertinoPageRoute(
+    builder: (context) => CustomTransitionPage(),
+  ),
+);
+```
+
+
+### 全屏手势页面
+```dart
+class FullScreenGesturePage extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return CupertinoPage(
+      child: Container(
+        color: CupertinoColors.systemBackground,
+        child: SafeArea(
+          child: Column(
+            children: [
+              CupertinoNavigationBar(
+                middle: Text('全屏手势页面'),
+              ),
+              Expanded(
+                child: ListView(
+                  children: List.generate(20, (index) => 
+                    CupertinoListTile(
+                      title: Text('项目 $index'),
+                    )
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+```
+
+
+## 注意点
+- 常见问题
+  - 嵌套使用: 避免在`CupertinoPage`内再嵌套其他页面容器组件
+  - 手势冲突: 全屏手势可能与页面内其他水平滑动手势冲突
+  - 动画性能: 复杂页面内容可能影响过渡动画的流畅性
+
+- 优化技巧
+  - 与`CupertinoPageRoute`配合使用获得最佳效果
+  - 合理设置`maintainState`属性以优化内存使用
+  - 在页面内容复杂时考虑使用`keepAlive`
+
+- 最佳实践
+  - 在`CupertinoApp`中使用以获得完整的iOS体验
+  - 结合`CupertinoPageScaffold`使用标准页面布局
+  - 测试边缘返回手势在不同设备上的表现
+
+
+
+## 构造函数
+```dart
+const CupertinoPage({
+  Key? key,
+  required this.child,
+  this.maintainState = true,
+  this.fullscreenDialog = false,
+  this.allowSnapshotting = true,
+})
+```
+
+
+## 属性详情
+| 属性名 | 属性类型 | 说明 |
+|--------|----------|------|
+| child | Widget | 必需的页面内容组件 |
+| maintainState | bool | 页面不可见时是否保持状态，默认为 true |
+| fullscreenDialog | bool | 是否以全屏对话框模式显示，默认为 false |
+| allowSnapshotting | bool | 是否允许截图用于页面过渡，默认为 true |
+
+
+### 关键属性详解
+- **maintainState**
+  - 设置为true时，页面在导航栈中保持活动状态
+  - 设置为false可节省内存，但页面状态会被销毁
+  - 对于表单页面等重要页面建议保持默认值true
+
+- **fullscreenDialog**
+  - 设置为true时，页面以模态对话框形式显示
+  - 影响页面过渡动画和手势行为
+  - 适用于登录、设置等模态场景
+
+- **allowSnapshotting**
+  - 控制是否在页面过渡时使用截图效果
+  - 禁用后可提升性能，但过渡效果可能不够流畅
+  - 对于复杂动画页面可考虑设置为false
