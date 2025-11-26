@@ -1,0 +1,151 @@
+---
+title: CupertinoPageScaffold
+description: Flutter中用于构建iOS风格页面布局的核心脚手架组件
+---
+
+`CupertinoPageScaffold`是Flutter中用于构建iOS风格页面布局的核心脚手架组件。它提供了符合苹果设计规范的页面结构，包含导航栏、内容区域和背景颜色等标准iOS界面元素。
+
+### 主要用途
+- 创建具有iOS原生外观的页面布局
+- 提供标准的导航栏和内容区域分离
+- 支持iOS风格的页面过渡动画
+- 适配不同尺寸的iOS设备屏幕
+
+**核心逻辑**: 组件采用分层结构设计，导航栏固定在上方，内容区域占据剩余空间，自动处理安全区域适配。
+
+
+### 使用场景
+1. iOS原生应用开发 - 需要与iOS系统UI保持一致的应用
+2. 跨平台应用 - 在iOS平台上使用原生风格的页面
+3. 导航流程 - 需要标准导航栏的页面堆栈管理
+
+
+## 示例
+### 基础页面布局
+```dart
+CupertinoPageScaffold(
+  navigationBar: CupertinoNavigationBar(
+    middle: Text('首页'),
+  ),
+  child: Center(
+    child: Text('欢迎使用 iOS 风格页面'),
+  ),
+)
+```
+
+
+### 带交互的页面
+```dart
+class MyHomePage extends StatefulWidget {
+  @override
+  _MyHomePageState createState() => _MyHomePageState();
+}
+
+class _MyHomePageState extends State<MyHomePage> {
+  int _counter = 0;
+
+  @override
+  Widget build(BuildContext context) {
+    return CupertinoPageScaffold(
+      navigationBar: CupertinoNavigationBar(
+        middle: Text('计数器'),
+        trailing: CupertinoButton(
+          child: Text('重置'),
+          onPressed: () => setState(() => _counter = 0),
+        ),
+      ),
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text('点击次数: $_counter'),
+            CupertinoButton(
+              child: Text('增加'),
+              onPressed: () => setState(() => _counter++),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+```
+
+
+### 适配主题的页面
+```dart
+CupertinoPageScaffold(
+  backgroundColor: CupertinoColors.systemBackground,
+  navigationBar: CupertinoNavigationBar(
+    backgroundColor: CupertinoColors.systemGroupedBackground,
+    middle: Text('设置'),
+  ),
+  child: ListView(
+    children: [
+      CupertinoListSection(
+        children: [
+          CupertinoListTile(
+            title: Text('通知设置'),
+            trailing: CupertinoSwitch(value: true, onChanged: (v) {}),
+          ),
+          CupertinoListTile(
+            title: Text('隐私设置'),
+            onTap: () => print('跳转到隐私页面'),
+          ),
+        ],
+      ),
+    ],
+  ),
+)
+```
+
+
+## 注意点
+### 常见问题
+- 性能考虑: 避免在child属性中使用过于复杂的嵌套布局
+- 兼容性: 在Android平台上使用时需注意风格一致性
+- 安全区域: 组件自动处理安全区域，但复杂布局可能需要额外调整
+
+### 优化技巧
+- 使用`ListView.builder`处理长列表以提高性能
+- 合理设置`backgroundColor`以适应深色/浅色模式
+- 结合`CupertinoApp`使用以获得完整的iOS风格体验
+
+### 最佳实践
+- 导航栏标题应简洁明了
+- 内容区域使用适当的边距和填充
+- 遵循iOS人机界面指南的设计原则
+
+
+
+## 构造函数
+```dart
+const CupertinoPageScaffold({
+  Key? key,
+  ObstructingPreferredSizeWidget? navigationBar,
+  Color? backgroundColor,
+  Widget? child,
+  bool resizeToAvoidBottomInset = true,
+})
+```
+
+
+## 属性
+| 属性名 | 属性类型 | 说明 |
+|--------|----------|------|
+| navigationBar | ObstructingPreferredSizeWidget? | 页面导航栏，通常为 CupertinoNavigationBar |
+| backgroundColor | Color? | 页面背景颜色，默认为系统背景色 |
+| child | Widget? | 页面主要内容区域的子组件 |
+| resizeToAvoidBottomInset | bool | 是否在底部输入法出现时调整布局 |
+
+
+### 关键属性详解
+- `navigationBar`
+  - 必须实现`ObstructingPreferredSizeWidget`接口
+  - 通常使用`CupertinoNavigationBar`或其子类
+  - 支持设置标题、前后导按钮等标准iOS导航元素
+
+- `resizeToAvoidBottomInset`
+  - 设置为true时，输入法弹出会自动调整布局避免遮挡
+  - 在表单输入等场景下建议保持默认值true
+  - 设置为false可获得固定布局效果
