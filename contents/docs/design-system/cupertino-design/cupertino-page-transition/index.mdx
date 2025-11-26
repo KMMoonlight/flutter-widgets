@@ -6,6 +6,8 @@ description: Flutter中用于实现iOS风格页面转场动画的组件，主要
 `CupertinoPageTransition`是Flutter中用于实现iOS风格页面转场动画的组件，主要用于导航切换时的过渡效果。它模拟了iOS系统的默认页面切换动画，包括从右向左滑入新页面、渐变透明度变化以及
 缩放效果，使应用更符合iOS设计规范。该组件通常与`PageRouteBuilder`或自定义路由结合使用，适用于需要原生iOS体验的Flutter应用。
 
+![](https://docs.flutter.dev/assets/images/docs/widget-catalog/cupertino-page-transition.png)
+
 **核心逻辑**: `CupertinoPageTransition`通过动画控制器(如`Animation<double>`)管理转场过程，根据路由状态(如进入、退出)应用不同的变换(平移、缩放、透明度)。例如，新页面从屏幕右侧滑入，同时旧页面略微缩小并淡出，营造层次感。
 
 ### 使用场景
