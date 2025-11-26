@@ -1,0 +1,149 @@
+---
+title: CupertinoModalPopupRoute
+description: 用于实现iOS风格模态弹出层(Modal Popup)的路由类
+---
+
+`CupertinoModalPopupRoute`是Flutter中用于实现iOS风格模态弹出层(`Modal Popup`)的路由类。它继承自`PopupRoute`，专门模拟iOS系统的模态交互效果，例如从底部滑入的菜单或对话框。其核心逻辑是通过路由
+机制管理弹出层的动画(如滑动进入/退出)、背景遮罩(半透明黑色层)以及手势交互(如下滑关闭)。
+
+### 使用场景
+- 在iOS风格的App中展示底部动作菜单(如分享、删除确认)。
+- 实现模态对话框(如选择器、确认弹窗)，确保用户专注当前操作。
+- 需要与iOS原生组件(如`CupertinoActionSheet`)配合时，作为底层路由容器。
+
+
+## 示例
+### 基础底部模态弹窗
+```dart
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+
+void main() => runApp(MyApp());
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return CupertinoApp(
+      home: CupertinoPageScaffold(
+        navigationBar: CupertinoNavigationBar(middle: Text('首页')),
+        child: Center(
+          child: CupertinoButton(
+            child: Text('打开弹窗'),
+            onPressed: () {
+              Navigator.of(context).push(
+                CupertinoModalPopupRoute(
+                  builder: (context) => CupertinoActionSheet(
+                    title: Text('选择操作'),
+                    actions: [
+                      CupertinoActionSheetAction(
+                        child: Text('确认'),
+                        onPressed: () => Navigator.pop(context),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+      ),
+    );
+  }
+}
+```
+
+
+### 自定义内容弹窗(带滚动视图)
+```dart
+// 在按钮的 onPressed 中调用
+Navigator.of(context).push(
+  CupertinoModalPopupRoute(
+    builder: (context) => Container(
+      height: 300,
+      child: Column(
+        children: [
+          Padding(
+            padding: EdgeInsets.all(16),
+            child: Text('自定义弹窗内容', style: TextStyle(fontSize: 18)),
+          ),
+          Expanded(
+            child: ListView.builder(
+              itemCount: 10,
+              itemBuilder: (context, index) => ListTile(title: Text('项目 $index')),
+            ),
+          ),
+        ],
+      ),
+    ),
+  ),
+);
+```
+
+
+### 与主题适配的弹窗
+```dart
+// 结合 CupertinoTheme 调整弹窗样式
+Navigator.of(context).push(
+  CupertinoModalPopupRoute(
+    filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5), // 背景模糊效果
+    builder: (context) => CupertinoTheme(
+      data: CupertinoTheme.dark(),
+      child: CupertinoActionSheet(
+        actions: [
+          CupertinoActionSheetAction(
+            child: Text('暗色主题选项'),
+            onPressed: () => Navigator.pop(context),
+          ),
+        ],
+      ),
+    ),
+  ),
+);
+```
+
+
+## 注意点
+- 常见问题:
+  - 性能瓶颈: 弹窗内容过于复杂(如大量动画或图片)可能导致滑动卡顿，建议使用`ListView.builder`或分页加载。
+  - 兼容性警告: 在非iOS平台使用时，需测试手势交互（如安卓设备下滑关闭可能不自然）。
+  - 路由冲突: 避免在弹窗内嵌套`Navigator`操作，可能导致路由栈混乱。
+
+- 优化技巧:
+  - 使用`Semantics`组件为弹窗添加无障碍支持(如语音提示)。
+  - 通过`barrierDismissible: false`防止误触背景关闭(需自定义关闭逻辑)。
+
+- 最佳实践:
+  - 弹窗内容高度应适配屏幕，避免超出安全区域(可用`SafeArea`包裹)。
+  - 优先使用`CupertinoActionSheet`等标准组件，确保交互一致性。
+
+
+
+## 构造函数
+```dart
+CupertinoModalPopupRoute({
+  required WidgetBuilder builder,    // 弹窗内容构建器
+  String? barrierLabel,              // 无障碍标签（默认为 "Dismiss"）
+  Color barrierColor = Colors.black54, // 背景遮罩颜色
+  bool barrierDismissible = true,    // 点击背景是否关闭
+  ImageFilter? filter,               // 背景遮罩的滤镜效果（如模糊）
+  RouteSettings? settings,          // 路由配置（如名称）
+});
+```
+
+
+## 属性
+| 属性名           | 属性类型         | 说明                                                                 |
+|------------------|------------------|----------------------------------------------------------------------|
+| `builder`        | `WidgetBuilder`  | **必需**，用于构建弹窗内容的回调函数。                               |
+| `barrierLabel`   | `String?`        | 无障碍功能的语义标签，默认为 "Dismiss"。                            |
+| `barrierColor`   | `Color`          | 背景遮罩颜色，默认半透明黑色（`Colors.black54`）。                   |
+| `barrierDismissible` | `bool`      | 是否允许点击背景关闭弹窗，默认为 `true`。                           |
+| `filter`         | `ImageFilter?`   | 背景遮罩的滤镜效果（如高斯模糊），需配合 `barrierColor` 使用。       |
+| `settings`       | `RouteSettings?` | 路由的配置信息，可用于命名路由或传递参数。                           |
+
+
+### 关键属性解释: 
+- `builder`: 最核心属性，必须返回一个`Widget`，决定了弹窗的UI内容。若内容动态变化，需配合`StatefulWidget`使用。
+- `barrierDismissible`: 若设为false，用户必须通过弹窗内按钮关闭，适合关键操作(如支付确认)。
+- `filter`: 用于实现iOS 14+的毛玻璃效果(如`ImageFilter.blur(sigmaX: 5, sigmaY: 5)`)，增强视觉层次感。
+
