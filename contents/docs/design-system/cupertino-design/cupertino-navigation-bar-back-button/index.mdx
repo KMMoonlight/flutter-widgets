@@ -1,0 +1,100 @@
+---
+title: CupertinoNavigationBarBackButton
+description: Flutter中Cupertino设计风格(iOS 风格)的导航栏返回按钮组件
+---
+
+`CupertinoNavigationBarBackButton`是Flutter中Cupertino设计风格(iOS 风格)的导航栏返回按钮组件。它主要用于在Cupertino导航栏(如`CupertinoPageScaffold`)中提供一致的返回功能，模拟iOS系统的后退交互体验。
+
+![](https://docs.flutter.dev/assets/images/docs/widget-catalog/CupertinoNavigationBarBackButton.png)
+
+**主要用途**: 作为导航栏的左侧按钮，允许用户点击后返回上一个页面或执行自定义后退逻辑。
+**核心逻辑**: 该按钮默认显示一个向左的箭头图标和可选的文本标签(如“Back”)，点击时会触发`Navigator.pop(context)`来关闭当前页面。它还支持自定义颜色、文本和点击行为，以适配不同场景。
+
+### 使用场景
+- 在 iOS 风格的页面中，作为导航栏的标准返回按钮。
+- 需要自定义后退逻辑时（例如先保存数据再返回）。
+- 在多级导航结构中保持视觉一致性。
+
+
+## 示例
+### 基础用法
+```dart
+CupertinoPageScaffold(
+  navigationBar: CupertinoNavigationBar(
+    // 自动在左侧显示返回按钮
+    leading: CupertinoNavigationBarBackButton(
+      onPressed: () {
+        Navigator.pop(context); // 默认返回逻辑
+      },
+    ),
+    middle: Text('详情页'),
+  ),
+  child: Center(child: Text('页面内容')),
+);
+```
+
+
+### 自定义交互逻辑
+```dart
+CupertinoNavigationBarBackButton(
+  onPressed: () {
+    // 自定义逻辑：保存数据后再返回
+    if (_formKey.currentState!.validate()) {
+      saveData();
+      Navigator.pop(context);
+    }
+  },
+  color: CupertinoColors.activeBlue, // 自定义按钮颜色
+);
+```
+
+
+### 适配主题与文本
+```dart
+CupertinoNavigationBarBackButton(
+  onPressed: () => Navigator.pop(context),
+  color: CupertinoColors.white, // 浅色主题下的颜色
+  previousPageTitle: '返回', // 自定义返回文本（可选）
+);
+```
+
+
+## 注意点
+- 常见问题:
+  - 导航栈为空时错误: 如果当前页面是导航栈的唯一页面，点击按钮会触发`Navigator.pop`错误。建议添加栈检查(如`if (Navigator.canPop(context))`)。
+  - 文本溢出: 自定义`previousPageTitle`文本过长可能导致布局问题，建议限制字数。
+  - 兼容性: 仅适用于Cupertino风格页面，在Material设计中使用`AppBar`的`leading`属性替代。
+
+- 优化技巧:
+  - 在返回前使用`await`处理异步操作(如网络请求)，避免页面关闭后逻辑中断。
+  - 通过`color`属性保持与导航栏背景的对比度，确保可访问性。
+
+- 最佳实践:
+  - 在嵌套导航器中，显式指定`onPressed`逻辑以避免意外行为。
+  - 测试时模拟深度导航栈，验证返回按钮的稳定性。
+
+
+
+## 构造函数
+```dart
+const CupertinoNavigationBarBackButton({
+  Key? key,
+  this.color, // 按钮颜色，默认继承导航栏样式
+  required this.onPressed, // 点击回调函数（必须）
+  this.previousPageTitle, // 自定义返回文本（如 null 则显示默认“Back”）
+})
+```
+
+
+## 属性
+| 属性名             | 属性类型                  | 说明                                                                 |
+|---------------------|---------------------------|----------------------------------------------------------------------|
+| `color`             | `Color?`                  | 按钮图标和文本的颜色。若为 null，则使用导航栏的默认色调。           |
+| `onPressed`         | `VoidCallback?`           | 点击按钮时的回调函数。如果为 null，按钮将处于禁用状态。             |
+| `previousPageTitle` | `String?`                 | 自定义返回按钮的文本标签。若为 null，则显示系统默认文本（如“Back”）。 |
+
+
+### 关键属性解释
+- `onPressed`: 必须实现此回调，否则按钮无效。它是按钮交互的核心，建议始终检查导航栈状态(如`Navigator.canPop`)后再调用`pop`。
+- `color`: 用于适配主题。例如，在深色导航栏中设置为`CupertinoColors.white`可提升可见性。
+- `previousPageTitle`: 国际化时可通过此属性设置本地化文本(如中文“返回”)，但需注意文本长度避免溢出。
