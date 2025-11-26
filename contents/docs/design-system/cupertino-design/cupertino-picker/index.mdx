@@ -1,0 +1,296 @@
+---
+title: CupertinoPicker
+description: 一个滚轮式的选择器组件，它模拟了iOS原生应用中的典型选择界面(例如设置闹钟或选择日期时出现的滚轮)
+---
+
+`CupertinoPicker`是一个滚轮式的选择器组件，它模拟了iOS原生应用中的典型选择界面(例如设置闹钟或选择日期时出现的滚轮)。其核心逻辑是提供一个可滚动的列表，用户可以通过滑动来选择一个
+或多个选项。它继承自`StatefulWidget`，能够高效地管理其滚动状态和子项渲染。
+
+
+![](https://docs.flutter.dev/assets/images/docs/widget-catalog/CupertinoPicker.png)
+
+
+### 使用场景
+- 设置选择: 如选择时长、日期、货币单位等。
+- 表单输入: 在需要用户从一组预定义值中选择时，作为更优雅的输入方式。
+- iOS风格应用: 为追求与iOS设计语言高度一致的Flutter应用提供原生体验。
+
+
+## 示例
+### 基础使用
+```dart
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+
+class BasicPickerExample extends StatefulWidget {
+  const BasicPickerExample({super.key});
+
+  @override
+  State<BasicPickerExample> createState() => _BasicPickerExampleState();
+}
+
+class _BasicPickerExampleState extends State<BasicPickerExample> {
+  int selectedNumber = 0;
+
+  @override
+  Widget build(BuildContext context) {
+    return CupertinoApp(
+      home: CupertinoPageScaffold(
+        navigationBar: const CupertinoNavigationBar(
+          middle: Text('基础数字选择器'),
+        ),
+        child: SafeArea(
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text('选中的数字: $selectedNumber'),
+                const SizedBox(height: 20),
+                SizedBox(
+                  height: 120,
+                  child: CupertinoPicker(
+                    itemExtent: 32, // 每个选项的高度
+                    onSelectedItemChanged: (int index) {
+                      setState(() {
+                        selectedNumber = index;
+                      });
+                    },
+                    children: List<Widget>.generate(10, (int index) {
+                      return Center(
+                        child: Text(index.toString()),
+                      );
+                    }),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+```
+
+
+### 交互逻辑-联动选择器
+```dart
+import 'package:flutter/cupertino.dart';
+
+class LinkedPickerExample extends StatefulWidget {
+  const LinkedPickerExample({super.key});
+
+  @override
+  State<LinkedPickerExample> createState() => _LinkedPickerExampleState();
+}
+
+class _LinkedPickerExampleState extends State<LinkedPickerExample> {
+  // 模拟数据
+  final Map<String, List<String>> locationData = {
+    '省份A': ['城市A1', '城市A2'],
+    '省份B': ['城市B1', '城市B2', '城市B3'],
+  };
+
+  late String selectedProvince;
+  late String selectedCity;
+
+  @override
+  void initState() {
+    super.initState();
+    selectedProvince = locationData.keys.first;
+    selectedCity = locationData[selectedProvince]!.first;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return CupertinoPageScaffold(
+      navigationBar: const CupertinoNavigationBar(
+        middle: Text('联动选择器'),
+      ),
+      child: SafeArea(
+        child: Column(
+          children: [
+            // 显示选中结果
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Text('选中: $selectedProvince - $selectedCity'),
+            ),
+            // 使用Row放置两个并列的Picker
+            Row(
+              children: [
+                // 省份选择器
+                Expanded(
+                  child: SizedBox(
+                    height: 120,
+                    child: CupertinoPicker(
+                      itemExtent: 32,
+                      onSelectedItemChanged: (int index) {
+                        setState(() {
+                          selectedProvince = locationData.keys.elementAt(index);
+                          // 当省份改变时，重置城市为第一个
+                          selectedCity = locationData[selectedProvince]!.first;
+                        });
+                      },
+                      children: locationData.keys.map((String province) {
+                        return Center(child: Text(province));
+                      }).toList(),
+                    ),
+                  ),
+                ),
+                // 城市选择器
+                Expanded(
+                  child: SizedBox(
+                    height: 120,
+                    child: CupertinoPicker(
+                      itemExtent: 32,
+                      onSelectedItemChanged: (int index) {
+                        setState(() {
+                          selectedCity = locationData[selectedProvince]!.elementAt(index);
+                        });
+                      },
+                      children: locationData[selectedProvince]!.map((String city) {
+                        return Center(child: Text(city));
+                      }).toList(),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+```
+
+
+### 适配主题 - 自定义外观
+```dart
+import 'package:flutter/cupertino.dart';
+
+class ThemedPickerExample extends StatefulWidget {
+  const ThemedPickerExample({super.key});
+
+  @override
+  State<ThemedPickerExample> createState() => _ThemedPickerExampleState();
+}
+
+class _ThemedPickerExampleState extends State<ThemedPickerExample> {
+  String selectedFruit = 'Apple';
+
+  final List<String> fruits = [
+    'Apple',
+    'Banana',
+    'Orange',
+    'Grape',
+    'Mango',
+    'Strawberry'
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return CupertinoPageScaffold(
+      navigationBar: const CupertinoNavigationBar(
+        middle: Text('自定义主题选择器'),
+      ),
+      child: SafeArea(
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                '你最喜欢的水果是:',
+                style: CupertinoTheme.of(context).textTheme.navTitleTextStyle,
+              ),
+              Text(
+                selectedFruit,
+                style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 40),
+              SizedBox(
+                height: 180, // 增加高度以容纳放大效果
+                child: CupertinoPicker(
+                  itemExtent: 40,
+                  useMagnifier: true, // 启用放大镜效果
+                  magnification: 1.2, // 设置放大倍数
+                  looping: true, // 启用循环滚动
+                  onSelectedItemChanged: (int index) {
+                    setState(() {
+                      selectedFruit = fruits[index];
+                    });
+                  },
+                  children: fruits.map((String fruit) {
+                    return Center(
+                      child: Text(
+                        fruit,
+                        style: const TextStyle(fontSize: 20),
+                      ),
+                    );
+                  }).toList(),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+```
+
+
+## 注意点
+### 常见问题与性能瓶颈
+1. 性能与大量数据: 当选项数量极多(如超过1000个)时，一次性构建所有子组件可能会导致性能问题。对于超长列表，建议使用`CupertinoPicker.builder`构造函数进行懒加载。
+2. 默认样式: 在非Cupertino主题(如Material Design)的应用中，`CupertinoPicker`的视觉风格可能会显得突兀。请确保其与您的应用整体设计语言一致。
+3. 可访问性: 确保为每个选项提供适当的语义标签(Semantics)，以支持屏幕阅读器。
+4. `itemExtent`必须提供: 必须为`itemExtent`参数提供一个明确的高度值，否则`Picker`将无法正确渲染和计算滚动位置。
+
+### 优化技巧与最佳实践
+- 使用`looping`: 对于像时间、月份这类循环数据，将`looping`设置为true可以极大提升用户体验。
+- 控制高度: `Picker`的可见区域高度通常是`itemExtent`的整数倍(如3倍或5倍)，这样能保证总有选项完整地位于选择框内。
+- 结合`FixedExtentScrollController`: 如果需要以编程方式控制`Picker`的选中项(例如设置默认值或跳转到特定项)，可以使用`FixedExtentScrollController`。
+
+
+## 构造函数
+```dart
+CupertinoPicker({
+  Key? key,
+  required double itemExtent,
+  required ValueChanged<int> onSelectedItemChanged,
+  required List<Widget> children,
+  bool looping = false,
+  double diameterRatio = _kDefaultDiameterRatio,
+  double magnification = 1.0,
+  double offAxisFraction = 0.0,
+  bool useMagnifier = false,
+  double squeeze = _kDefaultSqueeze,
+  FixedExtentScrollController? scrollController,
+  Color? selectionColor,
+  ScrollPhysics? physics,
+})
+```
+
+
+## 属性
+| 属性名 (Property) | 属性类型 (Type) | 说明 (Description) |
+| :--- | :--- | :--- |
+| `itemExtent` | `double` | **【关键属性】【必需】** 每个选择项的高度（逻辑像素）。必须明确设置，Picker依靠此值进行布局和滚动定位。 |
+| `onSelectedItemChanged` | `ValueChanged<int>` | **【关键属性】【必需】** 当选中项发生变化时触发的回调函数。回调参数是当前选中项的索引。 |
+| `children` | `List<Widget>` | **【必需】** 选择器中所有选项的组件列表。 |
+| `looping` | `bool` | 是否允许选择器无限循环滚动。适用于如时间、日期等循环数据。默认值为 `false`。 |
+| `useMagnifier` | `bool` | 是否在选中位置使用放大镜效果（iOS 14+风格）。默认值为 `false`。 |
+| `magnification` | `double` | 与 `useMagnifier` 配合使用，指定放大镜的放大倍数。默认值为 `1.0`。 |
+| `scrollController` | `FixedExtentScrollController?` | 用于以编程方式控制Picker滚动位置的控制器。例如，可用 `jumpToItem` 方法跳转。 |
+| `selectionColor` | `Color?` | 选中项背景高亮的颜色。默认为iOS系统主题色（通常为灰色半透明）。 |
+| `diameterRatio` | `double` | 模拟3D圆柱体的直径与视口大小的比例。值越小，圆柱体的弯曲弧度越明显。 |
+| `offAxisFraction` | `double` | 控制视点偏离中心轴的程度，可产生斜视效果。通常为0。 |
+| `squeeze` | `double` | 视口中可见项的数量与总可用空间的比率。值越大，可见的项越多且越紧凑。 |
+| `physics` | `ScrollPhysics?` | 控制滚动行为的物理效果。例如，可设置为 `NeverScrollableScrollPhysics` 来禁用滚动。 |
+
+
+### 关键属性详解
+1. `itemExtent`与`onSelectedItemChanged`: 这是两个必须提供的属性。`itemExtent`保证了滚动的精确性，而`onSelectedItemChanged`是`Picker`与外界交互的核心桥梁。在回调中更新状态(`setState`)是标准做法。
+2. `looping`: 对于像选择小时(0-23)这样的场景，开启循环滚动(`looping: true`)可以让用户从23直接滚到0，体验更流畅。
+3. `useMagnifier`与`magnification`: 这是现代iOS风格的关键。当`useMagnifier`为true时，选中项会有一个放大的视觉效果，`magnification`则控制放大的程度(例如 1.2 表示放大20%)。这显著提升了界面的视觉层次感和交互反馈。
