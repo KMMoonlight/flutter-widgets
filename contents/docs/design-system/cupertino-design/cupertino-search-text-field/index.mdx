@@ -1,0 +1,199 @@
+---
+title: CupertinoSearchTextField
+description: 类似iOS原生搜索栏的文本输入框
+---
+
+`CupertinoSearchTextField`是Flutter Cupertino(iOS风格)组件库中的一员。它提供了一个看起来和行为都像iOS原生搜索栏的文本输入框。
+
+![](https://docs.flutter.dev/assets/images/docs/widget-catalog/cupertino-search-field.png)
+
+### 主要特点
+- 外观原生: 默认带有灰色背景、圆角、左侧放大镜图标和右侧清除按钮(当有文字时显示)。
+- 交互封装: 内置了点击“X”按钮清除文本、点击输入框获取焦点等逻辑，无需开发者手动从零实现。
+- 高度定制: 虽然是iOS风格，但允许修改背景色、图标、文字样式等。
+
+### 使用场景 
+- 通讯录或好友列表顶部的搜索栏。
+- 应用内容检索页面。
+- 设置页面的功能查找。
+
+
+
+## 示例
+### 基础使用
+```dart
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+
+class BasicSearchExample extends StatelessWidget {
+  const BasicSearchExample({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const Center(
+      child: Padding(
+        padding: EdgeInsets.all(16.0),
+        // 只有一个简单的组件，带有默认占位符 "Search"
+        child: CupertinoSearchTextField(),
+      ),
+    );
+  }
+}
+```
+
+
+### 处理交互逻辑
+```dart
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+
+class LogicSearchExample extends StatefulWidget {
+  const LogicSearchExample({super.key});
+
+  @override
+  State<LogicSearchExample> createState() => _LogicSearchExampleState();
+}
+
+class _LogicSearchExampleState extends State<LogicSearchExample> {
+  String _searchText = "";
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: CupertinoSearchTextField(
+            // 自定义占位符
+            placeholder: '请输入关键字...',
+            
+            // 1. 监听文字变化 (实时搜索)
+            onChanged: (String value) {
+              setState(() {
+                _searchText = value;
+              });
+              print('当前输入: $value');
+            },
+            
+            // 2. 监听键盘确认/回车键 (触发搜索)
+            onSubmitted: (String value) {
+              print('提交搜索: $value');
+              // 这里通常执行网络请求或过滤列表
+            },
+            
+            // 3. 监听尾部清除按钮点击
+            onSuffixTap: () {
+              print('点击了清除按钮');
+              // 注意：组件内部会自动清除文字和Focus，但你可能需要重置外部状态
+              setState(() {
+                _searchText = "";
+              });
+            },
+          ),
+        ),
+        Text("搜索内容: $_searchText"),
+      ],
+    );
+  }
+}
+```
+
+
+### 自定义样式
+```dart
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+
+class StyledSearchExample extends StatelessWidget {
+  const StyledSearchExample({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: Colors.black87, // 模拟深色背景
+      padding: const EdgeInsets.all(20),
+      child: CupertinoSearchTextField(
+        // 修改背景色为深灰色
+        backgroundColor: Colors.white.withOpacity(0.2),
+        
+        // 修改左侧放大镜图标颜色
+        itemColor: Colors.white70,
+        
+        // 修改 placeholder 颜色
+        placeholderStyle: const TextStyle(color: Colors.grey),
+        
+        // 修改输入文字颜色
+        style: const TextStyle(color: Colors.white),
+        
+        // 自定义圆角大小
+        borderRadius: BorderRadius.circular(25.0),
+        
+        // 甚至可以更换图标
+        prefixIcon: const Icon(CupertinoIcons.search_circle_fill),
+      ),
+    );
+  }
+}
+```
+
+
+
+## 注意事项
+1. 平台风格一致性:
+  - `CupertinoSearchTextField`是强iOS风格组件。如果在Android应用中使用，可能会显得突兀。建议在Material风格应用中使用`TextField`配合`InputDecoration`或者根据平台判断(`Platform.isIOS`)来动态切换组件。
+2. 不需要显式的`Controller`(通常情况):
+  - 与标准`TextField`不同，如果你不需要在代码中动态设置文本(仅需读取)，可以不传入`TextEditingController`，因为它内部已经处理了文本状态和清除按钮的联动逻辑。
+  - 如果传入了`Controller`，请记得在`dispose()`中释放它。
+3. 键盘收起:
+  - 要在点击搜索框外部时收起键盘，通常需要在父组件包裹`GestureDetector`并调用`FocusScope.of(context).unfocus()`。
+4. 高度限制:
+  - 该组件默认有固定的高度行为(适应iOS标准)。如果需要强制改变高度，不要试图修改`style`的`fontSize`来撑大，建议外层包裹`SizedBox`或`Container`但需注意布局溢出。
+
+
+## 构造函数
+```dart
+CupertinoSearchTextField({
+  Key? key,
+  TextEditingController? controller,
+  ValueChanged<String>? onChanged,
+  ValueChanged<String>? onSubmitted,
+  TextStyle? style,
+  TextStyle? placeholderStyle,
+  String? placeholder,
+  Widget? prefixIcon,  // 默认为放大镜图标
+  Widget? suffixIcon,  // 默认为 X 图标
+  IconThemeData? prefixIconTheme, // 如果这里指定了颜色，通过 itemColor 指定的颜色将失效
+  IconThemeData? suffixIconTheme, // 如果这里指定了颜色，通过 itemColor 指定的颜色将失效
+  Color? backgroundColor,
+  Color? itemColor,    // 图标颜色
+  EdgeInsetsGeometry? padding,
+  BorderRadius? borderRadius,
+  FocusNode? focusNode,
+  bool autofocus = false,
+  VoidCallback? onSuffixTap,
+  BoxDecoration? decoration,
+  // ... 以及其他标准文本输入属性
+})
+```
+
+
+## 属性
+| 属性名 | 类型 | 说明 |
+| :--- | :--- | :--- |
+| **`controller`** | `TextEditingController?` | 控制编辑框的文本。如果需要在代码中修改文本内容（如重置），需要传入此对象。 |
+| **`placeholder`** | `String?` | 当输入框为空时显示的提示文字，默认为 "Search"。 |
+| **`onChanged`** | `ValueChanged<String>?` | 当输入框内容发生变化时被调用。适合做即时搜索（联想搜索）。 |
+| **`onSubmitted`** | `ValueChanged<String>?` | 当用户在键盘上点击确认/搜索/回车键时调用。适合做确认搜索。 |
+| **`onSuffixTap`** | `VoidCallback?` | 当点击右侧清除按钮时调用。注意：组件默认行为已包含清空文本，此回调用于处理额外的业务逻辑（如重置搜索结果列表）。 |
+| **`backgroundColor`** | `Color?` | 搜索框内部的背景颜色。 |
+| **`borderRadius`** | `BorderRadius?` | 搜索框边角的圆角半径。默认为 iOS 标准圆角。 |
+| **`itemColor`** | `Color?` | 前缀图标（放大镜）和后缀图标（清除）的颜色。 |
+| **`prefixIcon`** | `Widget?` | 显示在输入框最左侧的组件，默认为 `CupertinoIcons.search`。 |
+| **`suffixIcon`** | `Widget?` | 显示在非空状态下输入框右侧的组件，默认为 `CupertinoIcons.xmark_circle_fill`。 |
+| **`decoration`** | `BoxDecoration?` | 对搜索框外观的高级装饰。注意：如果设置了此属性，`backgroundColor` 和 `borderRadius` 可能会被覆盖或引发冲突。 |
+
+
+### 关键属性补充说明
+- `itemColor`与`prefix/suffixIcon`: `itemColor`是一个便捷属性，用于统一设置前后图标的颜色。如果你自定义了`prefixIcon`为一张图片，这个颜色属性可能不会生效。
+- `onSuffixTap`的默认行为: 即使用户没有传递`onSuffixTap`，点击默认的 "X" 图标也会清空输入框的内容并让输入框保持获取焦点状态。如果你传入了这个回调，它会在默认清理行为之外执行你的代码。
