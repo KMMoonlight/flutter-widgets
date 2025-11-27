@@ -1,0 +1,340 @@
+---
+title: CupertinoTabScaffold
+description: Flutter中Cupertino设计语言(iOS风格)组件库的一部分，它提供了一种在屏幕底部显示标签栏(Tab Bar)并在不同标签页之间切换的布局结构
+---
+
+`CupertinoTabScaffold`是Flutter中Cupertino设计语言(iOS风格)组件库的一部分，它提供了一种在屏幕底部显示标签栏(`Tab Bar`)并在不同标签页之间切换的布局结构。它旨在模拟iOS原生应用中常见的底部导航栏体验。
+
+![](https://docs.flutter.dev/assets/images/docs/widget-catalog/cupertino-tab-scaffold.png)
+
+**主要用途和逻辑**: `CupertinoTabScaffold`负责管理一个`CupertinoTabBar`(通常位于底部)和与之对应的多个内容区域(`tab`)，每个内容区域
+都由一个`Widget`表示。当用户点击标签栏中的不同图标时，`CupertinoTabScaffold`会自动切换显示对应的内容`Widget`，而标签栏本身保持不变。它通过内部
+维护一个`CupertinoTabController`或由父级`widget`提供一个`CupertinoTabController`来管理当前选中的标签页索引。
+
+### 使用场景
+- 多页面应用导航: 当应用需要提供多个顶级页面入口，且这些页面之间是平级的关系时，如社交应用的主页、消息、发现、我的等功能模块。
+- iOS风格应用: 如果你的应用目标是提供一致的iOS原生体验，`CupertinoTabScaffold`是构建底部导航的首选。
+- `Tab`页之间状态隔离: 每个`Tab`页的内容`Widget`可以拥有自己的导航栈和状态，切换`Tab`时保留状态。
+
+
+## 示例
+### 基本用法
+```dart
+import 'package:flutter/cupertino.dart';
+
+class BasicCupertinoTabScaffoldExample extends StatelessWidget {
+  const BasicCupertinoTabScaffoldExample({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return CupertinoTabScaffold(
+      // tabBuilder: 为每个tab索引构建内容Widget
+      tabBuilder: (BuildContext context, int index) {
+        return CupertinoTabView(
+          // builder: 每个CupertinoTabView的内容
+          builder: (BuildContext context) {
+            switch (index) {
+              case 0:
+                return CupertinoPageScaffold(
+                  navigationBar: CupertinoNavigationBar(
+                    middle: const Text('首页'),
+                  ),
+                  child: Center(
+                    child: Text('这是首页内容', style: CupertinoTheme.of(context).textTheme.navTitleTextStyle),
+                  ),
+                );
+              case 1:
+                return CupertinoPageScaffold(
+                  navigationBar: CupertinoNavigationBar(
+                    middle: const Text('设置'),
+                  ),
+                  child: Center(
+                    child: Text('这是设置页内容', style: CupertinoTheme.of(context).textTheme.navTitleTextStyle),
+                  ),
+                );
+              default:
+                return Container(); // 避免空内容
+            }
+          },
+        );
+      },
+      // tabBar: 底部标签栏
+      tabBar: CupertinoTabBar(
+        items: const <BottomNavigationBarItem>[
+          BottomNavigationBarItem(
+            icon: Icon(CupertinoIcons.home),
+            label: '首页',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(CupertinoIcons.settings),
+            label: '设置',
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// 如何运行此示例 (通常在main.dart中):
+// void main() {
+//   runApp(
+//     const CupertinoApp(
+//       home: BasicCupertinoTabScaffoldExample(),
+//       theme: CupertinoThemeData(
+//         brightness: Brightness.light,
+//         primaryColor: CupertinoColors.systemBlue,
+//       ),
+//     ),
+//   );
+// }
+```
+
+
+### 使用自定义控制器和初始索引
+```dart
+import 'package:flutter/cupertino.dart';
+
+class CustomControllerCupertinoTabScaffoldExample extends StatefulWidget {
+  const CustomControllerCupertinoTabScaffoldExample({Key? key}) : super(key: key);
+
+  @override
+  State<CustomControllerCupertinoTabScaffoldExample> createState() => _CustomControllerCupertinoTabScaffoldExampleState();
+}
+
+class _CustomControllerCupertinoTabScaffoldExampleState extends State<CustomControllerCupertinoTabScaffoldExample> {
+  late CupertinoTabController _tabController;
+
+  @override
+  void initState() {
+    super.initState();
+    // 初始化控制器，设置初始选中项为第二个Tab (索引1)
+    _tabController = CupertinoTabController(initialIndex: 1);
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return CupertinoTabScaffold(
+      controller: _tabController, // 传入自定义控制器
+      tabBar: CupertinoTabBar(
+        items: const <BottomNavigationBarItem>[
+          BottomNavigationBarItem(
+            icon: Icon(CupertinoIcons.search),
+            label: '搜索',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(CupertinoIcons.person),
+            label: '我的',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(CupertinoIcons.ellipses_vertical),
+            label: '更多',
+          ),
+        ],
+        onTap: (index) {
+          // 可以在这里添加额外的逻辑，例如记录用户行为
+          print('Tab switched to index: $index');
+        },
+      ),
+      tabBuilder: (BuildContext context, int index) {
+        return CupertinoTabView(
+          builder: (BuildContext context) {
+            switch (index) {
+              case 0:
+                return CupertinoPageScaffold(
+                  navigationBar: const CupertinoNavigationBar(middle: Text('搜索页面')),
+                  child: Center(child: Text('搜索内容', style: CupertinoTheme.of(context).textTheme.textStyle)),
+                );
+              case 1:
+                return CupertinoPageScaffold(
+                  navigationBar: const CupertinoNavigationBar(middle: Text('我的页面')),
+                  child: Center(child: Text('我的个人信息', style: CupertinoTheme.of(context).textTheme.textStyle)),
+                );
+              case 2:
+                // 示例：在某个Tab页内进行导航
+                return CupertinoPageScaffold(
+                  navigationBar: const CupertinoNavigationBar(middle: Text('更多页面')),
+                  child: Center(
+                    child: CupertinoButton(
+                      child: const Text('进入详情页'),
+                      onPressed: () {
+                        Navigator.of(context).push(
+                          CupertinoPageRoute<void>(
+                            builder: (BuildContext context) {
+                              return CupertinoPageScaffold(
+                                navigationBar: const CupertinoNavigationBar(
+                                  middle: Text('详情页'),
+                                ),
+                                child: Center(
+                                  child: Text('这是一个详情页', style: CupertinoTheme.of(context).textTheme.textStyle),
+                                ),
+                              );
+                            },
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                );
+              default:
+                return Container();
+            }
+          },
+        );
+      },
+    );
+  }
+}
+```
+
+
+### 嵌套的导航器
+```dart
+import 'package:flutter/cupertino.dart';
+
+class NestedNavigatorCupertinoTabScaffoldExample extends StatelessWidget {
+  const NestedNavigatorCupertinoTabScaffoldExample({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return CupertinoTabScaffold(
+      tabBar: CupertinoTabBar(
+        items: const <BottomNavigationBarItem>[
+          BottomNavigationBarItem(
+            icon: Icon(CupertinoIcons.folder),
+            label: '文件',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(CupertinoIcons.photo),
+            label: '图片',
+          ),
+        ],
+      ),
+      tabBuilder: (BuildContext context, int index) {
+        // 每个tabBuilder返回一个CupertinoTabView，它有自己的导航栈
+        return CupertinoTabView(
+          builder: (BuildContext context) {
+            switch (index) {
+              case 0:
+                // 文件Tab
+                return CupertinoPageScaffold(
+                  navigationBar: CupertinoNavigationBar(
+                    middle: const Text('文件列表'),
+                    trailing: CupertinoButton(
+                      padding: EdgeInsets.zero,
+                      onPressed: () {
+                        // 在当前Tab的导航栈中推送新页面
+                        Navigator.of(context).push(
+                          CupertinoPageRoute<void>(
+                            builder: (BuildContext context) {
+                              return CupertinoPageScaffold(
+                                navigationBar: const CupertinoNavigationBar(
+                                  middle: Text('文件详情'),
+                                ),
+                                child: Center(
+                                  child: Text('文件详情内容', style: CupertinoTheme.of(context).textTheme.textStyle),
+                                ),
+                              );
+                            },
+                          ),
+                        );
+                      },
+                      child: const Icon(CupertinoIcons.add),
+                    ),
+                  ),
+                  child: Center(
+                    child: Text('这里是文件列表', style: CupertinoTheme.of(context).textTheme.textStyle),
+                  ),
+                );
+              case 1:
+                // 图片Tab
+                return CupertinoPageScaffold(
+                  navigationBar: CupertinoNavigationBar(
+                    middle: const Text('图片库'),
+                    trailing: CupertinoButton(
+                      padding: EdgeInsets.zero,
+                      onPressed: () {
+                        Navigator.of(context).push(
+                          CupertinoPageRoute<void>(
+                            builder: (BuildContext context) {
+                              return CupertinoPageScaffold(
+                                navigationBar: const CupertinoNavigationBar(
+                                  middle: Text('图片详情'),
+                                ),
+                                child: Center(
+                                  child: Text('图片详情内容', style: CupertinoTheme.of(context).textTheme.textStyle),
+                                ),
+                              );
+                            },
+                          ),
+                        );
+                      },
+                      child: const Icon(CupertinoIcons.camera),
+                    ),
+                  ),
+                  child: Center(
+                    child: Text('这里是图片库', style: CupertinoTheme.of(context).textTheme.textStyle),
+                  ),
+                );
+              default:
+                return Container();
+            }
+          },
+        );
+      },
+    );
+  }
+}
+```
+
+
+## 注意点
+- `CupertinoTabView`的重要性: `CupertinoTabScaffold`的`tabBuilder`返回的每个`Widget`通常都应该是一个`CupertinoTabView`。`CupertinoTabView`内部管理一个独立的`Navigator`，这使得每个`Tab`都能拥有自己的路由历史栈。如果没有`CupertinoTabView`，所有`Tab`都将共享同一个`Navigator`，导致路由行为混乱。
+- 状态保持: `CupertinoTabScaffold`默认会保持`Tab`页面的状态。当一个`Tab`被切换走再切换回来时，它的`Widget`树和状态会保留。这与`IndexedStack`的行为类似。
+- 控制器管理:
+  - 如果未提供`controller`，`CupertinoTabScaffold`会内部创建一个`CupertinoTabController`。
+  - 如果需要精确控制当前选中的`Tab`或响应`Tab`切换事件，应该自己创建并传入一个`CupertinoTabController`。在`StatefulWidget`中使用时，记得在`initState`中初始化并在`dispose`中释放控制器。
+- 主题适配: `CupertinoTabScaffold`会自动继承最近的`CupertinoTheme`并应用到`CupertinoTabBar`和其内部的某些默认样式。确保在`CupertinoApp`中定义了合适的主题。
+- 性能考虑: 虽然`CupertinoTabScaffold`会保持`Tab`状态，但如果每个 Tab 的内容都非常复杂且包含大量资源，可能会导致内存占用较高。对于不常用的`Tab`，可以考虑懒加载其内容(尽管`CupertinoTabView`已经有一定优化)。
+- 与Material设计的对比: `CupertinoTabScaffold`对应于Material设计中的`Scaffold`和`BottomNavigationBar`的组合。在构建混合设计风格应用时，需要注意保持UI和行为的一致性。
+- 导航栏(`NavigationBar`): 每个`CupertinoTabView`内部的页面通常会使用`CupertinoPageScaffold`来提供一个`CupertinoNavigationBar`作为顶部导航栏。这些导航栏是独立于`CupertinoTabScaffold`的底部标签栏的。
+
+
+
+## 构造函数
+```dart
+const CupertinoTabScaffold({
+  Key? key,
+  required this.tabBar,
+  required this.tabBuilder,
+  this.controller,
+  this.backgroundColor,
+  this.resizeToAvoidBottomInset = true,
+  this.restorationId,
+});
+```
+
+
+## 属性
+| 属性名                  | 属性类型                           | 说明      |
+| :---------------------- | :--------------------------------- | :----------------------------------- |
+| `tabBar`                | `ObstructingPreferredSizeWidget`   | **必需。** 定义底部导航栏的 Widget，通常是 `CupertinoTabBar`。它负责显示图标和文本，并处理用户的点击事件。   |
+| `tabBuilder`            | `IndexedWidgetBuilder` (Function)  | **必需。** 一个函数，根据当前选中的 Tab 索引来构建对应的页面内容。通常返回一个 `CupertinoTabView`，它拥有自己的 `Navigator` 栈。  |
+| `controller`            | `CupertinoTabController?`          | 控制器，用于程序化地切换 Tab 页面或获取当前选中的 Tab 索引。如果需要从外部控制 Tab 选中状态，或监听 Tab 切换事件，则应提供此属性。  |
+| `backgroundColor`       | `Color?`                           | `CupertinoTabScaffold` 整个 Widget 的背景颜色。通常与 `CupertinoTheme` 中的 `scaffoldBackgroundColor` 保持一致。 |
+| `resizeToAvoidBottomInset` | `bool`                             | 当软键盘或其他系统 UI 弹出时，是否自动调整布局以避免内容被遮挡。默认为 `true`。在 iOS 风格应用中，这通常是期望的行为。  |
+| `restorationId`         | `String?`                          | 用于在应用程序被杀死并恢复后，恢复 `CupertinoTabScaffold` 的状态（例如选中的 Tab ）。  |
+
+
+
+### 关键属性详解
+- `tabBar`: 这个属性是`CupertinoTabScaffold`的核心外观部分，它定义了底部的导航栏。通常，您会在这里传入一个`CupertinoTabBar`实例，并填充其`items`列表(`BottomNavigationBarItem`)。`CupertinoTabBar`负责响应用户的触摸事件并通知`CupertinoTabScaffold`切换内容。它的样式(颜色、选中效果等)都可以通过`CupertinoTabBar`的属性或`CupertinoTheme`来定制。
+- `tabBuilder`: 这是定义每个 Tab 页内容的关键属性。它是一个函数，根据当前的`index`(0代表第一个`Tab`，1代表第二个，依此类推)返回相应的`Widget`。最重要的是，这里返回的`Widget`应该是一个`CupertinoTabView`。`CupertinoTabView`封装了一个独立的`Navigator`，使得每个`Tab`页面都可以拥有自己的导航历史栈，而不是整个应用共享一个导航栈，这对于多页面应用的复杂导航至关重要。
+- `controller`: 这个属性提供了更高级别的控制能力。如果您需要: 
+  - 在代码中通过程序化方式切换`Tab`。
+  - 在`CupertinoTabScaffold`外部监听`Tab`的切换事件。 那么您就需要创建一个`CupertinoTabController`实例并将其赋值给此属性。如果不提供，`CupertinoTabScaffold`会自动为您创建一个，并管理其生命周期。使用自定义控制器时，务必在`StatefulWidget`的`initState`中初始化并在`dispose`中释放它，以避免内存泄漏。
