@@ -1,0 +1,118 @@
+---
+title: CupertinoRadio
+description: Flutter中基于iOS设计语言的单选按钮组件，用于在多个选项中选择唯一项
+---
+
+`CupertinoRadio`是Flutter中基于iOS设计语言的单选按钮组件，用于在多个选项中选择唯一项。它遵循Cupertino风格，提供
+与iOS系统一致的视觉交互体验。其核心逻辑是：当用户点击时，通过`value`和`groupValue`的匹配关系自动切换选中状态，并触发`onChanged`回调。
+
+![](https://docs.flutter.dev/assets/images/docs/widget-catalog/CupertinoRadio.png)
+
+### 主要用途
+- 设置页面的选项切换(如主题选择、语言切换)。
+- 表单中的单选输入(如性别选择、支付方式)。
+- 列表项中的单选框(如任务优先级选择)。
+
+
+## 示例
+### 基础单选组
+```dart
+import 'package:flutter/cupertino.dart';
+
+class BasicRadioExample extends StatefulWidget {
+  @override
+  _BasicRadioExampleState createState() => _BasicRadioExampleState();
+}
+
+class _BasicRadioExampleState extends State<BasicRadioExample> {
+  String _selectedValue = 'option1'; // 当前选中的值
+
+  @override
+  Widget build(BuildContext context) {
+    return CupertinoPageScaffold(
+      child: Column(
+        children: [
+          CupertinoRadio(
+            value: 'option1',
+            groupValue: _selectedValue,
+            onChanged: (value) => setState(() => _selectedValue = value!),
+          ),
+          CupertinoRadio(
+            value: 'option2',
+            groupValue: _selectedValue,
+            onChanged: (value) => setState(() => _selectedValue = value!),
+          ),
+        ],
+      ),
+    );
+  }
+}
+```
+
+
+### 带标签的交互逻辑
+```dart
+CupertinoRadio(
+  value: 'enable',
+  groupValue: _configValue,
+  onChanged: (value) => setState(() => _configValue = value!),
+  activeColor: CupertinoColors.activeBlue, // 自定义选中颜色
+),
+Text('启用通知'), // 配合文本标签使用
+```
+
+
+### 适配深色主题
+```dart
+CupertinoRadio(
+  value: 'dark',
+  groupValue: _themeMode,
+  onChanged: _themeMode != 'dark' 
+      ? (value) => setState(() => _themeMode = value!) // 非禁用状态
+      : null, // 禁用当前选中项
+),
+```
+
+
+## 注意点
+1. 常见问题
+  - 状态管理: 必须通过`setState`或状态管理工具(如`Provider`)更新`groupValue`，否则界面无响应。
+  - 值类型匹配: `value`和`groupValue`的类型必须一致(如均为`String`或`int`)，否则匹配逻辑失效。
+  - 空安全处理: `onChanged`回调需处理`value`为null的情况(如使用`value!`)。
+
+2. 性能优化
+  - 在列表中使用时，将`CupertinoRadio`包裹在`StatelessWidget`中，避免父组件频繁重建。
+  - 若选项较多，使用`ListView.builder`而非直接列叠组件。
+
+3. 最佳实践
+  - 始终为单选组提供标签(如`Text`或`CupertinoTextField`)以提升可访问性。
+  - 禁用状态时设置`onChanged: null`，并搭配`opacity`降低视觉权重。
+
+
+## 构造函数
+```dart
+const CupertinoRadio({
+  Key? key,
+  required T value,           // 当前选项的值
+  required T? groupValue,     // 单选组的当前选中值
+  required ValueChanged<T?>? onChanged, // 值变更回调
+  Color? activeColor,         // 选中状态颜色（默认蓝色）
+  bool toggleable = false,    // 是否允许取消选中
+})
+```
+
+
+## 属性
+| 属性名         | 类型                 | 说明                                                                 |
+|----------------|----------------------|----------------------------------------------------------------------|
+| `value`        | `T`（泛型）          | **必需**，当前单选按钮代表的值。                                     |
+| `groupValue`   | `T?`（泛型）         | **必需**，组内当前选中的值，与 `value` 匹配时显示为选中状态。        |
+| `onChanged`    | `ValueChanged<T?>?`  | **必需**，值变化时的回调函数；设为 `null` 时按钮禁用。               |
+| `activeColor`  | `Color?`             | 选中状态的颜色，默认使用 Cupertino 主题蓝色。                        |
+| `toggleable`   | `bool`               | 为 `true` 时允许已选中项再次点击取消选中（默认 `false`）。           |
+
+
+### 关键属性解析
+- `value`与`groupValue`: 这是组件的核心逻辑，通过比较两者决定选中状态。需确保泛型类型一致。
+- `toggleable`: 在需要“取消选择”场景下(如“无偏好”选项)设置为true，但需注意iOS设计规范中较少使用此模式。
+- `activeColor`: 优先使用`CupertinoTheme`统一管理颜色，避免硬编码以保持主题一致性。
