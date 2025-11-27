@@ -1,0 +1,250 @@
+---
+title: CupertinoSliverNavigationBar
+description: Flutter Cupertino(iOS风格)设计语言中的一个组件，它提供了一个可滚动区域中的导航栏
+---
+
+`CupertinoSliverNavigationBar`是Flutter Cupertino(iOS风格)设计语言中的一个组件，它提供了一个可滚动区域中的导航栏。这个导航栏通常作为`CustomScrollView`的`slivers`列表中的一个元素，能够随着用户的滚动而
+改变其显示行为，例如标题的收缩或扩展。
+
+它的设计灵感来源于iOS的大型标题导航栏，能够在用户向下滚动时显示一个大的可读标题，向上滚动时标题会缩小并固定在顶部。它与`SliverAppBar`类似，但提供了更接近iOS原生导航栏的视觉和交互体验。
+
+![](https://docs.flutter.dev/assets/images/docs/widget-catalog/cupertino-sliver-navigation-bar.png)
+
+### 主要用途
+- 在`CustomScrollView`中构建具有iOS风格大标题和透明或半透明效果的导航栏。
+- 为应用程序提供一致的iOS视觉体验。
+- 处理滚动时导航栏的动态变化，例如标题大小和按钮位置。
+
+### 使用场景
+- 列表或网格视图的顶部: 搭配`CustomScrollView`和`SliverList`或`SliverGrid`，为内容提供一个动态显示的iOS风格导航栏。
+- 用户个人资料页: 显示用户姓名、头像等信息时，导航栏可以随着滚动展示动态效果。
+- 设置页面: 当设置项较多时，使用大标题能更好地引导用户。
+
+
+## 示例
+### 基本用法与大标题
+```dart
+import 'package:flutter/cupertino.dart';
+
+class BasicCupertinoSliverNavBarPage extends StatelessWidget {
+  const BasicCupertinoSliverNavBarPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return CupertinoPageScaffold(
+      child: CustomScrollView(
+        slivers: <Widget>[
+          const CupertinoSliverNavigationBar(
+            largeTitle: Text('我的应用'), // 大标题
+            // 中间标题，在滚动时显示，默认为 largeTitle 的 Text
+            // middle: Text('顶部导航'), 
+            // 次要标题，在大标题下方，只在大标题显示时可见
+            // trailing: CupertinoButton(
+            //   padding: EdgeInsets.zero,
+            //   onPressed: () {},
+            //   child: Icon(CupertinoIcons.add),
+            // ),
+          ),
+          SliverList(
+            delegate: SliverChildBuilderDelegate(
+              (BuildContext context, int index) {
+                return CupertinoListTile(
+                  title: Text('列表项 $index'),
+                );
+              },
+              childCount: 50, // 列表项数量，确保可滚动
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// 假设有一个 CupertinoListTile 示例，如果不存在你可以替换成 ListTile:
+class CupertinoListTile extends StatelessWidget {
+  final Widget title;
+  const CupertinoListTile({super.key, required this.title});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+      decoration: BoxDecoration(
+        color: CupertinoColors.white,
+        border: Border(
+          bottom: BorderSide(
+            color: CupertinoColors.extraLightBackgroundGray,
+            width: 0.5,
+          ),
+        ),
+      ),
+      child: DefaultTextStyle(
+        style: CupertinoTheme.of(context).textTheme.textStyle,
+        child: title,
+      ),
+    );
+  }
+}
+```
+
+
+### 带有操作按钮的导航栏
+```dart
+import 'package:flutter/cupertino.dart';
+
+class ActionsCupertinoSliverNavBarPage extends StatelessWidget {
+  const ActionsCupertinoSliverNavBarPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return CupertinoPageScaffold(
+      child: CustomScrollView(
+        slivers: <Widget>[
+          CupertinoSliverNavigationBar(
+            largeTitle: const Text('消息'),
+            leading: CupertinoButton(
+              padding: EdgeInsets.zero,
+              onPressed: () {
+                Navigator.of(context).pop(); // 返回上一页
+              },
+              child: const Icon(CupertinoIcons.back),
+            ),
+            trailing: CupertinoButton(
+              padding: EdgeInsets.zero,
+              onPressed: () {
+                // 执行添加操作
+                print('添加消息');
+              },
+              child: const Icon(CupertinoIcons.add),
+            ),
+            backgroundColor: CupertinoColors.systemBackground.withOpacity(0.9), // 轻微透明
+            border: Border(
+              bottom: BorderSide(
+                color: CupertinoColors.systemGrey.withOpacity(0.5),
+                width: 0.0, // 无边框
+              ),
+            ),
+          ),
+          SliverList(
+            delegate: SliverChildBuilderDelegate(
+              (BuildContext context, int index) {
+                return CupertinoListTile(
+                  title: Text('你有新消息 $index'),
+                );
+              },
+              childCount: 50,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+// CupertinoListTile 参见示例 1
+```
+
+
+### 完全自定义中间标题和背景色
+```dart
+import 'package:flutter/cupertino.dart';
+
+class CustomCupertinoSliverNavBarPage extends StatelessWidget {
+  const CustomCupertinoSliverNavBarPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return CupertinoPageScaffold(
+      child: CustomScrollView(
+        slivers: <Widget>[
+          CupertinoSliverNavigationBar(
+            largeTitle: const Text('个人设置'),
+            middle: const Text('详情', style: TextStyle(color: CupertinoColors.activeBlue)), // 自定义中间小标题样式
+            backgroundColor: CupertinoColors.systemGrey5.withOpacity(0.95), // 自定义背景色
+            // effect: const NoSplashCupertinoSliverNavigationBarEffect(), // 移除背景模糊效果
+            border: Border( // 移除底部分割线
+              bottom: BorderSide(
+                color: CupertinoColors.systemGrey.withOpacity(0.0),
+                width: 0.0,
+              ),
+            ),
+          ),
+          SliverList(
+            delegate: SliverChildBuilderDelegate(
+              (BuildContext context, int index) {
+                return CupertinoListTile(
+                  title: Text('设置项 $index'),
+                );
+              },
+              childCount: 50,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+// CupertinoListTile 参见示例 1
+```
+
+
+## 注意点
+- 必须在`CustomScrollView`中使用: `CupertinoSliverNavigationBar`是一个`Sliver`，所以它必须作为`CustomScrollView`的`slivers`列表中的一个元素，不能直接用在`Scaffold`或`CupertinoPageScaffold`的`appBar`属性中。
+- `largeTitle`是核心: 要想实现iOS风格的大标题效果，`largeTitle`属性是必须提供的。如果没有`largeTitle`，导航栏的行为会更接近常规导航栏。
+- 背景色与透明度: `backgroundColor`属性可以控制导航栏的背景色。当颜色带有透明度时，`CupertinoSliverNavigationBar`会自动应用iOS风格的模糊效果(`UIVisualEffectView`)，使得内容在导航栏下方滚动时可以看到模糊的背景。
+- `border`属性: 默认情况下，导航栏底部会有一条细线。你可以通过`border`属性来修改或移除它，例如设置`BorderSide(width: 0.0, color: Colors.transparent)`。
+- `transitionBetweenRoutes`属性: 这个属性控制当路由切换时，导航栏是否显示过渡动画。如果禁用，切换会更生硬。
+- `alwaysShowMiddle`与`stretch`: 在某些布局中，中标题可能会在滚动时隐藏。通过`alwaysShowMiddle`可以强制显示。`stretch`属性可以让导航栏在下拉时有一个弹性拉伸的效果。
+- 与`CupertinoPageScaffold`配合: `CupertinoPageScaffold`通常是`CustomScrollView`的父级，它的`child`属性就是`CustomScrollView`。
+- 避免过度嵌套: 在`leading`、`middle`、`trailing`中放置的`widget`应该尽量轻量，避免复杂的布局，以保证滚动时的性能。
+
+
+## 构造函数
+```dart
+const CupertinoSliverNavigationBar({
+  Key? key,
+  this.largeTitle,
+  this.leading,
+  this.automaticallyImplyLeading = true,
+  this.automaticallyImplyMiddle = true,
+  this.middle,
+  this.trailing,
+  this.border = _kDefaultNavBarBorder,
+  this.backgroundColor,
+  this.padding,
+  this.previousPageTitle,
+  this.transitionBetweenRoutes = true,
+  this.heroTag = _defaultHeroTag,
+  this.stretch = false,
+  this.overlapActions = false,
+  this.alwaysShowMiddle = false,
+})
+```
+
+
+## 属性
+| 属性名称                     | 类型                  | 说明                                                                                                                 |
+| :--------------------------- | :-------------------- | :----------------------------------------------------------------------------------------------------------------------------------- |
+| `largeTitle`                 | `Widget?`             | **（关键）** 大标题，当导航栏展开时显示。它在滚动时会缩小并可能被 `middle` 替换。通常是一个 `Text` widget。                                           |
+| `leading`                    | `Widget?`             | 导航栏左侧的 widget，例如返回按钮 (`CupertinoNavigationBarBackButton`) 或其他操作按钮。                                                 |
+| `automaticallyImplyLeading`  | `bool`                | 是否自动推断并显示一个返回按钮。默认为 `true`。如果 `leading` 被设置，则此属性无效。                                               |
+| `automaticallyImplyMiddle`   | `bool`                | 如果 `middle` 未设置，是否自动使用 `largeTitle` 创建一个中间标题。默认为 `true`。                                         |
+| `middle`                     | `Widget?`             | 导航栏中间的标题 widget。当导航栏收缩时显示，或者 `alwaysShowMiddle` 为 true 时一直显示。如果未设置，通常会使用 `largeTitle` 的内容。      |
+| `trailing`                   | `Widget?`             | 导航栏右侧的操作按钮或 widget。                                                                            |
+| `border`                     | `Border?`             | **（关键）** 导航栏底部的边框。默认为一条细灰色线。可以设置为 `null` 或自定义 `Border` 以移除或修改。                  |
+| `backgroundColor`            | `Color?`              | **（关键）** 导航栏的背景颜色。如果设置了透明度，会自动应用 iOS 风格的模糊效果。           |
+| `padding`                    | `EdgeInsetsDirectional?` | 导航栏内容的内边距。                                                            |
+| `previousPageTitle`          | `String?`             | 当导航栏用作返回按钮时，返回按钮旁边显示的上一页标题文本。                                   |
+| `transitionBetweenRoutes`    | `bool`                | **（关键）** 控制在路由切换时，是否显示导航栏的过渡动画。默认为 `true`。                        |
+| `heroTag`                    | `Object`              | 用于 Hero 动画的标签，确保路由切换时导航栏能平滑过渡。如果页面有多个 `CupertinoSliverNavigationBar`，则需要为每个设置唯一的 `heroTag`。默认为一个内部生成的唯一对象。  |
+| `stretch`                    | `bool`                | 当 `CustomScrollView` 超出滚动范围时，导航栏是否可以弹性拉伸。默认为 `false`。         |
+| `overlapActions`             | `bool`                | 是否允许 `leading` 和 `trailing` widget 与 `middle` widget 重叠。默认为 `false`，即会尝试将它们分开。        |
+| `alwaysShowMiddle`           | `bool`                | 是否强制 `middle` widget 始终显示，而不是只在导航栏收缩时显示。默认为 `false`。     |
+
+
+### 关键属性详解
+- `largeTitle`: 这是实现iOS大标题效果的核心。它决定了导航栏展开时的主要视觉元素。
+- `border`: 默认的iOS导航栏底部有一个细的分割线，你可以通过此属性自定义或完全移除它，以获得更简洁的界面。
+- `backgroundColor`: 控制导航栏的颜色。特值得注意的是，当颜色带有透明度时，Flutter会自动模拟iOS的毛玻璃(`UIVisualEffectView`)效果，使得背景内容模糊可见。
+- `transitionBetweenRoutes`: 这个属性对于创建流畅的iOS风格页面切换体验至关重要。开启后，当页面进出时，导航栏会有类似iOS原生的动画效果。
+- `heroTag`: 在使用`CupertinoPageRoute`进行页面切换时，确保`heroTag`的唯一性对于`CupertinoSliverNavigationBar`之间平滑的"push/pop"动画至关重要。如果你的应用中有多个同时存在的`CupertinoSliverNavigationBar`，或者嵌套了导航器，应该为它们提供明确且唯一的`heroTag`。
