@@ -1,0 +1,390 @@
+---
+title: CupertinoTabBar
+description: Flutter cupertino库中提供的一个iOS风格的底部导航栏组件
+---
+
+`CupertinoTabBar`是Flutter cupertino库中提供的一个iOS风格的底部导航栏组件。它遵循Apple的HIG(Human Interface Guidelines)设计规范，通常用于在应用程序的不同主要视图之间进行切换。`CupertinoTabBar`通
+常与`CupertinoTabScaffold`配合使用，作为其`tabBar`属性的值，共同实现一个完整的iOS风格的多页面切换体验。
+
+![](https://docs.flutter.dev/assets/images/docs/widget-catalog/cupertino-tab-bar.png)
+
+### 主要用途和逻辑
+- 导航切换: 提供一种直观的方式，让用户在多个顶级功能模块或页面之间快速导航。
+- 状态管理: 每个标签页的视图状态可以独立维护。
+- 视觉反馈: 当用户选择一个标签时，会显示选中状态，且图标和文本通常有颜色变化。
+
+### 使用场景
+- 应用程序的主导航结构，如微信、QQ、设置等iOS应用程序底部的主导航栏。
+- 含有多个独立功能模块的工具类应用。
+- 任何需要提供iOS风格底部导航体验的Flutter应用。
+
+
+## 示例
+### 基本使用
+```dart
+import 'package:flutter/cupertino.dart';
+
+void main() {
+  runApp(const MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const CupertinoApp(
+      title: 'Cupertino TabBar Demo',
+      home: MyTabbedApp(),
+    );
+  }
+}
+
+class MyTabbedApp extends StatelessWidget {
+  const MyTabbedApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return CupertinoTabScaffold(
+      // 创建 CupertinoTabBar
+      tabBar: CupertinoTabBar(
+        // 配置标签项
+        items: const <BottomNavigationBarItem>[
+          BottomNavigationBarItem(
+            icon: Icon(CupertinoIcons.home),
+            label: '首页',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(CupertinoIcons.search),
+            label: '搜索',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(CupertinoIcons.profile_circled),
+            label: '我的',
+          ),
+        ],
+        // 可选：设置选中项的颜色
+        activeColor: CupertinoColors.activeBlue,
+        // 可选：设置未选中项的颜色
+        inactiveColor: CupertinoColors.inactiveGray,
+        backgroundColor: CupertinoColors.white, // 背景色
+      ),
+      // 页面构建器，根据选中的索引返回对应的页面
+      tabBuilder: (BuildContext context, int index) {
+        return CupertinoTabView(
+          builder: (BuildContext context) {
+            switch (index) {
+              case 0:
+                return const CupertinoPageScaffold(
+                  navigationBar: CupertinoNavigationBar(middle: Text('首页')),
+                  child: Center(child: Text('这是首页内容')),
+                );
+              case 1:
+                return const CupertinoPageScaffold(
+                  navigationBar: CupertinoNavigationBar(middle: Text('搜索')),
+                  child: Center(child: Text('这是搜索内容')),
+                );
+              case 2:
+                return const CupertinoPageScaffold(
+                  navigationBar: CupertinoNavigationBar(middle: Text('我的')),
+                  child: Center(child: Text('这是我的内容')),
+                );
+              default:
+                return const Center(child: Text('未知页面'));
+            }
+          },
+        );
+      },
+    );
+  }
+}
+```
+
+
+### 动态badge(红点提示)和自定义图标
+```dart
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart'; // 用于 Text 上的 badge
+
+void main() {
+  runApp(const MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const CupertinoApp(
+      title: 'Cupertino TabBar with Badge Demo',
+      home: MyTabbedAppWithBadge(),
+    );
+  }
+}
+
+class MyTabbedAppWithBadge extends StatefulWidget {
+  const MyTabbedAppWithBadge({super.key});
+
+  @override
+  State<MyTabbedAppWithBadge> createState() => _MyTabbedAppWithBadgeState();
+}
+
+class _MyTabbedAppWithBadgeState extends State<MyTabbedAppWithBadge> {
+  int _messageCount = 3; // 假设有一个消息计数
+
+  @override
+  Widget build(BuildContext context) {
+    return CupertinoTabScaffold(
+      tabBar: CupertinoTabBar(
+        items: <BottomNavigationBarItem>[
+          const BottomNavigationBarItem(
+            icon: Icon(CupertinoIcons.home),
+            label: '首页',
+          ),
+          BottomNavigationBarItem(
+            icon: Stack(
+              children: [
+                const Icon(CupertinoIcons.bell_fill), // 使用带填充的图标
+                if (_messageCount > 0)
+                  Positioned(
+                    right: 0,
+                    top: 0,
+                    child: Container(
+                      padding: const EdgeInsets.all(2),
+                      decoration: BoxDecoration(
+                        color: CupertinoColors.destructiveRed,
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      constraints: const BoxConstraints(
+                        minWidth: 14,
+                        minHeight: 14,
+                      ),
+                      child: Text(
+                        '$_messageCount',
+                        style: const TextStyle(
+                          color: CupertinoColors.white,
+                          fontSize: 9,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  )
+              ],
+            ),
+            label: '消息',
+          ),
+          const BottomNavigationBarItem(
+            icon: Icon(CupertinoIcons.settings),
+            label: '设置',
+          ),
+        ],
+        activeColor: CupertinoColors.activeOrange,
+        inactiveColor: CupertinoColors.systemGrey,
+        backgroundColor: CupertinoColors.systemGrey5,
+      ),
+      tabBuilder: (BuildContext context, int index) {
+        return CupertinoTabView(
+          builder: (BuildContext context) {
+            switch (index) {
+              case 0:
+                return CupertinoPageScaffold(
+                  navigationBar: const CupertinoNavigationBar(middle: Text('首页')),
+                  child: Center(
+                    child: CupertinoButton(
+                      child: const Text('模拟首页操作'),
+                      onPressed: () {},
+                    ),
+                  ),
+                );
+              case 1:
+                return CupertinoPageScaffold(
+                  navigationBar: const CupertinoNavigationBar(middle: Text('消息')),
+                  child: Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text('当前消息数: $_messageCount'),
+                        CupertinoButton(
+                          child: const Text('清空消息'),
+                          onPressed: () {
+                            setState(() {
+                              _messageCount = 0;
+                            });
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              case 2:
+                return CupertinoPageScaffold(
+                  navigationBar: const CupertinoNavigationBar(middle: Text('设置')),
+                  child: Center(
+                    child: CupertinoButton(
+                      child: const Text('进入设置'),
+                      onPressed: () {},
+                    ),
+                  ),
+                );
+              default:
+                return const Center(child: Text('未知页面'));
+            }
+          },
+        );
+      },
+    );
+  }
+}
+```
+
+
+### 自定义背景色、边框及不透明度
+```dart
+import 'package:flutter/cupertino.dart';
+
+void main() {
+  runApp(const MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const CupertinoApp(
+      title: 'Custom Cupertino TabBar Demo',
+      home: CustomTabBarApp(),
+    );
+  }
+}
+
+class CustomTabBarApp extends StatelessWidget {
+  const CustomTabBarApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return CupertinoTabScaffold(
+      tabBar: CupertinoTabBar(
+        items: const <BottomNavigationBarItem>[
+          BottomNavigationBarItem(
+            icon: Icon(CupertinoIcons.photo),
+            label: '相册',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(CupertinoIcons.video_camera),
+            label: '视频',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(CupertinoIcons.folder),
+            label: '文件',
+          ),
+        ],
+        // 自定义背景色（带透明度）
+        backgroundColor: CupertinoColors.darkBackgroundGray.withOpacity(0.8),
+        // 自定义选中项颜色
+        activeColor: CupertinoColors.systemYellow,
+        // 自定义未选中项颜色
+        inactiveColor: CupertinoColors.white,
+        // 自定义顶部边框
+        border: const Border(
+          top: BorderSide(
+            color: CupertinoColors.systemGrey4,
+            width: 0.5,
+            style: BorderStyle.solid,
+          ),
+        ),
+      ),
+      tabBuilder: (BuildContext context, int index) {
+        return CupertinoTabView(
+          builder: (BuildContext context) {
+            String pageName;
+            IconData icon;
+            switch (index) {
+              case 0:
+                pageName = '相册';
+                icon = CupertinoIcons.photo;
+                break;
+              case 1:
+                pageName = '视频';
+                icon = CupertinoIcons.video_camera;
+                break;
+              case 2:
+                pageName = '文件';
+                icon = CupertinoIcons.folder;
+                break;
+              default:
+                pageName = '未知';
+                icon = CupertinoIcons.question_circle;
+            }
+            return CupertinoPageScaffold(
+              navigationBar: CupertinoNavigationBar(middle: Text(pageName)),
+              child: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(icon, size: 50, color: CupertinoColors.systemGrey),
+                    const SizedBox(height: 20),
+                    Text('$pageName 页面内容', style: const TextStyle(fontSize: 18)),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+}
+```
+
+
+## 注意点
+- 通常与`CupertinoTabScaffold`配合使用: `CupertinoTabBar`本身只负责显示底部导航栏，不包含页面切换逻辑。它几乎总是作为`CupertinoTabScaffold`的`tabBar`属性来使用的，由`CupertinoTabScaffold`负责管理多个`CupertinoTabView`之间的切换。
+- `BottomNavigationBarItem`: `CupertinoTabBar`的`items`属性接受的是`List<BottomNavigationBarItem>`，而不是`CupertinoTabBarItem`。虽然名字上没有`Cupertino`前缀，但这些`Item`会被`CupertinoTabBar`按照iOS的风格渲染。
+- 图标和文本颜色: `activeColor`和`inactiveColor`属性用于设置选中和未选中状态下图标和文本的颜色。
+- 背景透明度: iOS底部导航栏通常是半透明的，可以设置`backgroundColor`为带有透明度的`Color`，例如`Color.fromRGBO(249, 249, 249, 0.9)`或`CupertinoColors.systemGrey6.withOpacity(0.9)`，并确保`CupertinoTabScaffold`的`resizeToAvoidBottomInset`属性根据需要设置。
+- 性能考虑: `CupertinoTabScaffold`在切换标签页时，默认会保持所有`CupertinoTabView`的状态。如果每个标签页都加载大量数据且`CupertinoTabView`数量较多，可能会导致内存占用较高。对于性能敏感的应用，可能需要考虑使用其他状态管理方式(如`AutomaticKeepAliveClientMixin`)或延迟加载部分页面内容。
+- 自定义高度: 默认高度为50.0。iOS 的Human Interface Guidelines(HIG)建议标准`Tab Bar`高度为 49pt。不建议随意修改其高度，以保持iOS风格的一致性。
+- `Accessibility`: 注意为`BottomNavigationBarItem`的`label`提供有意义的文本，以支持无障碍功能。
+
+
+
+
+## 构造函数
+```dart
+const CupertinoTabBar({
+  super.key,
+  required this.items,        // 底部导航栏的项列表
+  this.backgroundColor,       // 背景颜色
+  this.activeColor,           // 选中项的图标和文本颜色
+  this.inactiveColor,         // 未选中项的图标和文本颜色
+  this.border = _kTabBarBorder, // 导航栏顶部的边框
+  this.iconSize = 30.0,       // 图标大小
+  this.currentIndex = 0,      // 当前选中项的索引
+  this.onTap,                 // 点击回调
+  this.height = _kTabBarHeight, // 导航栏高度
+});
+```
+
+
+
+## 属性
+| 属性名          | 类型                                 | 说明                                                             |
+| :-------------- | :----------------------------------- | :--------------------------------------------------------------- |
+| `items`         | `List<BottomNavigationBarItem>`      | 必填项，定义了Tab Bar中显示的导航项。每个项包含图标和可选的文本标签。 |
+| `backgroundColor` | `Color?`                             | Tab Bar的背景颜色。如果为 `null`，将使用 `CupertinoTheme` 的 `barBackgroundColor`。 |
+| `activeColor`   | `Color?`                             | 选中项的图标和文本颜色。如果为 `null`，将使用 `CupertinoTheme` 的 `primaryColor`。 |
+| `inactiveColor` | `Color?`                             | 未选中项的图标和文本颜色。如果为 `null`，为黑色（深色模式下为白色）。 |
+| `border`        | `Border?`                            | Tab Bar顶部的边框。默认为一道细灰色边框。如果设置为 `null`，将没有边框。 |
+| `iconSize`      | `double`                             | Tab Bar中图标的尺寸。默认为 `30.0`。                              |
+| `currentIndex`  | `int`                                | 当前选中的 `BottomNavigationBarItem` 的索引。默认为 `0`。通常由 `CupertinoTabScaffold` 内部维护。 |
+| `onTap`         | `ValueChanged<int>?`                 | 当用户点击某个 Tab 项时的回调函数。参数为被点击项的索引。通常由 `CupertinoTabScaffold` 内部处理。 |
+| `height`        | `double`                             | Tab Bar的高度。默认为 `50.0`。不建议随意更改以保持 iOS 视觉一致性。 |
+
+
+### 关键属性解释
+- `items`: 这是`CupertinoTabBar`的核心，它是一个`BottomNavigationBarItem`列表，定义了`Tab Bar`上的所有导航项。每个`BottomNavigationBarItem`至少需要一个`icon`，通常也会有`label`(文本标签)。
+- `backgroundColor`: 允许您自定义 Tab Bar 的背景颜色。在 iOS 风格的应用中，常使用带一些透明度的颜色来创建磨砂玻璃效果，例如`Colors.white.withOpacity(0.9)`。
+- `activeColor`和`inactiveColor`: 这两个属性对于控制`Tab Bar`的视觉主题至关重要。`activeColor`定义了用户选中某个`Tab`时图标和文本的颜色，而`inactiveColor`则定义了未选中`Tab`的颜色。合理设置这两者可以增强用户体验，明确指示当前所在的页面。
+- `border`: 默认情况下，`CupertinoTabBar`会在顶部显示一个细细的分割线，模拟iOS的设计。你可以通过这个属性自定义边框，甚至设置为null来移除边框。
+- `onTap`: 这是一个回调函数，当用户点击`Tab Bar`中的某个项时会被调用。然而，当`CupertinoTabBar`作为`CupertinoTabScaffold`的一部分时，通常由`CupertinoTabScaffold`内部处理 onTap 事件来切换`CupertinoTabView`。如果你想在点击`Tab`时执行额外逻辑（而不只是切换页面），可以自定义`onTap`，但要确保它不会干扰`CupertinoTabScaffold`默认的页面切换行为。
