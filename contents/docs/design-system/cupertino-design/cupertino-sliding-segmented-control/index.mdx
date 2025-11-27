@@ -1,0 +1,276 @@
+---
+title: CupertinoSlidingSegmentedControl
+description: Flutter中cupertino库提供的一个iOS风格的滑动分段选择器
+---
+
+`CupertinoSlidingSegmentedControl`是Flutter中cupertino库提供的一个iOS风格的滑动分段选择器。它模拟了iOS原生应用中常见的选择器，具有平滑的滑动动画效果，用户可以通过点击或滑动来切换不同的选项。
+
+![](https://docs.flutter.dev/assets/images/docs/widget-catalog/cupertino-sliding-segmented-control.png)
+
+### 主要用途和逻辑
+`CupertinoSlidingSegmentedControl`主要用于提供一组互斥的选择项，用户只能选择其中一个。它通常用于:
+- 模式切换: 例如在“列表视图”和“网格视图”之间切换。
+- 数据筛选: 选择不同的数据筛选条件(如“全部”、“已完成”、“待处理”)。
+- 时间范围选择: “今天”、“本周”、“本月”等。
+- 设置选项: 提供多选一的设置选项。
+
+它的核心逻辑是管理当前选中的值(`groupValue`)，并通过`onValueChanged`回调函数通知父组件选中的值发生了变化。
+
+### 使用场景
+`CupertinoSlidingSegmentedControl`适用于任何需要iOS风格多选一界面的场景，特别常见于:
+- 工具栏或导航栏中: 作为筛选或视图切换工具。
+- 设置页面: 提供明确的选项组。
+- 数据展示界面: 切换不同维度的数据视图。
+
+
+## 示例
+### 基础使用
+```dart
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+
+class BasicSegmentedControlDemo extends StatefulWidget {
+  const BasicSegmentedControlDemo({super.key});
+
+  @override
+  State<BasicSegmentedControlDemo> createState() => _BasicSegmentedControlDemoState();
+}
+
+class _BasicSegmentedControlDemoState extends State<BasicSegmentedControlDemo> {
+  String? _selectedSegment = 'Daily';
+
+  @override
+  Widget build(BuildContext context) {
+    return CupertinoPageScaffold(
+      navigationBar: const CupertinoNavigationBar(
+        middle: Text('基础分段选择器'),
+      ),
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            CupertinoSlidingSegmentedControl<String>(
+              groupValue: _selectedSegment,
+              onValueChanged: (String? newValue) {
+                setState(() {
+                  _selectedSegment = newValue;
+                });
+              },
+              children: const <String, Widget>{
+                'Daily': Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 20),
+                  child: Text('日'),
+                ),
+                'Weekly': Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 20),
+                  child: Text('周'),
+                ),
+                'Monthly': Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 20),
+                  child: Text('月'),
+                ),
+              },
+            ),
+            const SizedBox(height: 20),
+            Text(
+              '当前选择: $_selectedSegment',
+              style: const TextStyle(fontSize: 18),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+```
+
+
+### 使用图标和文本混合作为选项
+```dart
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+
+class IconTextSegmentedControlDemo extends StatefulWidget {
+  const IconTextSegmentedControlDemo({super.key});
+
+  @override
+  State<IconTextSegmentedControlDemo> createState() => _IconTextSegmentedControlDemoState();
+}
+
+class _IconTextSegmentedControlDemoState extends State<IconTextSegmentedControlDemo> {
+  int? _selectedMode = 0; // 0 for list, 1 for grid
+
+  @override
+  Widget build(BuildContext context) {
+    return CupertinoPageScaffold(
+      navigationBar: const CupertinoNavigationBar(
+        middle: Text('图标文本分段选择器'),
+      ),
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            CupertinoSlidingSegmentedControl<int>(
+              groupValue: _selectedMode,
+              onValueChanged: (int? newValue) {
+                setState(() {
+                  _selectedMode = newValue;
+                });
+              },
+              children: const <int, Widget>{
+                0: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(CupertinoIcons.list_bullet),
+                      SizedBox(width: 5),
+                      Text('列表'),
+                    ],
+                  ),
+                ),
+                1: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(CupertinoIcons.square_grid_2x2),
+                      SizedBox(width: 5),
+                      Text('网格'),
+                    ],
+                  ),
+                ),
+              },
+            ),
+            const SizedBox(height: 20),
+            Text(
+              '当前模式: ${_selectedMode == 0 ? '列表' : '网格'}',
+              style: const TextStyle(fontSize: 18),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+```
+
+
+### 自定义颜色和背景
+```dart
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+
+class CustomStyledSegmentedControlDemo extends StatefulWidget {
+  const CustomStyledSegmentedControlDemo({super.key});
+
+  @override
+  State<CustomStyledSegmentedControlDemo> createState() => _CustomStyledSegmentedControlDemoState();
+}
+
+class _CustomStyledSegmentedControlDemoState extends State<CustomStyledSegmentedControlDemo> {
+  Color? _selectedColor = Colors.red; // 红色
+
+  @override
+  Widget build(BuildContext context) {
+    return CupertinoPageScaffold(
+      navigationBar: const CupertinoNavigationBar(
+        middle: Text('自定义样式分段选择器'),
+      ),
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            CupertinoSlidingSegmentedControl<Color>(
+              groupValue: _selectedColor,
+              onValueChanged: (Color? newValue) {
+                setState(() {
+                  _selectedColor = newValue;
+                });
+              },
+              thumbColor: CupertinoColors.activeBlue, // 滑块颜色
+              backgroundColor: CupertinoColors.systemGrey5, // 背景颜色
+              children: <Color, Widget>{
+                Colors.red: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 8),
+                  child: Text(
+                    '红色',
+                    style: TextStyle(color: _selectedColor == Colors.red ? Colors.white : Colors.red),
+                  ),
+                ),
+                Colors.green: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 8),
+                  child: Text(
+                    '绿色',
+                    style: TextStyle(color: _selectedColor == Colors.green ? Colors.white : Colors.green),
+                  ),
+                ),
+                Colors.blue: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 8),
+                  child: Text(
+                    '蓝色',
+                    style: TextStyle(color: _selectedColor == Colors.blue ? Colors.white : Colors.blue),
+                  ),
+                ),
+              },
+            ),
+            const SizedBox(height: 20),
+            Container(
+              width: 100,
+              height: 100,
+              color: _selectedColor,
+              child: Center(
+                child: Text(
+                  '选择的颜色',
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(color: Colors.white),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+```
+
+
+## 注意点
+1. 状态管理: `CupertinoSlidingSegmentedControl`是一个无状态的组件，它本身不保存选中状态。你需要通过`groupValue`属性传入当前选中的值，并通过`onValueChanged`回调函数来更新父组件的状态，从而实现UI的更新。
+2. `groupValue`类型: `groupValue`和`children`的键(`key`)必须是相同类型。这意味着如果你在`children`中使用了`String`作为键，那么`groupValue`也必须是`String`类型。
+3. `children`的键值对: `children`属性是一个`Map<T, Widget>`，其中T是`groupValue`的类型，`Widget`是每个分段的UI内容。每个键必须是唯一的。
+4. `onValueChanged`不可为null: 如果`onValueChanged`为null，则控件将变为禁用状态，用户无法进行选择。这在需要展示但禁止用户交互时非常有用。
+5. 内容宽度: `CupertinoSlidingSegmentedControl`会尝试将其子组件(`children`中的`Widget`)的宽度均分。如果子组件内容的宽度差异较大，可能会导致视觉上的不对称。建议各个子组件的内容长度相似或使用`Padding`进行调整。
+6. `thumbColor`与`backgroundColor`: 可以通过`thumbColor`自定义滑块的颜色，通过`backgroundColor`自定义选择器整体的背景颜色。这些颜色应与你的应用主题保持一致。
+7. 文本颜色处理: 在示例三中可以看到，当使用自定义颜色时，需要根据当前选中状态手动调整子组件中文本的颜色，以确保选中项的文本颜色与滑块颜色形成对比，非选中项的文本颜色也清晰可见。
+
+
+## 构造函数
+```dart
+const CupertinoSlidingSegmentedControl({
+  super.key,
+  required Map<T, Widget> children, // 必需，定义每个分段的内容
+  required ValueChanged<T?>? onValueChanged, // 必需，当选择值改变时触发
+  T? groupValue, // 当前选中的值
+  Color? thumbColor, // 滑块的颜色
+  Color? backgroundColor, // 分段控制的背景颜色
+  EdgeInsetsGeometry? padding, // 内边距
+});
+```
+
+
+## 属性
+| 属性名           | 属性类型         | 说明                                                         |
+| :--------------- | :--------------- | :----------------------------------------------------------- |
+| `children`       | `Map<T, Widget>` | 一个映射表，定义了分段选择器中的所有选项。键 `T` 必须与 `groupValue` 的类型相同，值 `Widget` 是每个分段的实际显示内容。 |
+| `onValueChanged` | `ValueChanged<T?>?` | 当用户选择不同的分段时触发的回调函数。参数 `T?` 代表新的选中值。如果为 `null`，控件将被禁用。|
+| `groupValue`     | `T?`             | 当前分段选择器中被选中的值。这个值必须是 `children` 中某个键。如果为 `null`，则没有分段被选中。 |
+| `thumbColor`     | `Color?`         | 滑块的颜色。默认为 `CupertinoColors.white`。              |
+| `backgroundColor`| `Color?`         | 分段选择器整体的背景颜色。默认为 `CupertinoColors.systemFill`（在暗模式下为 `CupertinoColors.darkBackgroundGray`）。|
+| `padding`        | `EdgeInsetsGeometry?` | 分段选择器内部的填充。默认为 `EdgeInsets.all(2.0)`。        |
+
+
+### 关键属性解释
+- `children`: 这是定义分段选择器内容的核心属性。它是一个Map，其中每个key代表一个选项的标识符(可以是任何类型，但通常是`String`或`int`或`enum`)，对应的value是一个`Widget`，用于显示该选项的UI。确保所有的key都是唯一的。
+- `onValueChanged`: 这个回调函数是实现分段选择器交互的关键。当用户点击或滑动到某个分段时，`onValueChanged`会被调用，并传入新选中的分段的键。你需要在这个回调中调用`setState`来更新组件的状态，从而改变`groupValue`并触发UI的重建。如果此属性为 null，`CupertinoSlidingSegmentedControl`将处于禁用状态。
+- `groupValue`: 它指明了当前哪个分段是“选中”状态。它的值必须与`children` Map中的某个键匹配。当`groupValue`发生变化时，`CupertinoSlidingSegmentedControl`会平滑地移动滑块到新的选中项。如果`groupValue`为null，则表示没有分段被选中，滑块将不可见(或停留在默认位置，具体取决于实现)。
