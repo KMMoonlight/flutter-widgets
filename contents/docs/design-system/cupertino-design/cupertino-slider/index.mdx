@@ -1,0 +1,261 @@
+---
+title: CupertinoSlider
+description: Flutter中用于表示范围选择的iOS风格滑块组件
+---
+
+`CupertinoSlider`是Flutter中用于表示范围选择的iOS风格滑块组件。它提供了一种直观的用户界面，允许用户通过拖动一个拇指控件在预设的最小值和最大值
+之间选择一个数值。`CupertinoSlider`通常用于调整设置，如音量、亮度、缩放级别或任何其他需要连续值选择的场景。
+
+![](https://docs.flutter.dev/assets/images/docs/widget-catalog/cupertino-slider.png)
+
+- 主要用途和逻辑:
+  - 显示一个可在预设范围内拖动选择值的滑块。
+  - 遵循iOS设计语言，提供平滑的过渡和触感反馈。
+  - 通过回调函数`onChanged`实时获取滑块当前选定的值。
+  - 支持禁用状态，在禁用时用户无法操作滑块。
+
+- 使用场景:
+  - 音量控制: 在音乐播放器中调节音量大小。
+  - 亮度调节: 在系统设置或应用内调节屏幕亮度。
+  - 进度显示与控制: 展示一个任务的完成进度，并允许用户拖动选择进度(例如视频播放进度)。
+  - 图片滤镜强度: 在图片编辑应用中调整滤镜效果的强度。
+  - 游戏难度选择: 通过滑块调整游戏难度等级。
+
+
+## 示例
+### 基础音量控制滑块
+```dart
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart'; // 用于Scaffold
+
+class BasicSliderExample extends StatefulWidget {
+  const BasicSliderExample({super.key});
+
+  @override
+  State<BasicSliderExample> createState() => _BasicSliderExampleState();
+}
+
+class _BasicSliderExampleState extends State<BasicSliderExample> {
+  double _currentVolume = 0.5; // 初始音量值
+
+  @override
+  Widget build(BuildContext context) {
+    return CupertinoPageScaffold(
+      navigationBar: const CupertinoNavigationBar(
+        middle: Text('音量控制'),
+      ),
+      child: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              Text('当前音量: ${(L(_currentVolume * 100)).toStringAsFixed(0)}%'),
+              const SizedBox(height: 20),
+              CupertinoSlider(
+                value: _currentVolume,
+                min: 0.0,
+                max: 1.0,
+                divisions: 10, // 分为10个等分，每次滑动0.1
+                onChanged: (double newValue) {
+                  setState(() {
+                    _currentVolume = newValue;
+                  });
+                },
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: const [
+                  Text('静音'),
+                  Text('最大'),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+```
+
+### 禁用状态滑块
+```dart
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+
+class DisabledSliderExample extends StatefulWidget {
+  const DisabledSliderExample({super.key});
+
+  @override
+  State<DisabledSliderExample> createState() => _DisabledSliderExampleState();
+}
+
+class _DisabledSliderExampleState extends State<DisabledSliderExample> {
+  double _currentValue = 0.7; // 初始值
+  bool _isDisabled = true; // 控制滑块是否禁用
+
+  @override
+  Widget build(BuildContext context) {
+    return CupertinoPageScaffold(
+      navigationBar: const CupertinoNavigationBar(
+        middle: Text('禁用滑块'),
+      ),
+      child: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              Text('当前值: ${(_currentValue * 100).toStringAsFixed(0)}%'),
+              const SizedBox(height: 20),
+              CupertinoSlider(
+                value: _currentValue,
+                min: 0.0,
+                max: 1.0,
+                onChanged: _isDisabled ? null : (double newValue) { // 若_isDisabled为true，则onChanged为null，滑块禁用
+                  setState(() {
+                    _currentValue = newValue;
+                  });
+                },
+                activeColor: _isDisabled ? CupertinoColors.systemGrey : CupertinoColors.activeBlue,
+              ),
+              const SizedBox(height: 20),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  CupertinoSwitch(
+                    value: _isDisabled,
+                    onChanged: (bool value) {
+                      setState(() {
+                        _isDisabled = value;
+                      });
+                    },
+                  ),
+                  const SizedBox(width: 10),
+                  Text(_isDisabled ? '滑块已禁用' : '滑块已启用'),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+```
+
+### 带有刻度的自定义色滑块
+```dart
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+
+class TickedSliderExample extends StatefulWidget {
+  const TickedSliderExample({super.key});
+
+  @override
+  State<TickedSliderExample> createState() => _TickedSliderExampleState();
+}
+
+class _TickedSliderExampleState extends State<TickedSliderExample> {
+  double _currentValue = 25.0; // 初始值
+  final double _min = 0.0;
+  final double _max = 100.0;
+  final int _divisions = 4; // 将0-100分为4份，每份25
+
+  @override
+  Widget build(BuildContext context) {
+    return CupertinoPageScaffold(
+      navigationBar: const CupertinoNavigationBar(
+        middle: Text('带有刻度滑块'),
+      ),
+      child: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              Text('选择强度: ${_currentValue.toStringAsFixed(0)}'),
+              const SizedBox(height: 20),
+              CupertinoSlider(
+                value: _currentValue,
+                min: _min,
+                max: _max,
+                divisions: _divisions, // 设置刻度
+                activeColor: CupertinoColors.systemGreen, // 改变激活颜色
+                thumbColor: CupertinoColors.systemRed, // 改变拇指颜色
+                onChanged: (double newValue) {
+                  setState(() {
+                    _currentValue = newValue;
+                  });
+                },
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: List.generate(_divisions + 1, (index) {
+                  return Text(
+                    '${(_min + index * ((_max - _min) / _divisions)).toStringAsFixed(0)}',
+                    style: const TextStyle(fontSize: 12),
+                  );
+                }),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+```
+
+
+## 注意点
+- 状态管理: `CupertinoSlider`是一个无状态的组件，其`value`属性必须由外部状态管理。这意味着，你通常需要将其放置在一个`StatefulWidget`中，并在`onChanged`回调中使用`setState`来更新滑块的当前值。
+- `onChanged`回调: 当`onChanged`为null时，滑块将被禁用，用户无法与其交互。这是控制滑块启用/禁用状态的关键。
+- `min`和`max`属性: 务必设置`min`和`max`属性，它们定义了滑块值的有效范围。`value`必须在此范围内。
+- `divisions`属性:
+  - 当`divisions`为null(默认值)时，滑块可以平滑地选择范围内的任意浮点值。
+  - 当`divisions`设置为一个整数时，滑块会`snap`到等间距的离散值。例如，如果`min=0, max=100, divisions=10`，则滑块只能选择0, 10, 20, ..., 100这些值。
+  - `divisions`表示滑块在其范围内可以停留的停靠点数量减一。例如，10个区间意味着11个停靠点，所以`divisions`设为10。
+- 性能考虑: 对于频繁更新UI的场景(如音量或亮度调节)，`onChanged`回调可能被频繁触发。如果回调中执行复杂计算或导致大量UI重绘，可能会影响性能。可以考虑使用`onChangedEnd`或`Debounce`技术来优化。
+- 主题适配: `CupertinoSlider`默认使用`CupertinoTheme`中的颜色。你可以通过`activeColor`和`thumbColor`属性来自定义颜色。
+- 无标签: `CupertinoSlider`本身不提供显示当前值或刻度标签的功能。如果需要这些信息，你需要手动在滑块旁边添加`Text`组件来显示。
+
+
+## 构造函数
+```dart
+const CupertinoSlider({
+  super.key,
+  required this.value,
+  required this.onChanged,
+  this.onChangeStart,
+  this.onChangeEnd,
+  this.min = 0.0,
+  this.max = 1.0,
+  this.divisions,
+  this.activeColor,
+  this.thumbColor = CupertinoColors.white,
+  this.mouseCursor,
+}) : assert(value >= min && value <= max);
+```
+
+
+## 属性
+| 属性名           | 类型               | 说明                                                                                                                                                             |
+| :--------------- | :----------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `value`          | `double`           | `CupertinoSlider` 的当前值。必须在 `min` 和 `max` 之间。                                                                                                         |
+| `onChanged`      | `ValueChanged<double>?` | 当滑块值发生变化时调用的回调函数。回调参数是新的值。如果为 `null`，滑块将被禁用。                                                                               |
+| `onChangeStart`  | `ValueChanged<double>?` | 用户开始拖动滑块时调用的回调函数。参数是拖动开始时的值。                                                                                                       |
+| `onChangeEnd`    | `ValueChanged<double>?` | 用户停止拖动（抬起手指）时调用的回调函数。参数是拖动结束时的值。                                                                                               |
+| `min`            | `double` (默认: 0.0) | 滑块的最小值。                                                                                                                                                   |
+| `max`            | `double` (默认: 1.0) | 滑块的最大值。                                                                                                                                                   |
+| `divisions`      | `int?`             | 如果非 `null`，滑块将只能在离散值之间跳转。该值表示在 `min` 和 `max` 之间等分的数量。例如，`divisions: 10` 将创建11个可能的停靠点。                                 |
+| `activeColor`    | `Color?`           | 滑块右侧（或左侧，取决于LTR/RTL方向）的颜色，表示已选择部分的颜色。如果为 `null`，会从 `CupertinoTheme` 获取默认颜色。                                          |
+| `thumbColor`     | `Color` (默认: `CupertinoColors.white`) | 滑块拇指（可拖动的小圆点）的颜色。                                                                                                               |
+| `mouseCursor`    | `MouseCursor?`     | 光标悬停在滑块上时显示的光标样式。                                                                                                                               |
+
+
+### 关键属性详解
+- `value`: 这是`CupertinoSlider`最核心的属性，它决定了滑块在视觉上的位置，并代表了当前选定的值。由于`CupertinoSlider`是一个无状态组件，`value`必须由父组件在`setState`中管理更新，否则滑块将无法移动。
+- `onChanged`: 此回调函数是实现滑块交互功能的关键。每当用户拖动滑块并使其值发生变化时，`onChanged`就会被调用。在这个回调中，你应该更新滑块的当前值(通常通过`setState`)，从而触发UI重绘，使得滑块移动到新的位置。当滑块禁用时，此属性应设置为null。
+- `divisions`: 该属性使`CupertinoSlider`从连续值选择变为离散值选择。例如，在一个音量调节器中，你可能希望用户只能选择0, 0.1, 0.2...等离散值，而不是0.057392 等任意值。通过设置`divisions`为一个整数(例如 10)，可以实现这种步进效果。
