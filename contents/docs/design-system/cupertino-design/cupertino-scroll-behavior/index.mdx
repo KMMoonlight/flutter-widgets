@@ -1,0 +1,104 @@
+---
+title: CupertinoScrollBehavior
+description: Flutter中用于定义iOS风格滚动行为的类，继承自ScrollBehavior
+---
+
+`CupertinoScrollBehavior`是Flutter中用于定义iOS风格滚动行为的类，继承自`ScrollBehavior`。它主要控制滚动组件的视觉反馈
+和交互特性(如滚动条显示规则、滚动物理效果等)，确保应用在iOS平台上具有原生般的滚动体验。其核心逻辑是覆盖父类的行为方法，强制使用`Cupertino`风格的滚动效果(例如弹性滚动和动态滚动条)。
+
+
+### 使用场景
+- 开发iOS风格应用时，需要统一全局滚动行为(如使用MaterialApp但希望滚动效果符合iOS设计语言)。
+- 在混合开发中，特定页面需覆盖默认的Material滚动效果，切换为Cupertino样式。
+- 需要自定义滚动条显示逻辑(如自动隐藏/显示规则)但保留iOS交互特性。
+
+
+## 示例
+### 基础应用
+```dart
+MaterialApp(
+  scrollBehavior: CupertinoScrollBehavior(), // 全局生效
+  home: Scaffold(
+    body: ListView.builder(
+      itemCount: 50,
+      itemBuilder: (context, index) => ListTile(title: Text('Item $index')),
+    ),
+  ),
+);
+```
+
+
+### 局部覆盖滚动行为
+```dart
+ScrollConfiguration(
+  behavior: CupertinoScrollBehavior(),
+  child: ListView(
+    children: [
+      Container(height: 200, color: CupertinoColors.activeBlue),
+      Container(height: 200, color: CupertinoColors.systemGrey),
+    ],
+  ),
+);
+```
+
+
+### 自定义滚动条行为
+```dart
+class CustomScrollBehavior extends CupertinoScrollBehavior {
+  @override
+  Widget buildScrollbar(BuildContext context, Widget child, ScrollableDetails details) {
+    // 仅在滚动时显示滚动条
+    return RawScrollbar(
+      controller: details.controller,
+      child: child,
+    );
+  }
+}
+
+// 使用自定义行为
+ScrollConfiguration(
+  behavior: CustomScrollBehavior(),
+  child: GridView.builder(gridDelegate: ...),
+);
+```
+
+
+### 注意点
+- 常见问题
+  - 平台兼容性: 在Android设备上强制使用可能破坏Material Design一致性，建议通过条件判断动态切换。
+  - 嵌套冲突: 若父组件已设置`ScrollBehavior`，子组件的局部覆盖可能失效，需检查组件树层级。
+  - 滚动条控制: 默认滚动条为iOS自动隐藏样式，若需永久显示需自定义`buildScrollbar`方法。
+
+- 优化技巧
+  - 结合`Platform.isIOS`条件设置行为，避免跨平台体验割裂。
+  - 重写`getScrollPhysics`可混合使用`BouncingScrollPhysics`(弹性效果)与固定滚动速度。
+  - 在`ListView/GridView`中，优先使用`CupertinoScrollBehavior`替代直接设置`physics`，以统一交互逻辑。
+
+- 最佳实践
+  - 在`CupertinoApp`中无需显式使用，因其已内置iOS滚动行为。
+  - 自定义时尽量复用`CupertinoScrollBehavior`的方法，仅覆盖必要部分(如`buildOverscrollIndicator`)。
+
+
+
+## 构造函数
+`CupertinoScrollBehavior`提供默认构造函数，无必选参数
+```dart
+CupertinoScrollBehavior({
+  // 所有参数均为可选，继承自 ScrollBehavior
+});
+```
+
+
+## 属性
+| 属性名                 | 属性类型                         | 说明                                                                 |
+|------------------------|----------------------------------|----------------------------------------------------------------------|
+| `getScrollPhysics`     | `ScrollPhysics Function(BuildContext)` | 返回当前平台的滚动物理规则（iOS 为 `BouncingScrollPhysics`）。        |
+| `buildScrollbar`       | `Widget Function(BuildContext, Widget, ScrollableDetails)` | 构建滚动条组件，默认使用 Cupertino 风格动态滚动条。                  |
+| `buildOverscrollIndicator` | `Widget Function(BuildContext, Widget, ScrollableDetails)` | 构建过度滚动指示器，默认在 iOS 上禁用 Material 的 GlowingOverscrollIndicator。 |
+
+
+
+### 关键属性详解
+- `getScrollPhysics`: 控制滚动的物理效果(如弹性、摩擦系数)。在iOS上默认返回`BouncingScrollPhysics`，这是实现iOS特色回弹效果的核心。可重写此方法以混合自定义物理规则(如限制滚动边界)。
+- `buildScrollbar`: 管理滚动条的显示/隐藏动画和样式。默认行为与iOS原生一致(滚动时淡入，静止时淡出)。需修改滚动条颜色或持久化显示时，应重写此方法并返回`RawScrollbar`等组件。
+
