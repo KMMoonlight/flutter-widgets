@@ -1,0 +1,285 @@
+---
+title: CupertinoTabController
+description: Flutter cupertino库中用于管理CupertinoTabScaffold或CupertinoTabBar的选择状态的控制器
+---
+
+`CupertinoTabController`是Flutter cupertino库中用于管理`CupertinoTabScaffold`或`CupertinoTabBar`的选择状态的控制器。它允许开发者程序化地控制当前选中的标签页索引，而不仅仅依赖用户点击交互。
+
+- **主要用途**: 用于在多个标签页(`Tabs`)之间切换时，管理和监听当前活跃的标签页索引。它通常与`CupertinoTabScaffold`结合使用，后者提供了一个底部标签栏和与之对应的页面内容区域。
+- **核心逻辑**: 它是一个`ChangeNotifier`，当`index`属性改变时，会通知所有监听器(如`CupertinoTabScaffold`)，从而更新UI显示。
+
+### 使用场景
+- 程序化切换标签页: 例如，当用户完成某个操作后，自动切换到另一个相关的标签页。
+- 共享标签页状态: 在应用的多个部分之间共享或同步当前激活的标签页状态。
+- 深度链接处理: 从外部链接(如通用链接或应用内通知)导航到特定的标签页。
+- 状态恢复: 在应用重启后恢复之前选中的标签页状态。
+
+
+## 示例
+### 基本使用与手动切换
+```dart
+import 'package:flutter/cupertino.dart';
+
+class BasicTabControlledApp extends StatefulWidget {
+  const BasicTabControlledApp({super.key});
+
+  @override
+  State<BasicTabControlledApp> createState() => _BasicTabControlledAppState();
+}
+
+class _BasicTabControlledAppState extends State<BasicTabControlledApp> {
+  late CupertinoTabController _tabController;
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = CupertinoTabController(initialIndex: 0); // 初始选中第一个标签页
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return CupertinoApp(
+      theme: const CupertinoThemeData(brightness: Brightness.light),
+      home: CupertinoTabScaffold(
+        controller: _tabController,
+        tabBar: CupertinoTabBar(
+          items: const <BottomNavigationBarItem>[
+            BottomNavigationBarItem(
+              icon: Icon(CupertinoIcons.home),
+              label: '主页',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(CupertinoIcons.settings),
+              label: '设置',
+            ),
+          ],
+          onTap: (index) {
+            // 用户点击标签栏时更新UI，控制器也会随之更新
+            print('用户点击了索引 $index');
+          },
+        ),
+        tabBuilder: (BuildContext context, int index) {
+          return CupertinoTabView(
+            builder: (BuildContext context) {
+              return CupertinoPageScaffold(
+                navigationBar: CupertinoNavigationBar(
+                  middle: Text('Tab ${index + 1}'),
+                  trailing: (index == 0)
+                      ? CupertinoButton(
+                          padding: EdgeInsets.zero,
+                          onPressed: () {
+                            // 手动切换到第二个标签页
+                            _tabController.index = 1;
+                            print('程序化切换到设置页');
+                          },
+                          child: const Text('去设置'),
+                        )
+                      : null,
+                ),
+                child: Center(
+                  child: Text('这是Tab ${index + 1} 的内容'),
+                ),
+              );
+            },
+          );
+        },
+      ),
+    );
+  }
+}
+
+void main() {
+  runApp(const BasicTabControlledApp());
+}
+```
+
+
+### 监听标签页切换事件
+```dart
+import 'package:flutter/cupertino.dart';
+
+class TabListenerApp extends StatefulWidget {
+  const TabListenerApp({super.key});
+
+  @override
+  State<TabListenerApp> createState() => _TabListenerAppState();
+}
+
+class _TabListenerAppState extends State<TabListenerApp> {
+  late CupertinoTabController _tabController;
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = CupertinoTabController(initialIndex: 0);
+    _tabController.addListener(_handleTabChange); // 添加监听器
+  }
+
+  void _handleTabChange() {
+    print('当前选中的标签页索引发生变化: ${_tabController.index}');
+    // 可以在这里执行一些依赖于当前标签页的逻辑
+    if (_tabController.index == 1) {
+      print('您切换到了设置标签页！');
+    }
+  }
+
+  @override
+  void dispose() {
+    _tabController.removeListener(_handleTabChange); // 移除监听器
+    _tabController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return CupertinoApp(
+      theme: const CupertinoThemeData(brightness: Brightness.light),
+      home: CupertinoTabScaffold(
+        controller: _tabController,
+        tabBar: CupertinoTabBar(
+          items: const <BottomNavigationBarItem>[
+            BottomNavigationBarItem(
+              icon: Icon(CupertinoIcons.square_list),
+              label: '列表',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(CupertinoIcons.info),
+              label: '关于',
+            ),
+          ],
+        ),
+        tabBuilder: (BuildContext context, int index) {
+          return CupertinoTabView(
+            builder: (BuildContext context) {
+              return CupertinoPageScaffold(
+                navigationBar: CupertinoNavigationBar(
+                  middle: Text('Tab ${index + 1}'),
+                ),
+                child: Center(
+                  child: Text('这是Tab ${index + 1} 的内容'),
+                ),
+              );
+            },
+          );
+        },
+      ),
+    );
+  }
+}
+
+void main() {
+  runApp(const TabListenerApp());
+}
+```
+
+
+### 结合路由实现深度链接
+```dart
+import 'package:flutter/cupertino.dart';
+
+// 模拟一个外部参数，用于决定初始标签页
+const bool _shouldStartOnSettings = true; // 假设从深度链接或其他条件判断而来
+
+class DeepLinkTabApp extends StatefulWidget {
+  const DeepLinkTabApp({super.key});
+
+  @override
+  State<DeepLinkTabApp> createState() => _DeepLinkTabAppState();
+}
+
+class _DeepLinkTabAppState extends State<DeepLinkTabApp> {
+  late CupertinoTabController _tabController;
+
+  @override
+  void initState() {
+    super.initState();
+    // 根据外部条件设置初始索引
+    final int initialTabIndex = _shouldStartOnSettings ? 1 : 0;
+    _tabController = CupertinoTabController(initialIndex: initialTabIndex);
+    print('应用启动，初始标签页索引: $initialTabIndex');
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return CupertinoApp(
+      theme: const CupertinoThemeData(brightness: Brightness.light),
+      home: CupertinoTabScaffold(
+        controller: _tabController,
+        tabBar: CupertinoTabBar(
+          items: const <BottomNavigationBarItem>[
+            BottomNavigationBarItem(
+              icon: Icon(CupertinoIcons.bag_badge_plus),
+              label: '商品',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(CupertinoIcons.person_alt),
+              label: '个人',
+            ),
+          ],
+        ),
+        tabBuilder: (BuildContext context, int index) {
+          return CupertinoTabView(
+            builder: (BuildContext context) {
+              return CupertinoPageScaffold(
+                navigationBar: CupertinoNavigationBar(
+                  middle: Text('Tab ${index + 1}'),
+                ),
+                child: Center(
+                  child: Text('这是Tab ${index + 1} 的内容'),
+                ),
+              );
+            },
+          );
+        },
+      ),
+    );
+  }
+}
+
+void main() {
+  runApp(const DeepLinkTabApp());
+}
+```
+
+
+## 注意点
+1. 生命周期管理: `CupertinoTabController`是一个`ChangeNotifier`，必须在不再使用时通过调用`dispose()`方法释放资源，以避免内存泄漏。通常在管理它的`StatefulWidget`的`dispose`方法中进行。
+2. 与`CupertinoTabScaffold`配合: `CupertinoTabController`通常是与`CupertinoTabScaffold`的`controller`属性一起使用的。虽然也可以用于控制独立的`CupertinoTabBar`，但与`CupertinoTabScaffold`结合使用时，它会自动处理页面内容的切换。
+3. `initialIndex`的设置: `initialIndex`只能在控制器创建时设置一次。如果需要在运行时更改初始索引，需要重新创建`CupertinoTabController`或者使用`index`属性进行设置。
+4. 程序化与用户交互: `CupertinoTabController`的`index`属性可以直接(程序化地)修改，也可以通过用户点击`CupertinoTabBar`自动更新。两者都会触发监听器通知。
+5. 嵌套导航: 在`CupertinoTabView`中使用`Navigator`进行页面的推入和弹出时，每个`CupertinoTabView`都维护自己的导航栈。`CupertinoTabController`管理的是顶层标签页的切换，不会影响每个标签页内部的导航栈状态。
+
+
+## 构造函数
+```dart
+CupertinoTabController({
+  super.debugLabel, // 可选参数，用于调试时识别controller
+  int initialIndex = 0, // 初始选中的标签页索引
+})
+```
+
+
+## 属性
+| 属性名称    | 属性类型 | 说明   |
+| :---------- | :------- | :------- |
+| `index`     | `int`    | 当前选中的标签页的索引。修改此属性会触发所有监听器，并导致 `CupertinoTabScaffold` 或其他监听者更新其UI以显示新的标签页内容。这是一个可读写的属性。    |
+| `initialIndex` | `int`    | **（只读）** 控制器创建时指定的初始选中标签页的索引。此值在控制器生命周期内是固定的，不能在创建后修改。   |
+| `animation` | `Animation<double>` | 一个动画对象，通常用于表示在标签页切换过渡期间的动画进度。此动画通常由 `CupertinoTabScaffold` 内部管理，当切换标签页时，它会在0.0到1.0之间进行动画。开发者可以在高级场景下使用这个动画来同步自定义的过渡效果。   |
+| `vsync`     | `TickerProvider` | **（内部使用）** 为控制器内部的 `AnimationController` 提供 `TickerProvider`。通常不需要直接与此属性交互，它由 `CupertinoTabScaffold` 自动提供。  |
+
+
+### 关键属性详解
+- `index`: 这是`CupertinoTabController`中最核心的属性。它不仅表示当前激活的标签页，而且是一个**可变的**属性，可以被程序化地设置。当`index`值通过`_tabController.index = newIndex;`改变时，所有已注册的监听器(包括`CupertinoTabScaffold`自身)都会收到通知，从而触发UI的重新构建，显示对应新索引的标签页内容。这使得开发者能够完全控制标签页的切换，例如在用户完成某个操作后自动跳转到确认页所在的标签页。
+- `animation`: 尽管不常用，但`animation`属性在需要实现更精细的自定义标签页切换动画时非常有用。例如，如果你想让某个子组件的动画与标签页的滑动过渡同步，你可以监听这个动画对象的`value`变化。通常情况下，`CupertinoTabScaffold`会自行处理标签页内容的滑动动画，无需我们手动干预。
