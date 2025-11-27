@@ -1,0 +1,261 @@
+---
+title: CupertinoSliverRefreshControl
+description: Flutter中用于实现iOS风格下拉刷新(Pull-to-Refresh)效果的组件
+---
+
+`CupertinoSliverRefreshControl`是Flutter中用于实现iOS风格下拉刷新(`Pull-to-Refresh`)效果的组件，它通常与`CustomScrollView`、`SliverAppBar`和`SliverList`等`Sliver`系列组件配合使用。这个组件会在
+用户向下滑动内容超出列表顶部时，显示一个指示器来表示正在加载数据，并在数据加载完成后自动隐藏。
+
+- 它的核心优势在于:
+  - 原生iOS风格: 提供与iOS系统原生刷新控件高度一致的用户体验和视觉效果。
+  - 与`Slivers`无缝集成: 作为`Sliver`使用，可以灵活地嵌入到`CustomScrollView`中，与其他`Sliver`组件协同工作。
+  - 高度可定制: 允许开发者通过回调函数自定义刷新逻辑和加载动画。
+
+
+**主要用途**: 在需要下拉刷新功能且希望保持iOS应用原生感动的场景中使用，例如社交媒体动态、新闻列表、邮件收件箱等。
+
+**使用场景**:
+1. 列表数据更新: 当用户到达列表顶部并继续下拉时，触发数据重新加载。
+2. 内容同步: 确保显示为最新数据，提高用户体验。
+
+
+## 示例
+### 简单下拉刷新示例
+```dart
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+
+class SimpleRefreshControlExample extends StatefulWidget {
+  const SimpleRefreshControlExample({super.key});
+
+  @override
+  State<SimpleRefreshControlExample> createState() => _SimpleRefreshControlExampleState();
+}
+
+class _SimpleRefreshControlExampleState extends State<SimpleRefreshControlExample> {
+  List<String> _data = List.generate(20, (index) => 'Item ${index + 1}');
+  bool _isLoading = false;
+
+  Future<void> _handleRefresh() async {
+    if (_isLoading) return;
+    setState(() {
+      _isLoading = true;
+    });
+
+    await Future.delayed(const Duration(seconds: 2)); // 模拟网络请求
+
+    setState(() {
+      _data = List.generate(20, (index) => 'New Item ${index + 1} (Refreshed)');
+      _isLoading = false;
+    });
+    print('数据刷新完成！');
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return CupertinoPageScaffold(
+      navigationBar: const CupertinoNavigationBar(
+        middle: Text('下拉刷新示例'),
+      ),
+      child: CustomScrollView(
+        physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()), // 确保可以一直滚动以触发刷新
+        slivers: <Widget>[
+          CupertinoSliverRefreshControl(
+            onRefresh: _handleRefresh,
+            builder: (
+              BuildContext context,
+              RefreshIndicatorMode refreshState,
+              double pulledExtent,
+              double refreshIndicatorExtent,
+              AxisDirection axisDirection,
+              bool leading,
+            ) {
+              // 默认的指示器就很好，这里可以自定义
+              return CupertinoSliverRefreshControl.buildRefreshIndicator(
+                context,
+                refreshState,
+                pulledExtent,
+                refreshIndicatorExtent,
+                axisDirection,
+                leading,
+              );
+            },
+          ),
+          SliverSafeArea( // 避免内容被导航栏遮挡
+            sliver: SliverList(
+              delegate: SliverChildBuilderDelegate(
+                (BuildContext context, int index) {
+                  return CupertinoNoDefaultSelectedSystemColorScheme( // 如果有的话，保持Cupertino风格
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                      child: Container(
+                        height: 50.0,
+                        alignment: Alignment.centerLeft,
+                        decoration: BoxDecoration(
+                          color: CupertinoColors.extraLightBackgroundGray,
+                          borderRadius: BorderRadius.circular(8.0),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.only(left: 16.0),
+                          child: Text(
+                            _data[index],
+                            style: CupertinoTheme.of(context).textTheme.textStyle,
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                },
+                childCount: _data.length,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+void main() => runApp(const CupertinoApp(
+      title: 'Cupertino Refresh Control',
+      home: SimpleRefreshControlExample(),
+    ));
+```
+
+
+### 配合SliverAppBar和更复杂的布局
+```dart
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart'; // 引入Material用于SliverAppBar
+
+class AdvancedRefreshExample extends StatefulWidget {
+  const AdvancedRefreshExample({super.key});
+
+  @override
+  State<AdvancedRefreshExample> createState() => _AdvancedRefreshExampleState();
+}
+
+class _AdvancedRefreshExampleState extends State<AdvancedRefreshExample> {
+  List<Color> _colors = <Color>[Colors.red, Colors.green, Colors.blue, Colors.yellow, Colors.purple];
+  List<String> _items = List.generate(50, (index) => 'List Item ${index + 1}');
+
+  Future<void> _handleRefresh() async {
+    await Future.delayed(const Duration(seconds: 3)); // 模拟长时间加载
+
+    setState(() {
+      _items = List.generate(50, (index) => 'New Refreshed Item ${index + 1}');
+      _colors = [Colors.cyan, Colors.orange, Colors.teal, Colors.brown, Colors.pinkAccent];
+      print('数据已刷新！');
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return CupertinoPageScaffold(
+      child: CustomScrollView(
+        physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+        slivers: <Widget>[
+          // CupertinoSliverRefreshControl 必须放在所有其他 Sliver 之前
+          CupertinoSliverRefreshControl(
+            onRefresh: _handleRefresh,
+            // 可以在 builder 中添加额外的装饰或动画
+            builder: (
+              BuildContext context,
+              RefreshIndicatorMode refreshState,
+              double pulledExtent,
+              double refreshIndicatorExtent,
+              AxisDirection axisDirection,
+              bool leading,
+            ) {
+              return CupertinoSliverRefreshControl.buildRefreshIndicator(
+                context,
+                refreshState,
+                pulledExtent,
+                refreshIndicatorExtent,
+                axisDirection,
+                leading,
+              );
+            },
+          ),
+          SliverAppBar(
+            backgroundColor: CupertinoTheme.of(context).primaryColor,
+            expandedHeight: 200.0,
+            floating: false, // 不随滚动立即消失
+            pinned: true, // 标题栏固定在顶部
+            flexibleSpace: FlexibleSpaceBar(
+              centerTitle: true,
+              title: const Text('高级刷新列表',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 18.0,
+                  )),
+              background: Image.network(
+                'https://picsum.photos/id/1015/800/200', // 示例背景图
+                fit: BoxFit.cover,
+              ),
+            ),
+          ),
+          SliverList(
+            delegate: SliverChildBuilderDelegate(
+              (BuildContext context, int index) {
+                return Container(
+                  color: _colors[index % _colors.length].withOpacity(0.1),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Text(
+                      _items[index],
+                      style: CupertinoTheme.of(context).textTheme.navTitleTextStyle,
+                    ),
+                  ),
+                );
+              },
+              childCount: _items.length,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+void main() => runApp(const CupertinoApp(
+      title: 'Advanced Refresh',
+      home: AdvancedRefreshExample(),
+    ));
+```
+
+
+## 注意点
+- 位置: `CupertinoSliverRefreshControl`必须作为`CustomScrollView`的第一个`sliver`子组件，否则下拉刷新无法正确触发。
+- 物理特性(`physics`): `CustomScrollView`的`physics`属性应该设置为`AlwaysScrollableScrollPhysics()`或其子类(`如BouncingScrollPhysics()`)，以确保即使内容不足以填满屏幕时也能允许用户下拉滚动，从而触发刷新。`BouncingScrollPhysics`是iOS风格的弹性滚动，通常是配合`CupertinoSliverRefreshControl`的最佳选择。
+- 异步操作: `onRefresh`回调函数必须返回一个`Future`。Flutter会等待这个`Future`完成，然后自动隐藏刷新指示器。在`Future`完成之前，指示器会一直显示。
+- `builder`函数: `builder`函数允许你完全自定义刷新指示器的外观和动画。如果你不需要自定义，可以使用`CupertinoSliverRefreshControl.buildRefreshIndicator`静态方法来获取默认的iOS风格指示器。
+- 状态管理: 在`onRefresh`回调中，当数据加载完成后，务必调用`setState`来更新界面数据，以便列表显示最新的内容。
+- 错误处理: `onRefresh`回调中应包含错误处理逻辑。如果网络请求失败，可以通过`Future.error()`或其他方式通知用户，然后仍让`Future`完成，以便指示器隐藏。
+- 性能考虑: `onRefresh`中执行的操作应尽可能高效，避免阻塞UI线程。对于耗时操作，应使用异步(`async/await`)或`Isolate`处理。
+
+
+## 构造函数
+```dart
+const CupertinoSliverRefreshControl({
+  super.key,
+  this.refreshIndicatorExtent = _defaultRefreshIndicatorExtent,
+  this.builder = CupertinoSliverRefreshControl.buildRefreshIndicator,
+  required this.onRefresh,
+})
+```
+
+
+## 属性
+| 属性名                | 类型                                                                                                          | 说明                                                                                                                                                                                                                                                                                |
+| :-------------------- | :------------------------------------------------------------------------------------------------------------ | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `key`                 | `Key?`                                                                                                        | 用于在 Widget 树中唯一标识此控件。                                                                                                                                                                                                                                                  |
+| `refreshIndicatorExtent` | `double`                                                                                                      | 刷新指示器完全显示时的高度。当用户下拉超过此距离时，即使松开手指也会触发刷新。默认值为 `60.0`。                                                                                                                                                                                                      |
+| `builder`             | `RefreshControlIndicatorBuilder?` <br> (`BuildContext context, RefreshIndicatorMode refreshState, double pulledExtent, double refreshIndicatorExtent, AxisDirection axisDirection, bool leading`) => Widget | 用于构建刷新指示器的回调函数。它接收当前的刷新状态 (`RefreshIndicatorMode`)、用户下拉的距离 (`pulledExtent`)、完全显示的高度 (`refreshIndicatorExtent`) 等参数，并应返回一个 `Widget`。如果你想使用默认的 iOS 样式，可以使用 `CupertinoSliverRefreshControl.buildRefreshIndicator`。 |
+| `onRefresh`           | `AsyncCallback?` <br> (`Future<void> Function()`)                                                             | 当用户下拉并释放以触发刷新时调用的异步回调函数。这个函数必须返回一个 `Future<void>`，Flutter 会等待这个 `Future` 完成，然后隐藏刷新指示器。这是一个必填参数。                                                                                                                                      |
+
+
+**关键属性解释**:
+- `onRefresh`: 这是`CupertinoSliverRefreshControl`最核心的属性。它定义了当用户触发刷新操作时应该执行什么业务逻辑。通常，这里会放置数据请求、本地缓存更新等异步操作。其返回的`Future`决定了刷新动画何时结束。
+- `builder`: 这个属性提供了极高的灵活性，允许开发者完全自定义刷新指示器在不同状态下的外观。例如，你可以在这里显示一个公司Logo，或者根据刷新状态显示不同的动效。其参数`refreshState`会告诉你当前指示器处于哪个阶段(如`drag`、`armed`、`refresh`、`done`等)，从而可以针对性地渲染不同的UI。
+- `refreshIndicatorExtent`: 这个值决定了用户需要下拉多少距离才能完全显示刷新指示器，并且在松手后触发刷新。合理的设置可以提升用户体验，避免过轻或过重的触发感。
