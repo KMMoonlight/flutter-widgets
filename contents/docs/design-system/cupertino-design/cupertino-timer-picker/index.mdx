@@ -1,0 +1,310 @@
+---
+title: CupertinoTimerPicker
+description: Flutter cupertino库中的一个计时器选择器组件，模仿了iOS风格的计时器界面
+---
+
+
+`CupertinoTimerPicker`是Flutter cupertino库中的一个计时器选择器组件，模仿了iOS风格的计时器界面。它允许用户以小时、分钟和/或秒为单位选择一个持续时间。这个组件非常适合在需要用户输入特定时间长度(例如设置闹钟、倒计时或记录活动时长)的场景中使用。
+
+![](https://docs.flutter.dev/assets/images/docs/widget-catalog/CupertinoTimerPicker.png)
+
+### 主要用途
+- 提供一个直观且原生的iOS风格时间选择体验。
+- 允许用户以小时、分钟或秒粒度选择一个时间段。
+- 通常与`showCupertinoModalPopup`搭配使用，以模态底部弹出框的形式展示。
+
+### 使用场景
+- 闹钟或计时器应用: 用户需要设置一个时长，用于倒计时或作为闹钟的持续时间。
+- 健身应用: 记录锻炼的时长。
+- 任务管理工具: 设置专注工作的时长。
+- 设置倒计时功能: 例如限时优惠、活动结束时间等。
+
+
+## 示例
+### 基本计时器选择器
+```dart
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+
+class BasicTimerPickerExample extends StatefulWidget {
+  const BasicTimerPickerExample({super.key});
+
+  @override
+  State<BasicTimerPickerExample> createState() => _BasicTimerPickerExampleState();
+}
+
+class _BasicTimerPickerExampleState extends State<BasicTimerPickerExample> {
+  Duration _selectedDuration = Duration.zero;
+
+  void _showTimerPicker(BuildContext context) {
+    showCupertinoModalPopup<void>(
+      context: context,
+      builder: (BuildContext context) {
+        return Container(
+          height: 250, // 为选择器设置合适的高度
+          color: CupertinoColors.systemBackground.resolveFrom(context),
+          child: Column(
+            children: [
+              // 顶部操作栏
+              Container(
+                alignment: Alignment.centerRight,
+                child: CupertinoButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('完成'),
+                ),
+              ),
+              Expanded(
+                child: CupertinoTimerPicker(
+                  mode: CupertinoTimerPickerMode.hms, // 显示小时、分钟和秒
+                  initialTimerDuration: _selectedDuration,
+                  onTimerDurationChanged: (Duration newDuration) {
+                    setState(() {
+                      _selectedDuration = newDuration;
+                    });
+                  },
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedDuration = const Duration(minutes: 5, seconds: 30); // 初始值
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('基本计时器选择器'),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Text('当前选择时长: ${_selectedDuration.inHours}h ${_selectedDuration.inMinutes % 60}m ${_selectedDuration.inSeconds % 60}s'),
+            const SizedBox(height: 20),
+            CupertinoButton.filled(
+              onPressed: () => _showTimerPicker(context),
+              child: const Text('选择时长'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+```
+
+
+### 只选择分钟和秒的计时器
+```dart
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+
+class MinutesSecondsTimerPickerExample extends StatefulWidget {
+  const MinutesSecondsTimerPickerExample({super.key});
+
+  @override
+  State<MinutesSecondsTimerPickerExample> createState() => _MinutesSecondsTimerPickerExampleState();
+}
+
+class _MinutesSecondsTimerPickerExampleState extends State<MinutesSecondsTimerPickerExample> {
+  Duration _selectedDuration = const Duration(minutes: 1, seconds: 0);
+
+  void _showPicker(BuildContext context) {
+    showCupertinoModalPopup<void>(
+      context: context,
+      builder: (BuildContext context) {
+        return Container(
+          height: 250,
+          color: CupertinoColors.systemBackground.resolveFrom(context),
+          child: Column(
+            children: [
+              Container(
+                alignment: Alignment.centerRight,
+                child: CupertinoButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('确定'),
+                ),
+              ),
+              Expanded(
+                child: CupertinoTimerPicker(
+                  mode: CupertinoTimerPickerMode.ms, // 只显示分钟和秒
+                  initialTimerDuration: _selectedDuration,
+                  onTimerDurationChanged: (Duration newDuration) {
+                    setState(() {
+                      // 这里 newDuration 只有分钟和秒部分，小时默认为0
+                      _selectedDuration = newDuration;
+                    });
+                  },
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('分钟和秒选择器'),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Text('当前设置时长: ${_selectedDuration.inMinutes}m ${_selectedDuration.inSeconds % 60}s'),
+            const SizedBox(height: 20),
+            CupertinoButton.filled(
+              onPressed: () => _showPicker(context),
+              child: const Text('设置时长 (mm:ss)'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+```
+
+
+### 自定义背景和文本颜色的计时器
+```dart
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+
+class CustomStyledTimerPickerExample extends StatefulWidget {
+  const CustomStyledTimerPickerExample({super.key});
+
+  @override
+  State<CustomStyledTimerPickerExample> createState() => _CustomStyledTimerPickerExampleState();
+}
+
+class _CustomStyledTimerPickerExampleState extends State<CustomStyledTimerPickerExample> {
+  Duration _selectedDuration = const Duration(hours: 1);
+
+  void _showCustomPicker(BuildContext context) {
+    showCupertinoModalPopup<void>(
+      context: context,
+      builder: (BuildContext context) {
+        return Container(
+          decoration: const BoxDecoration(
+            color: Colors.deepPurple, // 自定义背景颜色
+            borderRadius: BorderRadius.vertical(top: Radius.circular(10)),
+          ),
+          height: 280, // 稍微高一点以展示完全
+          child: Column(
+            children: [
+              Container(
+                alignment: Alignment.centerRight,
+                child: CupertinoButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('Done', style: TextStyle(color: Colors.white)), // 操作按钮文字颜色
+                ),
+              ),
+              Expanded(
+                child: DefaultTextStyle(
+                  style: const TextStyle(
+                    color: Colors.white, // 设置选择器文本颜色
+                    fontSize: 22,
+                  ),
+                  child: CupertinoTimerPicker(
+                    mode: CupertinoTimerPickerMode.hm, // 只选择小时和分钟
+                    initialTimerDuration: _selectedDuration,
+                    onTimerDurationChanged: (Duration newDuration) {
+                      setState(() {
+                        _selectedDuration = newDuration;
+                      });
+                    },
+                    backgroundColor: Colors.transparent, // 让内部背景透明，以显示外层Container的颜色
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('自定义样式计时器'),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Text('当前时长: ${_selectedDuration.inHours}h ${_selectedDuration.inMinutes % 60}m'),
+            const SizedBox(height: 20),
+            CupertinoButton.filled(
+              onPressed: () => _showCustomPicker(context),
+              child: const Text('设置时长 (自定义样式)'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+```
+
+
+## 注意点
+- **平台适配**: `CupertinoTimerPicker`是cupertino设计语言的一部分，主要用于模拟iOS平台的UI风格。在Android上使用时，它仍会呈现iOS风格。如果需要在Android上也保持原生风格，可能需要使用`showTimePicker`或`showDurationPicker`(需自定义)。
+- **模态弹出**: 通常不会直接放置在布局中，而是通过`showCupertinoModalPopup`等方法以模态对话框的形式弹出，这能提供更好的用户体验。弹出时需要手动管理其高度。
+- **状态管理**: `onTimerDurationChanged`回调在用户滑动选择器时会持续触发，因此通常需要在`StatefulWidget`中使用`setState`来更新选中的`Duration`值。
+- **初始值设置**: `initialTimerDuration`允许开发者设置选择器的初始值。确保该`Duration`对象在组件构建时就已经准备好。
+- **背景颜色问题**: `CupertinoTimerPicker`内部的背景色默认是白色或`CupertinoDynamicColor`。如果需要自定义整个弹出框的背景，可以将`CupertinoTimerPicker`放置在一个`Container`中，并设置`backgroundColor: Colors.transparent`来让父级`Container`的背景色透出来。
+- **文本样式**: 其子内容的文本样式(如字体大小、颜色)可以通过组件树上方的`DefaultTextStyle`来统一设置。
+
+
+## 构造函数
+```dart
+const CupertinoTimerPicker({
+  super.key,
+  this.mode = CupertinoTimerPickerMode.hms,
+  this.initialTimerDuration = Duration.zero,
+  this.minuteInterval = 1,
+  this.secondInterval = 1,
+  CupertinoTimerPickerCancelButton? onCancel, // Dart 3.4 废弃
+  CupertinoTimerPickerDoneButton? onDone,     // Dart 3.4 废弃
+  required this.onTimerDurationChanged,
+  this.alignment = Alignment.center,
+  this.backgroundColor,
+})
+```
+
+
+## 属性
+| 属性名                  | 属性类型                               | 说明                                                                            |
+| :---------------------- | :------------------------------------- | :--------------------------------------------------------------------------- |
+| `key`                   | `Key?`                                 | 控制 widget 在 widget 树中的标识。                                   |
+| `mode`                  | `CupertinoTimerPickerMode`             | **选择器模式。`CupertinoTimerPickerMode.hms` (默认，小时/分钟/秒), `CupertinoTimerPickerMode.hm` (小时/分钟), `CupertinoTimerPickerMode.ms` (分钟/秒)。**  |
+| `initialTimerDuration`  | `Duration`                             | **选择器首次显示时的初始时长。默认为 `Duration.zero`。**           |
+| `minuteInterval`        | `int`                                  | **分钟滚轮的步进间隔。必须是 1 到 30 之间的整数，且能被 60 整除。**           |
+| `secondInterval`        | `int`                                  | **秒滚轮的步进间隔。必须是 1 到 30 之间的整数，且能被 60 整除。**               |
+| `onTimerDurationChanged`| `ValueChanged<Duration>`               | **当用户更改选择器的值时调用的回调函数。回调参数为当前选定的 `Duration`。**       |
+| `alignment`             | `AlignmentGeometry`                    | 控制选择器内容的对齐方式。默认为 `Alignment.center`。                          |
+| `backgroundColor`       | `Color?`                               | 选择器本身的背景颜色。如果为 `null`，则使用 `CupertinoTheme` 的 `scaffoldBackgroundColor`。**通常设置为 `Colors.transparent`，以便外部容器控制背景色。**     |
+| `onCancel` (已废弃)     | `CupertinoTimerPickerCancelButton?`    | 自定义取消按钮。此属性在 Dart 3.4 中被废弃，应通过在外部 `showCupertinoModalPopup` 的 `builder` 中放置按钮来管理。    |
+| `onDone` (已废弃)       | `CupertinoTimerPickerDoneButton?`      | 自定义完成按钮。此属性在 Dart 3.4 中被废弃，应通过在外部 `showCupertinoModalPopup` 的 `builder` 中放置按钮来管理。 |
+
+
+### 关键属性解释
+- `mode`: 这是控制计时器选择器显示哪些部分的决定性属性。你可以选择显示时、分、秒(hms)，只显示时、分(hm)，或只显示分、秒(ms)。根据你的应用场景选择合适的模式能有效简化用户操作界面。
+- `initialTimerDuration`: 设置一个合理的初始值对于用户体验很重要，它可以是用户上次的选择，或者一个常见的默认时长。确保这个`Duration`对象在构建`CupertinoTimerPicker`时已被初始化。
+- `minuteInterval`和`secondInterval`: 通过设置这两个属性，你可以控制分钟和秒滚轮的步进值。例如，如果`minuteInterval`设置为5，则分钟将只会显示0, 5, 10...等刻度，有助于在某些场景下限制用户的选择粒度。
+- `onTimerDurationChanged`: 这是处理用户选择的核心回调。每次用户滚动滚轮，此回调就会带着新的`Duration`值被调用。务必在此回调中通过`setState`更新UI状态或保存新值。
+- `backgroundColor`: 这个属性控制选择器滚轮区域的背景色。将其设置为`Colors.transparent`允许其父级`Container`或其他`Widget`的背景色透过显示，从而实现更灵活的自定义样式。
