@@ -1,0 +1,263 @@
+---
+title: CupertinoTextSelectionToolbarButton
+description: Flutter中用于构建iOS风格文本选择工具栏按钮的组件
+---
+
+`CupertinoTextSelectionToolbarButton`是Flutter中用于构建iOS风格文本选择工具栏按钮的组件。它模拟了iOS系统中长按文本后弹出的上下文菜单中的按钮样式和行为，例如“复制”、“粘贴”等操作
+按钮。这个组件通常与`CupertinoTextSelectionToolbar`结合使用，共同构建出符合 iOS 设计规范的文本选择操作界面。
+
+![](https://docs.flutter.dev/assets/images/docs/widget-catalog/CupertinoTextSelectionToolbarButton.png)
+
+### 主要用途
+- 提供一致的iOS平台用户体验。
+- 作为文本选择工具栏中的可点击元素，执行特定的文本操作(如复制、剪切、粘贴、选择全部等)。
+- 确保在iOS设备上应用的外观和行为与原生应用保持高度一致。
+
+### 使用场景
+- 文本输入框的长按菜单: 当用户在`TextField`或`TextFormField`中长按选中文本时，弹出的工具栏中包含的各种操作按钮。
+- 自定义文本显示组件: 在自定义的文本显示区域，如果需要提供文本选择功能，可以使用此组件来构建操作按钮。
+- `WebView`或其他内嵌文本内容: 在需要对内嵌文本进行操作时，可利用此组件提供原生风格的交互。
+
+
+## 示例
+### 基本的“复制”按钮
+```dart
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart'; // For Material app structure
+
+class BasicToolbarButtonExample extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: CupertinoPageScaffold(
+        navigationBar: CupertinoNavigationBar(
+          middle: Text('基础按钮示例'),
+        ),
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              Text('长按我来模拟文本选择'),
+              SizedBox(height: 50),
+              // 通常会与一个Toolbar一起使用，这里只是展示按钮本身
+              CupertinoTextSelectionToolbarButton.text(
+                onPressed: () {
+                  print('复制按钮被点击了！');
+                  // 实际应用中会执行复制操作
+                },
+                text: const Text('复制'), // 使用Text widget来显示文本
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+void main() {
+  runApp(BasicToolbarButtonExample());
+}
+```
+
+
+### 结合CupertinoTextSelectionToolbar
+```dart
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart'; // For Material app structure
+
+class ToolbarWithButtonsExample extends StatefulWidget {
+  @override
+  _ToolbarWithButtonsExampleState createState() => _ToolbarWithButtonsExampleState();
+}
+
+class _ToolbarWithButtonsExampleState extends State<ToolbarWithButtonsExample> {
+  final _textFieldController = TextEditingController(text: '这是一个可以被复制和剪切的文本示例。');
+
+  @override
+  void dispose() {
+    _textFieldController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: CupertinoPageScaffold(
+        navigationBar: CupertinoNavigationBar(
+          middle: Text('工具栏组合示例'),
+        ),
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              Padding(
+                padding: const EdgeInsets.all(20.0),
+                child: CupertinoTextField(
+                  controller: _textFieldController,
+                  placeholder: '输入文本',
+                  // 模拟长按弹出菜单，实际应用中由框架自动处理
+                  contextMenuBuilder: (BuildContext context, EditableTextState editableTextState) {
+                    final List<Widget> items = <Widget>[
+                      CupertinoTextSelectionToolbarButton.text(
+                        onPressed: () {
+                          print('尝试复制...');
+                          // 实际的复制逻辑
+                          final TextSelection selection = editableTextState.textEditingValue.selection;
+                          if (selection.isValid && selection.isNormalized) {
+                            Clipboard.setData(
+                              ClipboardData(text: editableTextState.textEditingValue.text.substring(selection.start, selection.end)),
+                            );
+                          }
+                          editableTextState.hideToolbar(); // 隐藏工具栏
+                        },
+                        text: const Text('复制'),
+                      ),
+                      CupertinoTextSelectionToolbarButton.text(
+                        onPressed: () {
+                          print('尝试剪切...');
+                           // 实际的剪切逻辑
+                          final TextSelection selection = editableTextState.textEditingValue.selection;
+                          if (selection.isValid && selection.isNormalized) {
+                            Clipboard.setData(
+                              ClipboardData(text: editableTextState.textEditingValue.text.substring(selection.start, selection.end)),
+                            );
+                            _textFieldController.text = _textFieldController.text.replaceRange(selection.start, selection.end, '');
+                             editableTextState.userUpdateText(
+                               editableTextState.textEditingValue.text.replaceRange(selection.start, selection.end, ''),
+                               TextSelection.collapsed(offset: selection.start),
+                             );
+                          }
+                          editableTextState.hideToolbar(); // 隐藏工具栏
+                        },
+                        text: const Text('剪切'),
+                      ),
+                      CupertinoTextSelectionToolbarButton.text(
+                        onPressed: () {
+                          print('尝试粘贴...');
+                          // 实际的粘贴逻辑
+                          Clipboard.getData(Clipboard.kTextPlain).then((ClipboardData? value) {
+                            if (value != null && value.text != null) {
+                              final TextSelection selection = editableTextState.textEditingValue.selection;
+                              _textFieldController.text = _textFieldController.text.replaceRange(
+                                selection.start,
+                                selection.end,
+                                value.text!,
+                              );
+                              editableTextState.userUpdateText(
+                                _textFieldController.text,
+                                TextSelection.collapsed(offset: selection.start + value.text!.length),
+                              );
+                            }
+                          });
+                          editableTextState.hideToolbar(); // 隐藏工具栏
+                        },
+                        text: const Text('粘贴'),
+                      ),
+                    ];
+
+                    return CupertinoTextSelectionToolbar(
+                      anchor: editableTextState.contextMenuAnchors.primaryAnchor,
+                      children: items,
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+void main() {
+  runApp(ToolbarWithButtonsExample());
+}
+```
+
+
+### 自定义文本与图标按钮
+```dart
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+
+class CustomButtonExample extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: CupertinoPageScaffold(
+        navigationBar: CupertinoNavigationBar(
+          middle: Text('自定义按钮示例'),
+        ),
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              Text('注意: 通常不建议混合文本和图标'),
+              SizedBox(height: 50),
+              CupertinoTextSelectionToolbarButton(
+                onPressed: () {
+                  print('自定义操作被点击了！');
+                },
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: const <Widget>[
+                    Icon(CupertinoIcons.heart, size: 18),
+                    SizedBox(width: 4),
+                    Text('收藏'),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+void main() {
+  runApp(CustomButtonExample());
+}
+```
+
+
+## 注意点
+- 平台一致性: `CupertinoTextSelectionToolbarButton`严格遵循iOS的设计语言。如果在非iOS平台上使用此组件，可能导致UI风格不一致。对于跨平台应用，应考虑使用`AdaptiveTextSelectionToolbar`或根据平台选择不同的工具栏组件。
+- 与`CupertinoTextSelectionToolbar`协同: 此按钮组件通常作为`CupertinoTextSelectionToolbar`的`children`提供。单独使用它可能无法实现完整的文本选择交互。
+- 文本内容: 推荐使用`CupertinoTextSelectionToolbarButton.text`构造函数来创建按钮，它会自动处理文本的样式和大小，使其符合iOS的标准。通过`child`属性自定义内容时，请谨慎处理样式，确保与原生体验保持一致。
+- `onPressed`回调: 按钮点击后需要执行的实际操作(如复制、粘贴)应在`onPressed`回调中实现。同时，通常还需要通过`EditableTextState.hideToolbar()`来手动隐藏工具栏。
+- 定位和显示: 文本选择工具栏的定位和显示通常由Flutter框架自动管理，当`EditableText`或`TextField`中的文本被选中时。在自定义场景下，需要额外处理工具栏的显示逻辑和位置。
+
+
+
+## 构造函数
+`CupertinoTextSelectionToolbarButton`提供了两种主要构造函数: 
+
+1. `CupertinoTextSelectionToolbarButton({Key? key, required VoidCallback onPressed, required Widget child})`
+  - 用途: 最通用的构造函数，允许你传入任意`Widget`作为按钮的内容。
+  - 参数:
+    - `key`: 用于控制组件在`widget tree`中的标识。
+    - `onPressed`: 类型`VoidCallback`。当按钮被点击时调用的回调函数。必填。
+    - `child`: 类型`Widget`。按钮内部显示的子组件。你可以放置`Text`、`Icon`或其他任何`widget`。必填。
+
+2. `CupertinoTextSelectionToolbarButton.text({Key? key, required VoidCallback onPressed, required Text text})`
+  - 用途: 一个便捷构造函数，专门用于创建只包含文本的按钮。它会自动为传入的`Text widget`设置合适的样式，以符合iOS文本选择工具栏的按钮外观。
+  - 参数:
+    - `key`: 用于控制组件在`widget tree`中的标识。
+    - `onPressed`: 类型`VoidCallback`。当按钮被点击时调用的回调函数。必填。
+    - `text`: 类型`Text`。按钮内部显示的文本内容。框架会自动应用`Cupertino`风格的文本样式。必填。
+
+
+
+## 属性
+| 属性名     | 类型            | 说明                                                         |
+| :--------- | :-------------- | :----------------------------------------------------------- |
+| `onPressed` | `VoidCallback`  | **必填**。当用户点击此按钮时调用的回调函数。在此函数内执行实际的文本操作（如复制、剪切、粘贴）。如果为 `null`，则按钮将处于禁用状态。 |
+| `child`    | `Widget`        | **必填**。按钮内部用来显示内容的 widget。当使用 `CupertinoTextSelectionToolbarButton.text` 构造函数时，此属性被处理为内部自动生成的 `Text` widget。 |
+
+
+### 关键属性解释
+- `onPressed`: 这是`CupertinoTextSelectionToolbarButton`最核心的属性。它定义了按钮被点击后会做什么。一个常见的模式是在此回调中执行文本操作，然后调用`editableTextState.hideToolbar()`来隐藏工具栏。如果`onPressed`为null，按钮将自动变灰且不可点击。
+- `child`: 此属性允许你完全定制按钮的视觉内容。例如，你可以传入一个`Text widget`来显示文本标签，或者一个`Row widget`来组合`Icon`和`Text`(尽管这在iOS文本选择工具栏中并不常见)。`CupertinoTextSelectionToolbarButton.text`构造函数就是对`child`属性的便捷封装，它会自动创建一个符合样式规范的`Text widget`。
