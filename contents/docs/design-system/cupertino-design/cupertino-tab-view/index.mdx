@@ -1,0 +1,528 @@
+---
+title: CupertinoTabView
+description: CupertinoTabScaffold的一个子组件，它用于管理iOS风格的标签页(CupertinoTabBar)中的每个单独的页面内容
+---
+
+`CupertinoTabView`是`CupertinoTabScaffold`的一个子组件，它用于管理iOS风格的标签页(`CupertinoTabBar`)中的每个单独的页面内容。每个`CupertinoTabView`都拥有自己的导航堆栈(`Navigator`)，这意味着每个标签页都可以独
+立地进行页面之间的跳转和返回操作，而不会影响到其他标签页的导航状态。这使得用户可以在不同的标签页之间无缝切换，同时保持每个标签页的浏览历史。
+
+![](https://docs.flutter.dev/assets/images/docs/widget-catalog/cupertino-tab-view.png)
+
+### 主要用途
+- 组织应用程序的不同功能模块，每个模块作为一个独立的标签页。
+- 为每个标签页提供独立的导航功能，允许用户在不离开当前标签页的情况下深入浏览内容。
+- 在iOS风格的应用中，实现底部导航栏的页面内容管理。
+
+### 使用场景
+- 多功能应用的主界面: 例如，一个社交应用可能有“动态”、“消息”、“我的”等标签页，每个标签页都通过`CupertinoTabView`来管理其内部的内容和导航。
+- 独立的模块化内容展示: 当你的应用有多个逻辑上独立但又需要频繁切换的功能区域时，`CupertinoTabView`是一个理想选择，如购物应用中的“首页”、“分类”、“购物车”、“我的”等。
+- iOS风格设计规范: 当你需要遵循Apple的Human Interface Guidelines(HIG)进行UI设计时，`CupertinoTabView`是实现标签栏导航的关键组件之一。
+
+
+
+## 示例
+### 简单页面导航示例
+```dart
+import 'package:flutter/cupertino.dart';
+
+void main() {
+  runApp(const CupertinoApp(
+    home: CupertinoTabScaffoldExample(),
+  ));
+}
+
+class CupertinoTabScaffoldExample extends StatelessWidget {
+  const CupertinoTabScaffoldExample({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return CupertinoTabScaffold(
+      tabBar: CupertinoTabBar(
+        items: const <BottomNavigationBarItem>[
+          BottomNavigationBarItem(
+            icon: Icon(CupertinoIcons.home),
+            label: '首页',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(CupertinoIcons.search),
+            label: '搜索',
+          ),
+        ],
+      ),
+      tabBuilder: (BuildContext context, int index) {
+        // 每个tabBuilder返回一个CupertinoTabView
+        return CupertinoTabView(
+          builder: (BuildContext context) {
+            switch (index) {
+              case 0:
+                return const HomePage();
+              case 1:
+                return const SearchPage();
+              default:
+                return const Center(child: Text('未知页面'));
+            }
+          },
+        );
+      },
+    );
+  }
+}
+
+// 首页
+class HomePage extends StatelessWidget {
+  const HomePage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return CupertinoPageScaffold(
+      navigationBar: const CupertinoNavigationBar(
+        middle: Text('首页'),
+      ),
+      child: Center(
+        child: CupertinoButton(
+          child: const Text('Go to Home Detail'),
+          onPressed: () {
+            // 在当前标签页的导航堆栈中进行跳转
+            Navigator.of(context).push(
+              CupertinoPageRoute<void>(
+                builder: (BuildContext context) => const HomeDetailPage(),
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+}
+
+// 首页详情页
+class HomeDetailPage extends StatelessWidget {
+  const HomeDetailPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return CupertinoPageScaffold(
+      navigationBar: const CupertinoNavigationBar(
+        middle: Text('首页详情'),
+        previousPageTitle: '首页',
+      ),
+      child: Center(
+        child: CupertinoButton(
+          child: const Text('Back to Home'),
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+        ),
+      ),
+    );
+  }
+}
+
+// 搜索页
+class SearchPage extends StatelessWidget {
+  const SearchPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return CupertinoPageScaffold(
+      navigationBar: const CupertinoNavigationBar(
+        middle: Text('搜索'),
+      ),
+      child: Center(
+        child: CupertinoButton(
+          child: const Text('Go to Search Detail'),
+          onPressed: () {
+            // 在当前标签页的导航堆栈中进行跳转
+            Navigator.of(context).push(
+              CupertinoPageRoute<void>(
+                builder: (BuildContext context) => const SearchDetailPage(),
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+}
+
+// 搜索详情页
+class SearchDetailPage extends StatelessWidget {
+  const SearchDetailPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return CupertinoPageScaffold(
+      navigationBar: const CupertinoNavigationBar(
+        middle: Text('搜索详情'),
+        previousPageTitle: '搜索',
+      ),
+      child: Center(
+        child: CupertinoButton(
+          child: const Text('Back to Search'),
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+        ),
+      ),
+    );
+  }
+}
+```
+
+
+### 结合主题与路由设置
+```dart
+import 'package:flutter/cupertino.dart';
+
+void main() {
+  runApp(const CupertinoStyledApp());
+}
+
+class CupertinoStyledApp extends StatelessWidget {
+  const CupertinoStyledApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return CupertinoApp(
+      theme: const CupertinoThemeData(
+        primaryColor: CupertinoColors.systemPink,
+        brightness: Brightness.light,
+      ),
+      home: CupertinoTabScaffold(
+        tabBar: CupertinoTabBar(
+          items: const <BottomNavigationBarItem>[
+            BottomNavigationBarItem(
+              icon: Icon(CupertinoIcons.chat_bubble_2),
+              label: '消息',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(CupertinoIcons.settings),
+              label: '设置',
+            ),
+          ],
+        ),
+        tabBuilder: (BuildContext context, int index) {
+          return CupertinoTabView(
+            // 为每个TabView定义独立的路由生成器
+            onGenerateRoute: (RouteSettings settings) {
+              WidgetBuilder builder;
+              switch (settings.name) {
+                case '/':
+                  // 根据tab的index决定初始页面
+                  builder = (BuildContext context) => index == 0 ? const MessagesPage() : const SettingsPage();
+                  break;
+                case '/detail':
+                  builder = (BuildContext context) => DetailPage(tabIndex: index, argument: settings.arguments);
+                  break;
+                default:
+                  throw Exception('Invalid route: ${settings.name}');
+              }
+              return CupertinoPageRoute<void>(builder: builder, settings: settings);
+            },
+          );
+        },
+      ),
+    );
+  }
+}
+
+// 消息页
+class MessagesPage extends StatelessWidget {
+  const MessagesPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return CupertinoPageScaffold(
+      navigationBar: const CupertinoNavigationBar(middle: Text('消息')),
+      child: Center(
+        child: CupertinoButton(
+          child: const Text('查看消息详情'),
+          onPressed: () {
+            Navigator.of(context).pushNamed('/detail', arguments: '来自消息页');
+          },
+        ),
+      ),
+    );
+  }
+}
+
+// 设置页
+class SettingsPage extends StatelessWidget {
+  const SettingsPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return CupertinoPageScaffold(
+      navigationBar: const CupertinoNavigationBar(middle: Text('设置')),
+      child: Center(
+        child: CupertinoButton(
+          child: const Text('查看设置详情'),
+          onPressed: () {
+            Navigator.of(context).pushNamed('/detail', arguments: '来自设置页');
+          },
+        ),
+      ),
+    );
+  }
+}
+
+// 详情页（用于演示不同标签页的跳转）
+class DetailPage extends StatelessWidget {
+  final int tabIndex;
+  final Object? argument;
+  const DetailPage({super.key, required this.tabIndex, this.argument});
+
+  @override
+  Widget build(BuildContext context) {
+    return CupertinoPageScaffold(
+      navigationBar: CupertinoNavigationBar(
+        middle: Text('Tab ${tabIndex + 1} 详情页'),
+        previousPageTitle: tabIndex == 0 ? '消息' : '设置',
+      ),
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text('这是 Tab ${tabIndex + 1} 的详情页面。'),
+            Text('接收到的参数: ${argument ?? '无'}'),
+            CupertinoButton(
+              child: const Text('返回'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+```
+
+
+### 页面状态保持与重置
+```dart
+import 'package:flutter/cupertino.dart';
+
+void main() {
+  runApp(const CupertinoApp(
+    home: StatePreservingExample(),
+  ));
+}
+
+class StatePreservingExample extends StatefulWidget {
+  const StatePreservingExample({super.key});
+
+  @override
+  State<StatePreservingExample> createState() => _StatePreservingExampleState();
+}
+
+class _StatePreservingExampleState extends State<StatePreservingExample> {
+  // 用于演示各个计数器状态
+  final GlobalKey<NavigatorState> _tab1NavigatorKey = GlobalKey<NavigatorState>();
+  final GlobalKey<NavigatorState> _tab2NavigatorKey = GlobalKey<NavigatorState>();
+
+  @override
+  Widget build(BuildContext context) {
+    return CupertinoTabScaffold(
+      tabBar: CupertinoTabBar(
+        items: const <BottomNavigationBarItem>[
+          BottomNavigationBarItem(
+            icon: Icon(CupertinoIcons.person),
+            label: '用户',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(CupertinoIcons.photo),
+            label: '相册',
+          ),
+        ],
+      ),
+      tabBuilder: (BuildContext context, int index) {
+        return CupertinoTabView(
+          navigatorKey: index == 0 ? _tab1NavigatorKey : _tab2NavigatorKey, // 为每个TabView设置独立的key
+          builder: (BuildContext context) {
+            switch (index) {
+              case 0:
+                return UserPage(navigatorKey: _tab1NavigatorKey);
+              case 1:
+                return GalleryPage(navigatorKey: _tab2NavigatorKey);
+              default:
+                return const Center(child: Text('未知页面'));
+            }
+          },
+        );
+      },
+    );
+  }
+}
+
+// 用户页面
+class UserPage extends StatefulWidget {
+  final GlobalKey<NavigatorState> navigatorKey;
+  const UserPage({super.key, required this.navigatorKey});
+
+  @override
+  State<UserPage> createState() => _UserPageState();
+}
+
+class _UserPageState extends State<UserPage> {
+  int _counter = 0;
+
+  @override
+  Widget build(BuildContext context) {
+    return CupertinoPageScaffold(
+      navigationBar: CupertinoNavigationBar(
+        middle: Text('用户页 (计数: $_counter)'),
+      ),
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text('当前计数: $_counter'),
+            CupertinoButton(
+              child: const Text('增加计数'),
+              onPressed: () {
+                setState(() {
+                  _counter++;
+                });
+              },
+            ),
+            CupertinoButton(
+              child: const Text('前往用户详情'),
+              onPressed: () {
+                Navigator.of(context).push(
+                  CupertinoPageRoute<void>(
+                    builder: (BuildContext context) => UserDetailPage(initialCounter: _counter),
+                  ),
+                );
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// 用户详情页
+class UserDetailPage extends StatelessWidget {
+  final int initialCounter;
+  const UserDetailPage({super.key, required this.initialCounter});
+
+  @override
+  Widget build(BuildContext context) {
+    return CupertinoPageScaffold(
+      navigationBar: const CupertinoNavigationBar(
+        middle: Text('用户详情'),
+        previousPageTitle: '用户',
+      ),
+      child: Center(
+        child: Text('从用户页跳转过来，初始计数: $initialCounter'),
+      ),
+    );
+  }
+}
+
+// 相册页面
+class GalleryPage extends StatefulWidget {
+  final GlobalKey<NavigatorState> navigatorKey;
+  const GalleryPage({super.key, required this.navigatorKey});
+
+  @override
+  State<GalleryPage> createState() => _GalleryPageState();
+}
+
+class _GalleryPageState extends State<GalleryPage> {
+  @override
+  Widget build(BuildContext context) {
+    return CupertinoPageScaffold(
+      navigationBar: const CupertinoNavigationBar(middle: Text('相册页')),
+      child: Center(
+        child: CupertinoButton(
+          child: const Text('浏览相册'),
+          onPressed: () {
+            Navigator.of(context).push(
+              CupertinoPageRoute<void>(
+                builder: (BuildContext context) => const GalleryDetailPage(),
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+}
+
+// 相册详情页
+class GalleryDetailPage extends StatelessWidget {
+  const GalleryDetailPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return CupertinoPageScaffold(
+      navigationBar: const CupertinoNavigationBar(
+        middle: Text('相册详情'),
+        previousPageTitle: '相册',
+      ),
+      child: Center(
+        child: Text('这里显示相册详情内容'),
+      ),
+    );
+  }
+}
+```
+
+
+## 注意事项
+- **独立的导航堆栈**: `CupertinoTabView`的核心特性是为每个标签页提供一个独立的`Navigator`。这意味着在一个标签页内进行的`push`或`pop`操作只会影响该标签页的页面堆栈，而不会影响其他标签页。当用户切换标签页时，前一个标签页的导航状态会被保存，并在切换回来时恢复。
+- **路由管理**: 由于每个`CupertinoTabView`都有自己的`Navigator`，因此当你在标签页内部进行导航时，应使用`Navigator.of(context)`。如果你需要访问顶层`CupertinoApp`的`Navigator`(通常用于全局通知或弹出对话框)，可以使用`Navigator.of(context, rootNavigator: true)`。
+- **状态保持**: `CupertinoTabView`默认会保持其内部页面的状态。这意味着即使切换到其他标签页再切换回来，之前页面的`State`也会被保留。如果需要重置某个标签页的状态(例如在重新点击`Tab Bar`中的图标时回到根页面)，你需要在`CupertinoTabScaffold`的`onTap`回调中手动处理`Navigator`的`popUntil`操作，或者为`CupertinoTabView`提供一个`GlobalKey<NavigatorState>`来控制其`Navigator`。
+- `heroController`: 如果你在`CupertinoTabView`内部使用`Hero`动画，并且需要在不同标签页之间共享`Hero`动画上下文，你需要为每个`CupertinoTabView`提供相同的`heroController`。然而，这通常不是推荐的使用方式，因为`Hero`动画通常仅在单个`Navigator`堆栈内部发挥作用。
+- **性能考量**: 虽然`CupertinoTabView`保持了所有标签页的状态，但它并不会销毁并重建非活动标签页。这有助于保持快速的标签页切换体验，但也要注意每个标签页的初始构建成本和内存使用。避免在非活动标签页中执行大量不必要的操作。
+
+
+## 构造函数
+```dart
+const CupertinoTabView({
+  super.key,
+  this.builder,
+  this.navigatorKey,
+  this.onGenerateRoute,
+  this.onUnknownRoute,
+  this.routes,
+  this.heroController,
+}) : assert(builder != null || onGenerateRoute != null);
+```
+
+
+## 属性
+| 属性名称         | 类型                             | 说明             |
+| :--------------- | :------------------------------- | :------------------------------------------ |
+| `key`            | `Key?`                           | 用于在 Widget 树中唯一标识此 Widget。通常默认为 `null`。          |
+| `builder`        | `WidgetBuilder?`                 | **必需**。用于构建此 `CupertinoTabView` 的起始页面的函数。当 `onGenerateRoute` 或 `routes` 均未提供 `'/'` 路由时，此函数返回的 Widget 将作为该标签页的根页面。如果 `onGenerateRoute` 提供了 `'/'` 路由，`builder` 会被忽略。    |
+| `navigatorKey`   | `GlobalKey<NavigatorState>?`     | `CupertinoTabView` 内部的 `Navigator` 的全局 Key。提供此属性允许你从 `CupertinoTabView` 外部（例如通过 `CupertinoTabScaffold` 的 `onTap` 回调）访问和操作此标签页的 `Navigator`，例如 `navigatorKey.currentState?.popUntil((route) => route.isFirst)`。   |
+| `onGenerateRoute`| `RouteFactory?`                  | 当 `Navigator` 尝试导航到一个命名路由，但 `routes` 列表中没有匹配项时调用。此函数会返回一个 `Route` 对象。这是管理复杂命名路由的推荐方式。如果定义了此属性，且根路由是命名路由 `'/'`，那么 `builder` 将不会被调用。  |
+| `onUnknownRoute` | `RouteFactory?`                  | 当 `Navigator` 无法通过 `routes` 或 `onGenerateRoute` 找到给定名称的路由时调用。此函数应返回一个包含错误页面的 `Route`。它通常用于处理应用程序中不存在的路由请求。    |
+| `routes`         | `Map<String, WidgetBuilder>?`    | 一个将命名路由映射到 `WidgetBuilder` 的 Map。当 `Navigator` 尝试导航到一个匹配 `Map` 中键的命名路由时，将调用相应的值 (`WidgetBuilder`) 来构建页面。例如 `{'home': (context) => HomePage()}`。    |
+| `heroController` | `HeroController?`                | 控制此 `Navigator` 内部 `Hero` 动画的 `HeroController`。通常不需要手动设置，除非你有非常特殊的 `Hero` 动画需求，并且需要在多个 `Navigator` 之间共享 `Hero` 动画上下文（极少见）。    |
+
+
+**关键属性解释:**
+- `builder`: 这是最常使用的属性，它简单地定义了当标签页被选中时，它内部`Navigator`的第一个要显示的`Widget`。对于简单的单页`TabView`，这是最直接的初始化方式。
+- `navigatorKey`: 这个属性对于需要在点击底部导航栏图标时重置当前标签页的导航堆栈(例如，回到该标签页的根页面)的场景至关重要。通过这个`Key`，你可以在`CupertinoTabScaffold`的`onTap`回调中获取到对应的`NavigatorState`并执行`popUntil`等操作。
+- `onGenerateRoute`: 对于具有复杂路由结构的标签页，强烈推荐使用`onGenerateRoute`。它允许你在一个地方集中定义和处理所有命名路由，包括参数传递和动态路由，使得路由管理更加灵活和可维护。
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
