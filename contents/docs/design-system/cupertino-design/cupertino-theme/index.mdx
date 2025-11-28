@@ -1,0 +1,292 @@
+---
+title: CupertinoTheme
+description: Flutter中用于定义和应用iOS风格主题的组件
+---
+
+`CupertinoTheme`是Flutter中用于定义和应用iOS风格主题的组件。它提供了一种在应用程序中统一管理和传递主题数据(如颜色、字体、文本样式等)的方式，特别适用于遵循Apple iOS设计准则的
+应用。通过`CupertinoTheme`，您可以为整个应用程序或其特定部分设置统一的视觉风格。
+
+### 使用场景
+- 统一应用主题: 在整个iOS风格的Flutter应用中，为所有Cupertino风格的部件(如`CupertinoNavigationBar`, `CupertinoButton`, `CupertinoTextField`等)设置统一的颜色、字体和亮度(`Brightness`)。
+- 局部主题覆盖: 在应用的某个特定部分，需要与全局主题有所不同时，可以使用`CupertinoTheme`嵌套来覆盖或继承部分主题属性。
+- 深色/浅色模式切换: 配合`CupertinoThemeData`的`brightness`属性，方便地实现应用的深色模式和浅色模式切换。
+- 响应系统主题: 结合`MediaQuery`监听系统的主题设置，动态调整`CupertinoTheme`。
+
+
+## 示例
+### 基础应用主题设置
+```dart
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart'; // 仅用于 Material scaffold
+
+void main() {
+  runApp(const MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return CupertinoApp(
+      // 使用 CupertinoTheme 包裹整个应用
+      home: CupertinoTheme(
+        data: const CupertinoThemeData(
+          primaryColor: CupertinoColors.systemGreen, // 设置应用的iOS主色调为绿色
+          scaffoldBackgroundColor: CupertinoColors.extraLightBackgroundGray, // 设置页面背景色
+          brightness: Brightness.light, // 明确指定为浅色模式
+        ),
+        child: const MyHomePage(),
+      ),
+    );
+  }
+}
+
+class MyHomePage extends StatelessWidget {
+  const MyHomePage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    // 获取当前应用的主题数据
+    final theme = CupertinoTheme.of(context);
+
+    return CupertinoPageScaffold(
+      navigationBar: CupertinoNavigationBar(
+        middle: Text(
+          'Cupertino Theme Demo',
+          style: theme.textTheme.navTitleTextStyle, // 使用主题文本样式
+        ),
+        backgroundColor: CupertinoColors.white.withOpacity(0.9), // 导航栏背景透明度
+      ),
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            // primaryColor 会影响 CupertinoButton 的文字颜色
+            CupertinoButton(
+              onPressed: () {},
+              child: const Text('Cupertino Button'),
+            ),
+            const SizedBox(height: 20),
+            // 背景色保持默认或由 scaffoldBackgroundColor 控制
+            CupertinoActivityIndicator(
+              radius: 15.0,
+              color: theme.primaryColor, // 使用主题的primaryColor
+            ),
+            const SizedBox(height: 20),
+            Text(
+              '当前主题 PrimaryColor: ${theme.primaryColor}',
+              style: theme.textTheme.textStyle, // 使用主题文本样式
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+```
+
+
+### 局部主题覆盖与深色模式切换
+```dart
+import 'package:flutter/cupertino.dart';
+
+void main() {
+  runApp(const ThemeSwitchApp());
+}
+
+class ThemeSwitchApp extends StatefulWidget {
+  const ThemeSwitchApp({super.key});
+
+  @override
+  State<ThemeSwitchApp> createState() => _ThemeSwitchAppState();
+}
+
+class _ThemeSwitchAppState extends State<ThemeSwitchApp> {
+  Brightness _brightness = Brightness.light;
+
+  void _toggleBrightness() {
+    setState(() {
+      _brightness = _brightness == Brightness.light ? Brightness.dark : Brightness.light;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return CupertinoApp(
+      home: CupertinoTheme(
+        data: CupertinoThemeData(
+          brightness: _brightness, // 根据状态切换深色/浅色模式
+          primaryColor: _brightness == Brightness.light
+              ? CupertinoColors.systemBlue
+              : CupertinoColors.systemOrange, // 不同模式下主色不同
+          scaffoldBackgroundColor: _brightness == Brightness.light
+              ? CupertinoColors.extraLightBackgroundGray
+              : CupertinoColors.darkBackgroundGray,
+        ),
+        child: CupertinoPageScaffold(
+          navigationBar: CupertinoNavigationBar(
+            middle: const Text('Theme Switch Demo'),
+            trailing: CupertinoButton(
+              padding: EdgeInsets.zero,
+              onPressed: _toggleBrightness,
+              child: Icon(_brightness == Brightness.light ? CupertinoIcons.moon_fill : CupertinoIcons.sun_max_fill),
+            ),
+          ),
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                CupertinoButton.filled(
+                  onPressed: () {},
+                  child: const Text('Filled Button'),
+                ),
+                const SizedBox(height: 20),
+                // 局部子主题，PrimaryColor 覆盖了父主题
+                CupertinoTheme(
+                  data: CupertinoTheme.of(context).copyWith(
+                    primaryColor: _brightness == Brightness.light
+                        ? CupertinoColors.systemRed
+                        : CupertinoColors.systemTeal,
+                  ),
+                  child: CupertinoButton(
+                    onPressed: () {},
+                    child: const Text('Locally Themed Button'),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Text(
+                  '当前应用模式: ${_brightness == Brightness.light ? "浅色" : "深色"}',
+                  style: CupertinoTheme.of(context).textTheme.textStyle,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+```
+
+
+### 动态响应系统主题
+```dart
+import 'package:flutter/cupertino.dart';
+
+void main() {
+  runApp(const SystemThemeApp());
+}
+
+class SystemThemeApp extends StatelessWidget {
+  const SystemThemeApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return CupertinoApp(
+      home: Builder(
+        builder: (context) {
+          // 获取当前系统的 brightness
+          final platformBrightness = MediaQuery.of(context).platformBrightness;
+          final isDarkMode = platformBrightness == Brightness.dark;
+
+          return CupertinoTheme(
+            data: CupertinoThemeData(
+              brightness: platformBrightness,
+              primaryColor: isDarkMode ? CupertinoColors.systemGreen : CupertinoColors.systemBlue,
+              scaffoldBackgroundColor: isDarkMode
+                  ? CupertinoColors.darkBackgroundGray
+                  : CupertinoColors.extraLightBackgroundGray,
+            ),
+            child: CupertinoPageScaffold(
+              navigationBar: CupertinoNavigationBar(
+                middle: const Text('System Theme Demo'),
+                backgroundColor: isDarkMode
+                    ? CupertinoColors.darkBackgroundGray.withOpacity(0.9)
+                    : CupertinoColors.white.withOpacity(0.9),
+              ),
+              child: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    Text(
+                      '当前系统模式: ${isDarkMode ? "深色" : "浅色"}',
+                      style: CupertinoTheme.of(context).textTheme.textStyle,
+                    ),
+                    const SizedBox(height: 20),
+                    CupertinoButton(
+                      onPressed: () {
+                        // 演示一个按钮，其颜色会随主题变化
+                      },
+                      child: const Text('Hello Cupertino!'),
+                    ),
+                    const SizedBox(height: 20),
+                    // 用于检查主题是否正确应用的指示器
+                    CupertinoActivityIndicator(
+                      color: CupertinoTheme.of(context).primaryColor,
+                      radius: 15.0,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+```
+
+
+### 注意事项
+- **主题查找顺序**: `CupertinoTheme.of(context)`会从最近的`CupertinoTheme`祖先节点查找主题数据。如果没有找到`CupertinoTheme`，它会退回到默认的iOS风格主题数据。
+- **`CupertinoThemeData`的重要性**: `CupertinoTheme`接收的`data`属性是`CupertinoThemeData`类型，所有主题的定制都是通过配置`CupertinoThemeData`的属性来实现的。
+- **与`MaterialTheme`的区别**: `CupertinoTheme`仅影响Cupertino风格的组件。如果您的应用混合使用了Material和Cupertino组件，您可能需要同时使用`Theme`和`CupertinoTheme`。
+- **性能考虑**: 大范围频繁地切换`CupertinoTheme`数据可能会导致组件重建，但对于应用程序整体主题切换(如深色模式)通常不是性能瓶颈。
+- **文本主题(`textTheme`)**: `CupertinoThemeData`中的`textTheme`属性非常强大，可以定义各种文本样式，如`navTitleTextStyle`、`navLargeTitleTextStyle`、`actionTextStyle`等。使用这些预定义样式可以更好地保持iOS的视觉一致性。
+- **`primaryColor`的作用**: `primaryColor`是最重要的颜色之一，它影响到许多Cupertino控件(如按钮文本、进度指示器等)的默认颜色。
+
+
+## 构造函数
+`CupertinoTheme`的构造函数相对简单，主要接受`data`和`child`两个参数。
+
+```dart
+const CupertinoTheme({
+  Key? key,
+  required CupertinoThemeData data, // 必需，定义主题数据
+  required Widget child,             // 必需，应用主题的子Widget
+})
+```
+- `key`: 可选，用于在`Widget`树中唯一标识此`Widget`。
+- `data`: 类型为`CupertinoThemeData`。这是定义iOS风格主题数据的地方，包括颜色、文本样式、亮度等。
+- `child`: 类型为`Widget`。当前`CupertinoTheme`的子`Widget`树将继承并使用此处定义的主题数据。
+
+
+## 属性
+| 属性名称                 | 属性类型                                              | 说明                                                                                                                                           |
+| :----------------------- | :---------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `brightness`             | `Brightness?`                                         | 设置主题的亮度（`light` 或 `dark`）。它会影响某些 Cupertino 组件的默认颜色，例如 `CupertinoActivityIndicator` 的颜色。                                                           |
+| `primaryColor`           | `Color?`                                              | 用于整个应用的主要颜色。此颜色一般用于显示强调交互元素，如按钮文本、选中状态的图标等。如果未指定，将根据 `brightness` 默认值为 `CupertinoColors.systemBlue` 或 `CupertinoColors.white` (深色模式)。     |
+| `primaryContrastingColor`| `Color?`                                              | 与 `primaryColor` 形成强烈对比的颜色。常用于在 `primaryColor` 背景上显示文本或图标。例如，如果 `primaryColor` 是深色，此颜色应为浅色。                                                            |
+| `scaffoldBackgroundColor`| `Color?`                                              | `CupertinoPageScaffold` 的主题背景颜色。它用于普通页面背景，如果未指定，将根据 `brightness` 默认值为 `CupertinoColors.systemBackground` 或 `CupertinoColors.darkBackgroundGray` (+800亮度)。   |
+| `barBackgroundColor`     | `Color?`                                              | `CupertinoNavigationBar` 和 `CupertinoTabBar` 的主题背景颜色。如果未指定，将根据 `brightness` 默认值为 `CupertinoColors.tertiarySystemFill` 或 `CupertinoColors.darkBackgroundGray` (-100亮度)。  |
+| `textTheme`              | `CupertinoTextThemeData?`                             | 定义 Cupertino 风格的文本主题，包含各种文本样式，如导航栏标题、大标题、按钮文本等。这是一个非常重要的属性，用于统一应用内的字体和文本表现。                                                         |
+| `activeColor`            | `Color?`                                              | 用于表示活跃状态或选中状态的颜色，例如 `CupertinoSwitch` 被选中时的颜色。默认为 `primaryColor`。                                                                                      |
+| `inactiveColor`          | `Color?`                                              | 用于表示非活跃或未选中状态的颜色。例如 `CupertinoSwitch` 未选中时的颜色。                                                                                                            |
+| `splashFactory`          | `InteractiveInkFeatureFactory?`                       | **(此属性在 `CupertinoThemeData` 中通常不直接使用，更常用于 `MaterialTheme`)**。在 Cupertino 风格中通常通过 `CupertinoButton` 等组件的自身行为来处理触摸反馈，而不是 Material 的 `InkWell`。  |
+| `separatorColor`         | `Color?`                                              | 用于绘制分隔线的颜色，例如 `CupertinoListTile` 之间的分隔线。                                                                                                                         |
+| `textSelectionColor`     | `Color?`                                              | 当用户选择文本时，用于文本高亮的颜色。                                                                                                                                             |
+| `textSelectionHandleColor`| `Color?`                                              | 文本选择手柄（拖动选择范围的圆点）的颜色。                                                                                                                                   |
+| `is       NoPadding`     | `bool?`                                               | **(较少用)** 通常用于控制某些布局的默认内边距。                                                                                                                        |
+
+
+### 关键属性解释
+- `brightness`: 这个属性是Cupertino主题实现深色/浅色模式切换的关键。它会影响多个默认颜色，使得整个应用能够适应用户的系统偏好。建议总是在`CupertinoThemeData`中明确设置此属性。
+- `primaryColor`: 它是Fuchsia应用的主色调，会影响到很多交互元素的视觉表现。例如，`CupertinoButton`的文本颜色如果没有被明确覆盖，会继承`primaryColor`。合理选择`primaryColor`对应用的视觉统一性至关重要。
+- `scaffoldBackgroundColor`和`barBackgroundColor`: 这两个颜色分别控制`CupertinoPageScaffold`的主体背景和导航栏/标签栏的背景。它们对于定义应用的整体背景层次结构非常重要。
+- `textTheme`: 这是一个高度可定制的属性，类型是`CupertinoTextThemeData`。它允许您为应用中的不同文本类型(如导航栏标题、大标题、正文等)定义统一的`TextStyle`。例如，`CupertinoTextThemeData.navTitleTextStyle`可以在导航栏中使用，以确保标题具有一致的iOS风格。通过`CupertinoTheme.of(context).textTheme.yourTextStyle`获取并使用这些样式，可以大大提高UI的一致性。
+
+
+
+
