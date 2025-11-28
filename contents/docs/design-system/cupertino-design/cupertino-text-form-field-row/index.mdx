@@ -1,0 +1,344 @@
+---
+title: CupertinoTextFormFieldRow
+description: 在不通过修改布局、大小或位置的情况下，对子组件施加虚拟效果的组件
+---
+
+`CupertinoTextFormFieldRow`是Flutter中Cupertino设计风格的一款文本输入组件。它将`CupertinoTextField`包裹在一个具有行标题的布局中，并通常包含一个左侧标题(`prefix`)和右侧的文本输入区域，整体呈现为iOS风格的一
+行。这个组件专为模拟iOS应用中的设置列表或表单输入项而设计，用户可以在其中输入单行文本。
+
+
+![](https://docs.flutter.dev/assets/images/docs/widget-catalog/CupertinoTextFormFieldRow.png)
+
+
+### 主要用途
+- 在iOS风格的应用中创建表单输入行。
+- 提供带有标签的文本输入框。
+- 方便地集成到`Cupertino`风格的设置页面或任何需要清晰标签文本字段的场景。
+
+### 使用场景
+- 用户个人信息设置页: 输入姓名、邮箱、电话等。
+- 注册/登录表单: 用户名、密码输入。
+- 搜索框: 带标题的搜索输入。
+- 应用设置: 允许用户自定义某些文本设置(如默认消息)。
+
+
+## 示例
+### 基本用法
+```dart
+import 'package:flutter/cupertino.dart';
+
+class BasicTextFormFieldRowExample extends StatefulWidget {
+  const BasicTextFormFieldRowExample({super.key});
+
+  @override
+  State<BasicTextFormFieldRowExample> createState() => _BasicTextFormFieldRowExampleState();
+}
+
+class _BasicTextFormFieldRowExampleState extends State<BasicTextFormFieldRowExample> {
+  final TextEditingController _nameController = TextEditingController();
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return CupertinoPageScaffold(
+      navigationBar: const CupertinoNavigationBar(
+        middle: Text('基本文本输入'),
+      ),
+      child: SafeArea(
+        child: Column(
+          children: <Widget>[
+            const SizedBox(height: 20),
+            CupertinoTextFormFieldRow(
+              prefix: const Text('用户名', style: TextStyle(fontSize: 17.0)),
+              placeholder: '请输入您的用户名',
+              controller: _nameController,
+              onChanged: (value) {
+                print('用户名: $value');
+              },
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+              child: Text(
+                '当前输入: ${_nameController.text}',
+                style: const TextStyle(color: CupertinoColors.systemGrey),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+```
+
+
+### 密码输入与验证器
+```dart
+import 'package:flutter/cupertino.dart';
+
+class PasswordTextFormFieldRowExample extends StatefulWidget {
+  const PasswordTextFormFieldRowExample({super.key});
+
+  @override
+  State<PasswordTextFormFieldRowExample> createState() => _PasswordTextFormFieldRowExampleState();
+}
+
+class _PasswordTextFormFieldRowExampleState extends State<PasswordTextFormFieldRowExample> {
+  final TextEditingController _passwordController = TextEditingController();
+  String? _errorMessage;
+
+  @override
+  void dispose() {
+    _passwordController.dispose();
+    super.dispose();
+  }
+
+  String? _validatePassword(String? value) {
+    if (value == null || value.isEmpty) {
+      return '密码不能为空';
+    }
+    if (value.length < 6) {
+      return '密码至少需要6位';
+    }
+    return null; // 验证通过
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return CupertinoPageScaffold(
+      navigationBar: const CupertinoNavigationBar(
+        middle: Text('密码输入'),
+      ),
+      child: SafeArea(
+        child: Column(
+          children: <Widget>[
+            const SizedBox(height: 20),
+            CupertinoTextFormFieldRow(
+              prefix: const Text('密码', style: TextStyle(fontSize: 17.0)),
+              placeholder: '请输入您的密码',
+              controller: _passwordController,
+              obscureText: true, // 密码遮蔽显示
+              validator: _validatePassword,
+              onChanged: (value) {
+                setState(() {
+                  _errorMessage = _validatePassword(value);
+                });
+              },
+              // errorBuilder 用于显示错误信息
+              errorBuilder: (_, String? errorText) {
+                return errorText != null
+                    ? Text(
+                        errorText,
+                        style: const TextStyle(color: CupertinoColors.systemRed, fontSize: 13.0),
+                      )
+                    : null;
+              },
+            ),
+            if (_errorMessage != null)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                child: Text(
+                  _errorMessage!, // 显示实时错误信息
+                  style: const TextStyle(color: CupertinoColors.systemRed),
+                ),
+              ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+              child: Text(
+                '当前密码: ${_passwordController.text}',
+                style: const TextStyle(color: CupertinoColors.systemGrey),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+```
+
+
+### 带有修饰和键盘类型
+```dart
+import 'package:flutter/cupertino.dart';
+
+class EmailTextFormFieldRowExample extends StatefulWidget {
+  const EmailTextFormFieldRowExample({super.key});
+
+  @override
+  State<EmailTextFormFieldRowExample> createState() => _EmailTextFormFieldRowExampleState();
+}
+
+class _EmailTextFormFieldRowExampleState extends State<EmailTextFormFieldRowExample> {
+  final TextEditingController _emailController = TextEditingController();
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return CupertinoPageScaffold(
+      navigationBar: const CupertinoNavigationBar(
+        middle: Text('邮箱输入'),
+      ),
+      child: SafeArea(
+        child: Column(
+          children: <Widget>[
+            const SizedBox(height: 20),
+            CupertinoTextFormFieldRow(
+              prefix: const Text('邮箱', style: TextStyle(fontSize: 17.0)),
+              placeholder: '请输入您的邮箱地址',
+              controller: _emailController,
+              keyboardType: TextInputType.emailAddress, // 设置键盘类型为邮箱
+              textCapitalization: TextCapitalization.none, // 不自动大写
+              autocorrect: false, // 不启用自动校正
+              suffix: const Icon(CupertinoIcons.mail, color: CupertinoColors.secondaryLabel), // 右侧图标装饰
+              onFieldSubmitted: (value) {
+                print('已提交邮箱: $value');
+              },
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+              child: Text(
+                '当前邮箱: ${_emailController.text}',
+                style: const TextStyle(color: CupertinoColors.systemGrey),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+```
+
+
+## 注意点
+- iOS风格适配: `CupertinoTextFormFieldRow`严格遵循iOS设计指南。如果你正在构建跨平台应用，可能需要判断平台来选择Material风格的`TextFormField`或`Cupertino`风格的此组件。
+- 控制器管理: 务必为`controller`属性提供`TextEditingController`实例，并在`State`的`dispose`方法中`dispose`该控制器，以避免内存泄漏。
+- 验证器(`validator`): 该组件提供了`validator`属性，用于实现输入验证逻辑。`validator`函数应返回null表示验证通过，返回一个String表示验证失败的错误信息。结合`errorBuilder`可以自定义错误信息的显示方式。
+- 键盘类型(`keyboardType`): 根据输入内容的类型(如文本、数字、邮箱、电话等)正确设置`keyboardType`可以提供更好的用户体验。
+- 焦点管理: 对于复杂的表单，可能需要使用`FocusNode`来手动管理焦点。
+- 高度自适应: `CupertinoTextFormFieldRow`的高度通常由其内容(如`prefix`和输入框)及其内部填充决定。如果需要调整行高，可能需要通过`padding`或包裹其他`Widget`来实现。
+- 无默认边框: 类似`CupertinoTextField`，`CupertinoTextFormFieldRow`默认没有明显的边框。如果你需要边框，可以考虑在`decoration`属性中进行自定义，或在外部使用`Container`加`BoxDecoration`包裹。
+
+
+
+## 构造函数
+```dart
+const CupertinoTextFormFieldRow({
+  super.key,
+  this.prefix,
+  this.padding = const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+  this.textInputAction,
+  this.textCapitalization = TextCapitalization.none,
+  this.keyboardType,
+  this.strutStyle,
+  this.textAlign = TextAlign.start,
+  this.textAlignVertical,
+  this.autofocus = false,
+  this.readOnly = false,
+  this.toolbarOptions,
+  this.showCursor,
+  this.obscuringCharacter = '•',
+  this.obscureText = false,
+  this.autocorrect = true,
+  this.smartDashesType,
+  this.smartQuotesType,
+  this.enableSuggestions = true,
+  this.maxLines = 1,
+  this.minLines,
+  this.expands = false,
+  this.maxLength,
+  this.maxLengthEnforcement,
+  this.onChanged,
+  this.onEditingComplete,
+  this.onSubmitted,
+  this.onAppPrivateCommand,
+  this.inputFormatters,
+  this.enabled,
+  this.cursorWidth = 2.0,
+  this.cursorHeight,
+  this.cursorRadius = const Radius.circular(2.0),
+  this.cursorColor,
+  this.selectionHeightStyle = ui.BoxHeightStyle.tight,
+  this.selectionWidthStyle = ui.BoxWidthStyle.tight,
+  this.keyboardAppearance,
+  this.scrollPadding = const EdgeInsets.only(bottom: 20.0),
+  this.dragStartBehavior = DragStartBehavior.start,
+  this.enableInteractiveSelection = true,
+  this.selectionControls,
+  this.onTap,
+  this.scrollController,
+  this.scrollPhysics,
+  this.placeholder,
+  this.placeholderStyle = const TextStyle(
+    fontWeight: FontWeight.w400,
+    color: CupertinoColors.placeholderText,
+  ),
+  this.prefixMode = OverlayVisibilityMode.always,
+  this.clearButtonMode = OverlayVisibilityMode.never,
+  this.controller,
+  this.focusNode,
+  this.decoration,
+  this.paddingWhileEditing = const EdgeInsets.all(4.0),
+  this.errorBuilder,
+  this.validator,
+  this.style,
+  this.suffix,
+  this.suffixMode = OverlayVisibilityMode.always,
+  this.restorationId,
+})
+```
+
+
+
+## 属性
+| 属性名                       | 类型                             | 说明                                                         |
+| :--------------------------- | :------------------------------- | :----------------------------------------------------------- |
+| `controller`                 | `TextEditingController?`         | 控制文本字段的编辑行为，用于读取或设置文本内容。**（重要）** |
+| `prefix`                     | `Widget?`                        | 显示在输入框左侧的前缀小部件，通常是文本标签。**（常用）**   |
+| `placeholder`                | `String?`                        | 当输入框内容为空时显示的提示文本。                           |
+| `placeholderStyle`           | `TextStyle?`                     | `placeholder` 的样式。                                       |
+| `obscureText`                | `bool`                           | 是否隐藏输入文本（如密码）。默认为 `false`。**（常用）**     |
+| `obscuringCharacter`         | `String`                         | 当 `obscureText` 为 `true` 时，用于遮蔽文本的字符，默认为 `•`。 |
+| `keyboardType`               | `TextInputType?`                 | 弹出键盘类型，例如 `TextInputType.emailAddress`、`TextInputType.number`。**（常用）** |
+| `textInputAction`            | `TextInputAction?`               | 键盘右下角“完成”按钮的类型（如 `done`, `next`, `search`）。 |
+| `onChanged`                  | `ValueChanged<String>?`          | 当文本内容改变时回调。**（常用）**                           |
+| `onEditingComplete`          | `VoidCallback?`                  | 当输入完成（用户按下键盘上的“完成”键）时回调。             |
+| `onSubmitted`                | `ValueChanged<String>?`          | 当用户提交文本（通常是按下键盘上的“完成”键）时回调，参数为最终文本。 |
+| `validator`                  | `FormFieldValidator<String>?`    | 用于验证输入合法性的回调函数。返回 `null` 表示验证通过，返回 `String` 表示错误信息。**（重要）** |
+| `errorBuilder`               | `FormFieldErrorBuilder?`         | 构建自定义错误信息的Widget，传入错误文本。                   |
+| `maxLines`                   | `int?`                           | 输入框最大的行数，默认为 1。设置为 `null` 或大于 1 的值可实现多行输入。 |
+| `minLines`                   | `int?`                           | 输入框最小的行数。                                           |
+| `maxLength`                  | `int?`                           | 允许输入的最大字符数。                                       |
+| `autofocus`                  | `bool`                           | 是否自动获取焦点。默认为 `false`。                           |
+| `readOnly`                   | `bool`                           | 是否只读。默认为 `false`。                                   |
+| `enabled`                    | `bool?`                          | 是否启用输入框。禁用时无法交互。                             |
+| `padding`                    | `EdgeInsetsGeometry`             | 组件内部的填充。默认为 `EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0)`。 |
+| `style`                      | `TextStyle?`                     | 输入文本的样式。                                             |
+| `cursorColor`                | `Color?`                         | 光标的颜色。                                                 |
+| `decoration`                 | `BoxDecoration?`                 | 输入框的装饰样式（背景、边框、阴影等）。                     |
+| `suffix`                     | `Widget?`                        | 显示在输入框右侧的后缀小部件，如清除按钮（通常通过 `clearButtonMode` 控制）。 |
+| `clearButtonMode`            | `OverlayVisibilityMode`          | 控制清除按钮的显示模式 (`.always`, `.editing`, `.never`)。 |
+| `prefixMode`                 | `OverlayVisibilityMode`          | 控制 `prefix` 的显示模式。                                   |
+| `suffixMode`                 | `OverlayVisibilityMode`          | 控制 `suffix` 的显示模式。                                   |
+| `focusNode`                  | `FocusNode?`                     | 用于手动管理输入框焦点。                                     |
+| `scrollPadding`              | `EdgeInsetsGeometry`             | 当输入框获取焦点时，为了确保其可见，滚动父级时会增加的填充量。 |
+
+
+### 关键属性解释
+- `controller`: 这是与文本字段交互的核心。通过它，你可以获取当前输入文本(`_controller.text`)或设置新的文本(`_controller.text = 'new value'`)。在`StatefulWidget`中使用时，请务必在`dispose`方法中调用`_controller.dispose()`以释放资源。
+- `prefix`: `CupertinoTextFormFieldRow`的一个设计亮点就是其左侧的`prefix`。它让你无需手动布局即可轻松地添加一个标签，使其在`Cupertino`表单中看起来非常自然和美观。
+- `obscureText`: 对于密码或敏感信息输入，将其设置为true会自动将输入的字符替换为`obscuringCharacter`(默认为 •)，保护用户隐私。
+- `validator`和`errorBuilder`: 这两个属性协同工作，提供了强大的输入验证和错误反馈机制。`validator`定义了验证规则，而`errorBuilder`则控制错误信息在UI中的展现形式，使得错误提示更加灵活和用户友好。
+- `onChanged`和`onSubmitted`: `onChanged`用于实时响应文本变化，常用于即时搜索或验证；`onSubmitted`则响应用户明确的“完成”操作，适合在用户完成输入后触发逻辑，如表单提交。
+- `keyboardType`: 正确设置键盘类型是优化用户体验的关键。例如，为电话号码输入字段设置`TextInputType.phone`，会弹出带有数字和常用符号的键盘，方便用户输入。
