@@ -1,0 +1,300 @@
+---
+title: CupertinoTextSelectionControls
+description: 在不通过修改布局、大小或位置的情况下，对子组件施加虚拟效果的组件
+---
+
+`CupertinoTextSelectionControls`是Flutter中用于实现iOS风格文本选择控制手柄及操作菜单(如复制、剪切、粘贴、全选)的一个类。它继承自`TextSelectionControls`，专门为遵循Apple iOS设计指南的应用提供统一的文本选择体验。
+
+当用户在可编辑文本(如`TextField`、`EditableText`)或可选择文本(如`SelectableText`)上进行长按或双击操作以选
+择文本时，`CupertinoTextSelectionControls`会负责绘制并管理出现的光标(`selection handles`)和内容菜单(如“拷贝”、“粘贴”等)。它的核心作用是确保文本选择体验在iOS设备上看起来和行为都与原生应用保持一致。
+
+### 主要用途和逻辑
+- 显示选择手柄(`Selection Handles`): 在选中文本的起始和结束位置绘制两个圆球状的控制手柄，用户可以通过拖动它们来调整选区范围。
+- 显示操作菜单(`Toolbar`): 当文本被选中时，在选区附近显示一个浮动工具栏，包含常见的文本操作选项，如复制(`Copy`)、剪切(`Cut`)、粘贴(`Paste`)、全选(`Select All`)。
+- 平台适配: 它与`MaterialTextSelectionControls`相对应，确保在iOS平台下提供原生的选择体验。
+
+### 使用场景
+- 当你在构建一个`CupertinoApp`或任何希望在iOS平台上提供原生外观和感受的Flutter应用时，你应该使用`CupertinoTextSelectionControls`来处理文本选择。
+- 尤其是在`TextField`、`CupertinoTextField`中，它的选择控制通常是自动集成的。
+- 在自定义的文本展示或编辑组件中，如果你需要实现文本选择功能，可以手动指定使用`CupertinoTextSelectionControls`。
+
+
+
+## 示例
+### 在CupertinoTextField中的默认行为
+```dart
+import 'package:flutter/cupertino.dart';
+
+void main() {
+  runApp(const MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    // CupertinoApp 会自动使用 CupertinoTextSelectionControls
+    return const CupertinoApp(
+      title: 'Cupertino Text Selection Demo',
+      home: MyHomePage(),
+    );
+  }
+}
+
+class MyHomePage extends StatefulWidget {
+  const MyHomePage({super.key});
+
+  @override
+  State<MyHomePage> createState() => _MyHomePageState();
+}
+
+class _MyHomePageState extends State<MyHomePage> {
+  final TextEditingController _controller = TextEditingController(
+    text: '这是一个Cupertino风格的文本输入框。长按或双击可选择文本。',
+  );
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return CupertinoPageScaffold(
+      navigationBar: const CupertinoNavigationBar(
+        middle: Text('Cupertino TextField'),
+      ),
+      child: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(20.0),
+          child: CupertinoTextField(
+            controller: _controller,
+            placeholder: '请输入文本',
+            padding: const EdgeInsets.all(12.0),
+            // selectionControls 属性通常无需手动设置，CupertinoTextField 会自动处理
+            // selectionControls: CupertinoTextSelectionControls(), // 默认已使用，无需再次指定
+            onTap: () {
+              // 示例：点击时打印光标位置
+              debugPrint('Cursor position: ${_controller.selection.start}');
+            },
+          ),
+        ),
+      ),
+    );
+  }
+}
+```
+
+
+### 在SelectableText中使用CupertinoTextSelectionControls
+```dart
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart'; // 引入Material，以便在MaterialApp中展示Cupertino
+
+void main() {
+  runApp(const MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    // 即使在 MaterialApp 中，也可以指定使用 Cupertino 的选择控制
+    return MaterialApp(
+      title: 'SelectableText with Cupertino Controls',
+      // 定义一个 ThemeData，可以包含一些基本设置
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: const MySelectableTextPage(),
+    );
+  }
+}
+
+class MySelectableTextPage extends StatelessWidget {
+  const MySelectableTextPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('SelectableText with Cupertino Controls'),
+      ),
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(20.0),
+          child: SelectableText(
+            '这是一段可选择的文本。长按或双击以体验Cupertino风格的选择手柄和菜单。'
+            '虽然应用是Material主题，但这里我们指定了使用Cupertino的选择控制。',
+            textAlign: TextAlign.center,
+            style: const TextStyle(fontSize: 18.0, color: Colors.black),
+            // 显式指定使用 CupertinoTextSelectionControls
+            selectionControls: CupertinoTextSelectionControls(),
+          ),
+        ),
+      ),
+    );
+  }
+}
+```
+
+
+### 自定义TextSelectionControls以实现特殊效果
+```dart
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart'; // 需要 Material 库的 TextSelectionToolbarItem
+
+// 自定义一个继承自 CupertinoTextSelectionControls 的类
+class CustomCupertinoTextSelectionControls extends CupertinoTextSelectionControls {
+  // 可以重写 buildToolbar 方法来修改操作菜单的内容或样式
+  @override
+  Widget buildToolbar(
+    BuildContext context,
+    Rect globalEditableRegion,
+    double textLineHeight,
+    Offset selectionMidpoint,
+    List<TextSelectionPoint> endpoints,
+    TextSelectionDelegate delegate,
+    ClipboardStatusNotifier clipboardStatus,
+  ) {
+    // 调用父类的 buildToolbar 获取默认的 CupertinoToolbar
+    final Widget defaultToolbar = super.buildToolbar(
+      context,
+      globalEditableRegion,
+      textLineHeight,
+      selectionMidpoint,
+      endpoints,
+      delegate,
+      clipboardStatus,
+    );
+
+    // 可以在这里包装或修改 defaultToolbar，例如添加自定义按钮
+    return defaultToolbar;
+    // return CupertinoTheme( // 可以在这里包装主题
+    //   data: CupertinoTheme.of(context).copyWith(
+    //     primaryColor: Colors.deepPurple, // 改变Toolbar的主色调
+    //   ),
+    //   child: defaultToolbar,
+    // );
+  }
+
+  // 你也可以重写 buildHandle 方法来改变选择手柄的样式
+  // @override
+  // Widget buildHandle(BuildContext context, TextSelectionHandleType type, double textLineHeight) {
+  //   return super.buildHandle(context, type, textLineHeight);
+  //   // 例如，返回一个不同颜色的手柄
+  //   // return Material(
+  //   //   color: Colors.red,
+  //   //   child: SizedBox(width: 20, height: 20),
+  //   // );
+  // }
+}
+
+void main() {
+  runApp(const MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const CupertinoApp(
+      title: 'Custom Cupertino Controls Demo',
+      home: MyCustomControlsPage(),
+    );
+  }
+}
+
+class MyCustomControlsPage extends StatefulWidget {
+  const MyCustomControlsPage({super.key});
+
+  @override
+  State<MyCustomControlsPage> createState() => _MyCustomControlsPageState();
+}
+
+class _MyCustomControlsPageState extends State<MyCustomControlsPage> {
+  final TextEditingController _controller = TextEditingController(
+    text: '这段文本使用自定义的Cupertino选择控制器。',
+  );
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return CupertinoPageScaffold(
+      navigationBar: const CupertinoNavigationBar(
+        middle: Text('Custom Text Selection Controls'),
+      ),
+      child: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(20.0),
+          child: CupertinoTextField(
+            controller: _controller,
+            placeholder: '请输入文本',
+            padding: const EdgeInsets.all(12.0),
+            // 使用自定义的 selectionControls
+            selectionControls: CustomCupertinoTextSelectionControls(),
+          ),
+        ),
+      ),
+    );
+  }
+}
+```
+
+
+
+## 注意点
+- 平台一致性: `CupertinoTextSelectionControls`旨在提供iOS原生体验。如果你的应用主要是Material Design风格，应使用`MaterialTextSelectionControls`，它们通常与`MaterialApp`和`TextField`默认集成。
+- 自动集成: 在`CupertinoApp`下的`CupertinoTextField`或`SelectableText` 会自动使用`CupertinoTextSelectionControls`，通常你不需要手动设置`selectionControls`属性。
+- 性能: `TextSelectionControls`实例通常是轻量级的，不会引起显著的性能开销。
+- 定制性: `CupertinoTextSelectionControls`本身是一个完整的实现。如果需要大范围定制，考虑继承并覆盖其方法，但通常仅限于修改颜色或图标，不建议完全重写文本选择逻辑，因为这涉及到复杂的触摸手势和文本布局处理。
+- 剪贴板操作: `CupertinoTextSelectionControls`会自动处理复制、剪切、粘贴等操作，这些操作依赖于Flutter的`Clipboard`服务。确保如果你的应用在特殊场景下限制剪贴板访问，需要另行处理。
+- 主题影响: 文本选择手柄和工具栏的颜色通常会受到`CupertinoTheme`或`CupertinoThemeData`中`primaryColor`的影响。你可以通过`CupertinoTheme Widget`来调整这些颜色。
+
+
+
+## 构造函数
+```dart
+const CupertinoTextSelectionControls({super.debugRequiredFor})
+```
+
+
+## 属性
+由于`CupertinoTextSelectionControls`是一个实现文本选择行为的控制类，它自身没有直接暴露可配置的公共属性。大部分可配置的外观和行为都是通过其
+构建方法(如`buildHandle`和`buildToolbar`)间接实现的，这些方法通常会从当前的`Theme`或`CupertinoTheme`中获取样式信息。
+
+虽然它没有直接的属性供外部配置，但它内部实现了一些关键的方法，这些方法定义了文本选择控制器的行为和外观:
+| 属性/方法名     | 类型                           | 说明                                          |
+| :-------------- | :----------------------------- | :--------------------------------------------------------------------------- |
+| `buildHandle`   | `Widget Function(...)`         | 生成文本选择手柄（光标）的视觉组件。**此方法决定了手柄的形状和颜色。** 默认实现将根据当前的 `CupertinoTheme` 来绘制 iOS 风格的手柄。|
+| `buildToolbar`  | `Widget Function(...)`         | 生成文本选择操作菜单（如“拷贝”、“粘贴”）。**此方法决定了工具栏的内容、样式和位置。** 默认实现会创建一个 iOS 风格的工具栏，并包含复制、剪切、粘贴、全选等选项。|
+| `get==lectionOffset` | `Offset Function(...)`         | 用于计算选择手柄的绘制位置，通常是相对于文本区域。            |
+| `handleSize`    | `Size Function()`              | 返回文本选择手柄的建议尺寸。                      |
+| `canCut`        | `bool Function(TextSelectionDelegate delegate)` | 判断是否可以执行“剪切”操作。通常取决于 `delegate` 是否可编辑且有选中的文本。     |
+| `canCopy`       | `bool Function(TextSelectionDelegate delegate)` | 判断是否可以执行“复制”操作。通常取决于 `delegate` 是否有选中的文本。     |
+| `canPaste`      | `bool Function(TextSelectionDelegate delegate)` | 判断是否可以执行“粘贴”操作。通常取决于 `delegate` 是否可编辑且剪贴板中有文本。 |
+| `canSelectAll`  | `bool Function(TextSelectionDelegate delegate)` | 判断是否可以执行“全选”操作。通常取决于 `delegate` 是否有文本。|
+| `cut`           | `void Function(TextSelectionDelegate delegate)` | 执行“剪切”操作的逻辑。    |
+| `copy`          | `void Function(TextSelectionDelegate delegate)` | 执行“复制”操作的逻辑。    |
+| `paste`         | `void Function(TextSelectionDelegate delegate)` | 执行“粘贴”操作的逻辑。    |
+| `selectAll`     | `void Function(TextSelectionDelegate delegate)` | 执行“全选”操作的逻辑。    |
+
+
+
+
+### 关键属性/方法解释
+- `buildHandle(BuildContext context, TextSelectionHandleType type, double textLineHeight)`: 这个方法非常重要，它负责绘制文本选择时在选区起点和终点出现的“手柄”。`CupertinoTextSelectionControls`会使用iOS风格的圆形蓝色手柄。如果你需要自定义手柄的样式(例如，改成方形或不同颜色)，你可以创建一个`CupertinoTextSelectionControls`的子类并覆盖此方法。
+- `buildToolbar(BuildContext context, Rect globalEditableRegion, ...)`: 此方法负责构建当文本被选中时弹出的上下文菜单(即工具栏)。工具栏包含了“复制”、“剪切”、“粘贴”等选项。`CupertinoTextSelectionControls`会生成一个iOS风格的磨砂玻璃效果的工具栏。如果你希望修改工具栏的按钮、文本或整体样式，同样需要继承并覆盖此方法。
+
+
+
+> 总结来说，`CupertinoTextSelectionControls`是Flutter中实现iOS风格文本选择功能的核心。它通过内部方法提供了一整套的文本选择UI和交互逻辑，多数情况下开发者只需在`CupertinoApp`环境下使用`CupertinoTextField`或`SelectableText`即可自动获得其功能，无需手动配置。但如果需要高级定制，则可以通过继承和覆盖其方法来实现。
