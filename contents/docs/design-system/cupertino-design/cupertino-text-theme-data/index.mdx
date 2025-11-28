@@ -1,0 +1,341 @@
+---
+title: CupertinoTextThemeData
+description: 定义和配置Cupertino应用程序中的文本主题样式，包括字体、字重、颜色、字号以及行高等各种文本属性
+---
+
+`CupertinoTextThemeData`是Flutter中Cupertino设计风格的一员，它继承自`TextTheme`类。其主要作用是定义和配置Cupertino应用程序中的文本主题样式，包括字体、字重、颜色、字号以及行高等各种文本属性。
+
+`CupertinoTextThemeData`旨在与`CupertinoThemeData`配合使用，为整个应用程序或特定部分提供统一的iOS风格文本样式。它允许开发者像定义一个调色板一样，定义一套符合iOS设计规范的文本样式，这样所
+有使用这些样式的Cupertino控件(如`CupertinoNavigationBar`、`CupertinoTabBar`、`CupertinoDialog`等)都能保持视觉上的一致性。
+
+### 主要用途
+- 统一应用内所有文本的视觉风格，确保iOS设计规范的一致性。
+- 简化文本样式的管理，避免在每个文本控件中重复设置样式。
+- 通过主题切换，轻松更改应用的整体文本样式。
+
+
+### 使用场景
+`CupertinoTextThemeData`通常与`CupertinoTheme`或`CupertinoThemeData`结合使用，应用于以下场景:
+- 全局文本主题配置: 在`CupertinoApp`或`CupertinoTheme`小部件中设置应用程序的默认文本主题。
+- 特定区域的文本主题覆盖: 在应用程序的某个部分，通过`CupertinoTheme widget`局部覆盖全局文本主题。
+- 自定义特定文本样式: 为`CupertinoAlertDialog`、`CupertinoNavigationBar`等Cupertino控件提供定制化的文本样式。
+
+
+
+## 示例
+### 全局设置CupertinoTextThemeData
+```dart
+import 'package:flutter/cupertino.dart';
+
+void main() {
+  runApp(const MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return CupertinoApp(
+      title: 'Cupertino Text Theme Demo',
+      // 定义全局CupertinoThemeData
+      theme: const CupertinoThemeData(
+        brightness: Brightness.light,
+        primaryColor: CupertinoColors.systemBlue,
+        textTheme: CupertinoTextThemeData(
+          // headline 样式示例
+          navLargeTitleTextStyle: TextStyle(
+            fontFamily: '.SF Pro Display',
+            fontSize: 34.0,
+            fontWeight: FontWeight.w700,
+            color: CupertinoColors.black,
+          ),
+          // body 样式示例
+          textStyle: TextStyle(
+            fontFamily: '.SF Pro Text',
+            fontSize: 17.0,
+            fontWeight: FontWeight.w400,
+            color: CupertinoColors.systemGrey, // 全局默认文字颜色
+          ),
+          // 可以在这里定义更多文本样式
+        ),
+      ),
+      home: const MyHomePage(),
+    );
+  }
+}
+
+class MyHomePage extends StatelessWidget {
+  const MyHomePage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    // 获取当前上下文的CupertinoTheme
+    final CupertinoThemeData theme = CupertinoTheme.of(context);
+    // 获取CupertinoTextThemeData
+    final CupertinoTextThemeData textTheme = theme.textTheme;
+
+    return CupertinoPageScaffold(
+      navigationBar: CupertinoNavigationBar(
+        middle: Text(
+          '主页',
+          // navTitleTextStyle 是默认的导航栏标题样式
+          // 这里可以不显式设置，它会从textTheme中获取
+          style: theme.textTheme.navTitleTextStyle,
+        ),
+        largeTitle: Text(
+          '欢迎来到我的应用',
+          // 使用 navLargeTitleTextStyle
+          style: textTheme.navLargeTitleTextStyle,
+        ),
+      ),
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            // 使用textStyle作为默认的文字样式
+            Text(
+              '这是一个使用全局文本主题的文本!',
+              style: textTheme.textStyle, // 示例使用
+            ),
+            const SizedBox(height: 20),
+            Text(
+              '另一个文本，可以局部覆盖样式',
+              style: textTheme.textStyle?.copyWith(
+                color: CupertinoColors.systemPurple,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+```
+
+
+### 局部覆盖文本主题
+```dart
+import 'package:flutter/cupertino.dart';
+
+void main() {
+  runApp(const MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return CupertinoApp(
+      title: '局部覆盖主题示例',
+      theme: const CupertinoThemeData(
+        brightness: Brightness.light,
+        primaryColor: CupertinoColors.systemGreen,
+        textTheme: CupertinoTextThemeData(
+          textStyle: TextStyle(
+            fontSize: 18.0,
+            color: CupertinoColors.systemGrey,
+          ),
+          navTitleTextStyle: TextStyle(
+            fontSize: 20.0,
+            fontWeight: FontWeight.bold,
+            color: CupertinoColors.black,
+          ),
+        ),
+      ),
+      home: const LocalThemeOverridePage(),
+    );
+  }
+}
+
+class LocalThemeOverridePage extends StatelessWidget {
+  const LocalThemeOverridePage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return CupertinoPageScaffold(
+      navigationBar: const CupertinoNavigationBar(
+        middle: Text('局部主题覆盖'),
+      ),
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            const Text(
+              '这是全局主题的文本',
+            ),
+            const SizedBox(height: 30),
+            // 使用 CupertinoTheme.merge 局部覆盖 textStyle
+            CupertinoTheme(
+              data: CupertinoTheme.of(context).copyWith(
+                textTheme: CupertinoTheme.of(context).textTheme.copyWith(
+                  textStyle: CupertinoTheme.of(context).textTheme.textStyle?.copyWith(
+                    fontSize: 22.0,
+                    fontWeight: FontWeight.w600,
+                    color: CupertinoColors.systemOrange,
+                  ),
+                ),
+              ),
+              child: const Column(
+                children: [
+                  Text(
+                    '这是局部覆盖后的文本样式!',
+                  ),
+                  SizedBox(height: 10),
+                  Text(
+                    '此样式仅在此CupertinoTheme的子树中生效。',
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+```
+
+
+
+### 结合CupertinoAlertDialog使用
+```dart
+import 'package:flutter/cupertino.dart';
+
+void main() {
+  runApp(const MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return CupertinoApp(
+      title: 'Cupertino Dialog Text Theme',
+      theme: const CupertinoThemeData(
+        brightness: Brightness.light,
+        primaryColor: CupertinoColors.activeBlue,
+      ),
+      home: const DialogPage(),
+    );
+  }
+}
+
+class DialogPage extends StatelessWidget {
+  const DialogPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return CupertinoPageScaffold(
+      navigationBar: const CupertinoNavigationBar(
+        middle: Text('对话框文本主题'),
+      ),
+      child: Center(
+        child: CupertinoButton.filled(
+          onPressed: () {
+            _showAlertDialog(context);
+          },
+          child: const Text('显示对话框'),
+        ),
+      ),
+    );
+  }
+
+  void _showAlertDialog(BuildContext context) {
+    // 我们可以直接在Text widget中定义样式，这些样式将覆盖CupertinoThemeData中的默认值
+    CupertinoThemeData currentTheme = CupertinoTheme.of(context);
+
+    showCupertinoDialog<void>(
+      context: context,
+      builder: (BuildContext dialogContext) => CupertinoAlertDialog(
+        // 通过直接设置Text Widget的style属性来覆盖主题样式
+        title: Text(
+          '重要提示！',
+          style: currentTheme.textTheme.navTitleTextStyle?.copyWith(
+            color: CupertinoColors.systemRed,
+            fontSize: 22,
+          ),
+        ),
+        content: Text(
+          '这是一个带自定义文本样式的对话框内容。请注意字体和颜色。',
+          style: currentTheme.textTheme.textStyle?.copyWith(
+            color: CupertinoColors.systemGreen,
+            fontSize: 16,
+          ),
+        ),
+        actions: <CupertinoDialogAction>[
+          CupertinoDialogAction(
+            onPressed: () {
+              Navigator.pop(dialogContext);
+            },
+            child: const Text('取消'),
+          ),
+          CupertinoDialogAction(
+            isDestructiveAction: true,
+            onPressed: () {
+              Navigator.pop(dialogContext);
+            },
+            child: const Text('确定'),
+          ),
+        ],
+      ),
+    );
+  }
+}
+```
+
+
+### 注意事项
+- 与Material Design的区别: `CupertinoTextThemeData`专为Cupertino(iOS风格)设计，其内部的样式名称和默认值与Material Design的`TextTheme`有显著不同。不要混淆或尝试直接替代使用。
+- 默认字体: 在iOS设备上，`CupertinoTextThemeData`默认使用`.SF Pro Text`和`.SF Pro Display`字体。在Android或其他非iOS平台上，Flutter会尝试回退到系统默认字体，如`Roboto`或其他无衬线字体。如果需要跨平台一致的字体，需要自行引入并配置`fontFamily`。
+- 继承与覆盖: `CupertinoTextThemeData`内部的`TextStyle`属性是`nullable`的。这意味着如果没有为某个属性(例如`navTitleTextStyle`)提供具体值，它将使用默认的`TextStyle`值。在局部覆盖时，通常使用`copyWith`方法来修改现有主题，保持未修改部分的样式不变。
+- 性能考量: 频繁创建或修改`CupertinoTextThemeData`实例可能会有轻微性能开销，尤其是在`build`方法中。最佳实践是在顶层 CupertinoApp 的主题中一次性定义，或在`CupertinoTheme`中利用`copyWith`进行高效的局部修改。
+- 语义化使用: `CupertinoTextThemeData`提供了一系列语义化的`TextStyle`属性，例如`navLargeTitleTextStyle`用于大标题，`actionTextStyle`用于按钮文本。尽量根据这些语义来选择和应用文本样式，而不是随意使用。
+- 亮/暗模式适应: `CupertinoTextThemeData`本身不直接处理亮/暗模式的文本颜色适配，这通常由`CupertinoThemeData`的`brightness`属性结合`CupertinoColors`动态选择。如果文本颜色是硬编码的，可能需要在切换亮/暗模式时手动调整。
+
+
+## 构造函数
+```dart
+const CupertinoTextThemeData({
+  TextStyle? primaryTextStyle,
+  TextStyle? textStyle,
+  TextStyle? actionTextStyle,
+  TextStyle? tabLabelTextStyle,
+  TextStyle? navTitleTextStyle,
+  TextStyle? navLargeTitleTextStyle,
+  TextStyle? navActionTextStyle,
+  TextStyle? pickerTextStyle,
+  TextStyle? dateTimePickerTextStyle,
+});
+```
+
+
+## 属性
+| 属性名                       | 属性类型    | 说明                                                                                              |
+| :--------------------------- | :---------- | :------------------------------------------------------------------------------------------------ |
+| `primaryTextStyle`           | `TextStyle?` | 应用程序主要文本的样式。通常是其他文本样式的基础。                                              |
+| `textStyle`                  | `TextStyle?` | 应用程序默认文本的样式。广泛应用于普通文本。                                                    |
+| `actionTextStyle`            | `TextStyle?` | 例如 `CupertinoDialogAction` 和 `CupertinoActionSheetAction` 等操作按钮的文本样式。             |
+| `tabLabelTextStyle`          | `TextStyle?` | 用于 `CupertinoTabBar` 中每个标签的文本样式。                                                   |
+| `navTitleTextStyle`          | `TextStyle?` | `CupertinoNavigationBar` 中部标题的文本样式。                                                   |
+| `navLargeTitleTextStyle`     | `TextStyle?` | `CupertinoNavigationBar` 大标题（如果启用）的文本样式。                                          |
+| `navActionTextStyle`         | `TextStyle?` | `CupertinoNavigationBar` 中动作按钮（例如右侧的按钮）的文本样式。                               |
+| `pickerTextStyle`            | `TextStyle?` | `CupertinoPicker` 中滚轮上文本的样式。                                                          |
+| `dateTimePickerTextStyle`    | `TextStyle?` | `CupertinoDatePicker` 中日期或时间选择器文本的样式。                                            |
+| `resolvedTextStyle`          | `TextStyle`  | (Getter) 一个已解析的 `TextStyle`，通常是 `textStyle` 但会根据主题的 `brightness` 和其他属性解析最终颜色。 |
+| `copyWith(...)`              | `CupertinoTextThemeData Function(...)` | 创建一个新的 `CupertinoTextThemeData` 实例，可以选择覆盖某些属性。                          |
+| `apply(...)`                 | `CupertinoTextThemeData Function(...)` | 应用一个新的文本样式作为基础，并覆盖其他属性。                                                |
+| `debugFillProperties(...)`   | `void Function(...)` | 调试时用于填充属性报告的方法。                                                                  |
+| `hashcode`                   | `int`        | 唯一标识此主题数据对象的哈希码。                                                                |
+| `operator ==(...)`           | `bool`       | 比较两个 `CupertinoTextThemeData` 对象是否相等。                                                |
+
+
+### 关键属性解释：
+- `primaryTextStyle`和`textStyle`: primaryTextStyle 是一个更基础的样式，它可能影响到其他未显式定义的样式。`textStyle`则更偏向于默认的正文文本样式。通常，如果两者都未定义，`Cupertino`控件会有一个内部的默认机制来获取样式。当你想要全局改变大部分文本的默认外观时，配置`textStyle`是最直接的方式。
+- `navLargeTitleTextStyle`和`navTitleTextStyle`: 这两个属性在构建具有iOS 11+风格的大标题导航栏时至关重要。`navLargeTitleTextStyle`用于导航栏展开时的大标题文本，而`navTitleTextStyle`用于导航栏收起或普通导航栏的标题文本。它们确保了导航栏在不同状态下的标题风格保持一致。
+- `pickerTextStyle`和`dateTimePickerTextStyle`: 这两个属性控制了`CupertinoPicker`和`CupertinoDatePicker`内部数值或日期文本的显示。正确配置它们可以确保选择器与应用整体设计保持一致。
+- `resolvedTextStyle`: 这是一个非常实用的`getter`。它返回一个“已解析”的`textStyle`，这意味着它会考虑当前`CupertinoThemeData`的`brightness`(亮色或暗色模式)来确定最终的文本颜色。例如，如果`textStyle`中没有明确的`color`，但主题是暗色模式，`resolvedTextStyle`可能会返回一个适合暗色背景的白色文本颜色。在使用`CupertinoTheme.of(context).textTheme.resolvedTextStyle`时，通常可以拿到一个最适合当前主题的通用文本样式。
+- `copyWith`方法: 这是修改现有`CupertinoTextThemeData`实例的最佳方式，而不是创建一个全新的实例。它允许您仅覆盖您希望更改的属性，同时保留其他属性的值。这对于局部主题覆盖非常有用。
