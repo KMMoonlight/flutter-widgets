@@ -1,0 +1,208 @@
+---
+title: CupertinoTextMagnifier
+description: 提供一个临时性的、浮动的视图，以放大屏幕上的特定区域(通常是文本)，从而帮助用户更好地进行文本选择或编辑
+---
+
+`CupertinoTextMagnifier`是一个内部使用的组件，它通常不会直接被开发者构建。它由`CupertinoTextSelectionToolbar`和`CupertinoTextField`等`Cupertino`风格的文本选择和输入组件在需要时创建和管理。它的主要作用是提供
+一个临时性的、浮动的视图，以放大屏幕上的特定区域(通常是文本)，从而帮助用户更好地进行文本选择或编辑。
+
+![](https://docs.flutter.dev/assets/images/docs/widget-catalog/CupertinoTextMagnifier.png)
+
+
+### 使用场景
+由于`CupertinoTextMagnifier`是一个内部实现组件，你通常不会直接在你的`widget`树中看到或实例化它。它在以下典型场景中会自动出现：
+- 文本选择: 当用户在`CupertinoTextField`或`EditableText`中长按或拖动选择手柄时，放大镜会出现以帮助用户精确选择字符。
+- 文本插入: 当用户长按以定位插入点时，放大镜可能会出现以帮助用户将光标置于精确位置。
+- 通用iOS文本操作: 它模仿了iOS系统中在文本输入和选择时提供精确反馈的UI行为。
+
+
+
+## 示例
+### 基本的CupertinoTextField
+```dart
+import 'package:flutter/cupertino.dart';
+
+class BasicCupertinoTextFieldDemo extends StatefulWidget {
+  const BasicCupertinoTextFieldDemo({super.key});
+
+  @override
+  State<BasicCupertinoTextFieldDemo> createState() => _BasicCupertinoTextFieldDemoState();
+}
+
+class _BasicCupertinoTextFieldDemoState extends State<BasicCupertinoTextFieldDemo> {
+  final TextEditingController _controller = TextEditingController(text: '长按这段文本，你会看到放大镜效果。');
+
+  @override
+  Widget build(BuildContext context) {
+    return CupertinoPageScaffold(
+      navigationBar: const CupertinoNavigationBar(
+        middle: Text('文本放大镜示例'),
+      ),
+      child: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: CupertinoTextField(
+            controller: _controller,
+            placeholder: '请输入文本',
+            padding: const EdgeInsets.all(12.0),
+            // 当你在iOS设备或模拟器上长按此处的文本时，放大镜会自动出现
+          ),
+        ),
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+}
+
+void main() {
+  runApp(const CupertinoApp(
+    home: BasicCupertinoTextFieldDemo(),
+    theme: CupertinoThemeData(
+      brightness: Brightness.light,
+    ),
+  ));
+}
+```
+
+
+### 带有自定义光标颜色的CupertinoTextField
+```dart
+import 'package:flutter/cupertino.dart';
+
+class CustomCursorColorTextFieldDemo extends StatefulWidget {
+  const CustomCursorColorTextFieldDemo({super.key});
+
+  @override
+  State<CustomCursorColorTextFieldDemo> createState() => _CustomCursorColorTextFieldDemoState();
+}
+
+class _CustomCursorColorTextFieldDemoState extends State<CustomCursorColorTextFieldDemo> {
+  final TextEditingController _controller = TextEditingController(text: '试试自定义光标颜色，放大镜依然工作。');
+
+  @override
+  Widget build(BuildContext context) {
+    return CupertinoPageScaffold(
+      navigationBar: const CupertinoNavigationBar(
+        middle: Text('自定义光标颜色'),
+      ),
+      child: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: CupertinoTextField(
+            controller: _controller,
+            placeholder: '输入文本',
+            padding: const EdgeInsets.all(12.0),
+            cursorColor: CupertinoColors.systemOrange, // 自定义光标颜色
+            // 长按时放大镜效果仍会按系统默认行为弹出
+          ),
+        ),
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+}
+
+void main() {
+  runApp(const CupertinoApp(
+    home: CustomCursorColorTextFieldDemo(),
+    theme: CupertinoThemeData(
+      brightness: Brightness.light,
+    ),
+  ));
+}
+```
+
+
+### 在EditableText中
+```dart
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/services.dart'; // For TextInputFormatter
+
+class EditableTextMagnifierDemo extends StatefulWidget {
+  const EditableTextMagnifierDemo({super.key});
+
+  @override
+  State<EditableTextMagnifierDemo> createState() => _EditableTextMagnifierDemoState();
+}
+
+class _EditableTextMagnifierDemoState extends State<EditableTextMagnifierDemo> {
+  final TextEditingController _controller = TextEditingController(text: '这是EditableText，长按它也会有放大镜。');
+  final FocusNode _focusNode = FocusNode();
+
+  @override
+  Widget build(BuildContext context) {
+    return CupertinoPageScaffold(
+      navigationBar: const CupertinoNavigationBar(
+        middle: Text('EditableText 放大镜'),
+      ),
+      child: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Container(
+            padding: const EdgeInsets.all(10.0),
+            decoration: BoxDecoration(
+              border: Border.all(color: CupertinoColors.systemGrey),
+              borderRadius: BorderRadius.circular(8.0),
+            ),
+            child: EditableText(
+              controller: _controller,
+              focusNode: _focusNode,
+              style: CupertinoTheme.of(context).textTheme.textStyle,
+              cursorColor: CupertinoColors.activeBlue,
+              backgroundCursorColor: CupertinoColors.activeBlue.withOpacity(0.5),
+              // editableText 会处理文本选择和放大镜的逻辑
+              selectionControls: CupertinoTextSelectionToolbar.get     // 确保使用Cupertino的TextSelectionControls
+                  (debugOwner: _focusNode.owner),                     // 在macOS或iOS上，这会自动启用放大镜
+              autofocus: true,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    _focusNode.dispose();
+    super.dispose();
+  }
+}
+
+void main() {
+  runApp(const CupertinoApp(
+    home: EditableTextMagnifierDemo(),
+    theme: CupertinoThemeData(
+      brightness: Brightness.light,
+    ),
+  ));
+}
+```
+
+
+## 注意点
+- **自动管理**: `CupertinoTextMagnifier`是一个内部辅助组件，它不应该被直接创建和控制。它被`CupertinoTextField`或更底层的`EditableText`及其关联的文本选择控制器(如`CupertinoTextSelectionControls`)自动管理其生命周期和位置。
+- **平台特定性**: 文本放大镜是iOS平台特有的UI行为。虽然Flutter的`CupertinoTextMagnifier`旨在模仿这种行为，但在Android平台（或其他非iOS平台）上，通常不会看到这种放大镜效果，或者会表现为该平台自己的文本选择UI。
+- **性能考量**: 文本放大镜需要实时渲染放大后的屏幕区域，这可能会涉及一定的性能开销。Flutter框架已对其进行了优化，以确保在大多数情况下平滑运行，但在极端复杂或动画密集型场景下仍需注意。
+- **样式定制**: `CupertinoTextMagnifier`的样式(如形状、边框、阴影)通常与iOS系统保持一致，并且不容易被直接定制。如果你需要完全不同风格的文本选择UI，你可能需要考虑构建自己的文本选择组件，但这会非常复杂。
+- **与主题的集成**: `CupertinoTextMagnifier`会自动适应当前`CupertinoThemeData`的亮度设置（浅色/深色模式），以确保视觉上的一致性。
+
+
+
+## 构造函数
+由于`CupertinoTextMagnifier`是一个内部组件，其构造函数细节通常不对外暴露，不供开发者直接调用。它的构建和管理由Flutter框架内部处理。
+
+
+## 属性
+由于`CupertinoTextMagnifier`的封装性，它没有任何对外暴露的公共属性供开发者直接设置或修改。它的行为和外观由Flutter框架根据当前的文本选择状态和系统设置自动确定。
+
