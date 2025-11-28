@@ -1,0 +1,339 @@
+---
+title: CupertinoTextField
+description: 在不通过修改布局、大小或位置的情况下，对子组件施加虚拟效果的组件
+---
+
+`CupertinoTextField`是Flutter中用于实现iOS风格的文本输入框组件。它遵循Apple的HIG(Human Interface Guidelines)，提供了一种在应用中收集用户文本输入的标准方式，具有圆角边框、清晰的光标、占位符文本和
+文本选择等功能。与`TextField`类似，但设计上更贴合iOS的视觉和交互习惯。
+
+![](https://docs.flutter.dev/assets/images/docs/widget-catalog/cupertino-textfield.png)
+
+- 主要用途: 在iOS风格的Flutter应用中接收用户输入的单行文本。
+- 核心逻辑: 通过`TextEditingController`管理输入文本，支持各种键盘类型和输入格式化。
+- 适用场景:
+  - 用户注册/登录界面中的用户名、密码输入。
+  - 搜索框。
+  - 表单中的短文本字段(如姓名、邮箱、电话)。
+  - 任何需要用户输入文本的交互场景。
+
+
+
+## 示例
+### 基本文本输入框
+```dart
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart'; // 为了使用 Scaffold 和 MaterialApp
+
+class BasicCupertinoTextFieldExample extends StatefulWidget {
+  const BasicCupertinoTextFieldExample({super.key});
+
+  @override
+  State<BasicCupertinoTextFieldExample> createState() => _BasicCupertinoTextFieldExampleState();
+}
+
+class _BasicCupertinoTextFieldExampleState extends State<BasicCupertinoTextFieldExample> {
+  final TextEditingController _textController = TextEditingController();
+
+  @override
+  void dispose() {
+    _textController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return CupertinoPageScaffold(
+      navigationBar: const CupertinoNavigationBar(
+        middle: Text('基本输入框'),
+      ),
+      child: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: CupertinoTextField(
+            controller: _textController,
+            placeholder: '请输入您的姓名', // 占位符文本
+            onChanged: (text) {
+              print('当前输入: $text');
+            },
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// 在 MaterialApp/CupertinoApp 中使用
+void main() => runApp(const CupertinoApp(
+  home: BasicCupertinoTextFieldExample(),
+));
+```
+
+
+### 密码输入框和自定义样式
+```dart
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart'; // 为了使用 Scaffold 和 MaterialApp
+
+class PasswordCupertinoTextFieldExample extends StatefulWidget {
+  const PasswordCupertinoTextFieldExample({super.key});
+
+  @override
+  State<PasswordCupertinoTextFieldExample> createState() => _PasswordCupertinoTextFieldExampleState();
+}
+
+class _PasswordCupertinoTextFieldExampleState extends State<PasswordCupertinoTextFieldExample> {
+  final TextEditingController _passwordController = TextEditingController();
+  bool _obscureText = true;
+
+  @override
+  void dispose() {
+    _passwordController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return CupertinoPageScaffold(
+      navigationBar: const CupertinoNavigationBar(
+        middle: Text('密码输入和自定义样式'),
+      ),
+      child: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              CupertinoTextField(
+                controller: _passwordController,
+                placeholder: '请输入密码',
+                obscureText: _obscureText, // 隐藏输入文本
+                padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 16.0), // 内边距
+                decoration: BoxDecoration( // 自定义边框颜色和圆角
+                  color: CupertinoColors.extraLightBackgroundGray,
+                  border: Border.all(color: CupertinoColors.systemGrey),
+                  borderRadius: BorderRadius.circular(8.0),
+                ),
+                prefix: const Padding( // 前缀图标
+                  padding: EdgeInsets.only(left: 8.0),
+                  child: Icon(CupertinoIcons.lock),
+                ),
+                suffix: CupertinoButton( // 后缀按钮（显示/隐藏密码）
+                  padding: EdgeInsets.zero,
+                  onPressed: () {
+                    setState(() {
+                      _obscureText = !_obscureText;
+                    });
+                  },
+                  child: Icon(
+                    _obscureText ? CupertinoIcons.eye_slash : CupertinoIcons.eye,
+                    color: CupertinoColors.systemGrey,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+              CupertinoButton.filled(
+                onPressed: () {
+                  print('输入的密码: ${_passwordController.text}');
+                },
+                child: const Text('提交'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// 在 MaterialApp/CupertinoApp 中使用
+void main() => runApp(const CupertinoApp(
+  home: PasswordCupertinoTextFieldExample(),
+));
+```
+
+
+### 数字输入和格式化
+```dart
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/services.dart'; // 导入用于 FilteringTextInputFormatter
+import 'package:flutter/material.dart'; // 为了使用 Scaffold 和 MaterialApp
+
+class NumberCupertinoTextFieldExample extends StatefulWidget {
+  const NumberCupertinoTextFieldExample({super.key});
+
+  @override
+  State<NumberCupertinoTextFieldExample> createState() => _NumberCupertinoTextFieldExampleState();
+}
+
+class _NumberCupertinoTextFieldExampleState extends State<NumberCupertinoTextFieldExample> {
+  final TextEditingController _numberController = TextEditingController();
+
+  @override
+  void dispose() {
+    _numberController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return CupertinoPageScaffold(
+      navigationBar: const CupertinoNavigationBar(
+        middle: Text('数字输入'),
+      ),
+      child: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: CupertinoTextField(
+            controller: _numberController,
+            placeholder: '请输入数字',
+            keyboardType: TextInputType.number, // 设置键盘类型为数字
+            inputFormatters: <TextInputFormatter>[
+              FilteringTextInputFormatter.digitsOnly // 只允许输入数字
+            ],
+            // 文本对齐方式
+            textAlign: TextAlign.center,
+            onChanged: (text) {
+              print('输入的数字: $text');
+            },
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// 在 MaterialApp/CupertinoApp 中使用
+void main() => runApp(const CupertinoApp(
+  home: NumberCupertinoTextFieldExample(),
+));
+```
+
+
+## 注意点
+1. **控制器管理**: 始终使用`TextEditingController`来管理`CupertinoTextField`的文本内容。在`State`对象的`dispose`方法中注销(`_controller.dispose()`)控制器，以避免内存泄漏。
+2. **样式定制**: `CupertinoTextField`默认样式与iOS保持一致，但可以通过`decoration`、`padding`、`placeholderStyle`等属性进行高度定制。注意不要过度定制，以免失去iOS原生UI的自然感。
+3. **键盘类型**: 通过`keyboardType`属性指定合适的键盘类型(如`TextInputType.emailAddress`、`TextInputType.number`、`TextInputType.phone`)，可以优化用户输入体验。
+4. **输入限制**: 使用`inputFormatters`属性可以对用户输入进行格式化或限制，例如只允许数字输入(`FilteringTextInputFormatter.digitsOnly`)。
+5. **密码输入**: 对于密码或敏感信息，务必设置`obscureText: true`来隐藏输入内容。
+6. **焦点管理**: 若需手动控制输入框的焦点(例如，在多个输入框之间切换)，可以使用`FocusNode`。
+7. **验证**: `CupertinoTextField`本身不提供内置的表单验证功能，需要结合其他组件(如`Form`或手动逻辑)来实现输入验证和错误提示。
+9. **文本选择行为**: `CupertinoTextField`提供了iOS原生的文本选择、复制、剪切、粘贴等上下文菜单。
+
+
+## 构造函数
+```dart
+const CupertinoTextField({
+  super.key,
+  this.controller,
+  this.focusNode,
+  this.decoration = const BoxDecoration(
+    border: Border(
+      top: BorderSide(color: _kBorderColor, width: 0.0),
+      bottom: BorderSide(color: _kBorderColor, width: 0.0),
+      left: BorderSide(color: _kBorderColor, width: 0.0),
+      right: BorderSide(color: _kBorderColor, width: 0.0),
+    ),
+    borderRadius: BorderRadius.all(Radius.circular(5.0)),
+  ),
+  this.padding = const EdgeInsets.symmetric(horizontal: 4.0, vertical: 8.0),
+  this.placeholder,
+  this.placeholderStyle = const TextStyle(
+    fontWeight: FontWeight.w400,
+    color: CupertinoColors.placeholderText,
+  ),
+  this.prefix,
+  this.prefixMode = OverlayVisibilityMode.always,
+  this.suffix,
+  this.suffixMode = OverlayVisibilityMode.always,
+  this.clearButtonMode = OverlayVisibilityMode.never,
+  this.keyboardType = TextInputType.text,
+  this.textInputAction,
+  this.textCapitalization = TextCapitalization.none,
+  this.style,
+  this.strutStyle,
+  this.textAlign = TextAlign.start,
+  this.textAlignVertical,
+  this.readOnly = false,
+  this.showCursor,
+  this.autofocus = false,
+  this.obscuringCharacter = '•',
+  this.obscureText = false,
+  this.autocorrect = true,
+  this.smartDashesType,
+  this.smartQuotesType,
+  this.enableSuggestions = true,
+  this.maxLines = 1,
+  this.minLines,
+  this.expands = false,
+  this.maxLength,
+  this.maxLengthEnforcement,
+  this.onChanged,
+  this.onEditingComplete,
+  this.onSubmitted,
+  this.onAppPrivateCommand,
+  this.inputFormatters,
+  this.enabled,
+  this.cursorWidth = 2.0,
+  this.cursorHeight,
+  this.cursorRadius = const Radius.circular(2.0),
+  this.cursorColor,
+  this.selectionHeightStyle = BoxHeightStyle.tight,
+  this.selectionWidthStyle = BoxWidthStyle.tight,
+  this.keyboardAppearance,
+  this.scrollPadding = const EdgeInsets.all(20.0),
+  this.enableInteractiveSelection = true,
+  this.selectionControls,
+  this.onTap,
+  this.onTapOutside,
+  this.dragStartBehavior = DragStartBehavior.start,
+  this.scrollController,
+  this.scrollPhysics,
+  this.autofillHints,
+  this.clipBehavior = Clip.hardEdge,
+  this.restorationId,
+  this.buildCounter,
+  this.mouseCursor,
+  this.magnifierConfiguration,
+})
+```
+
+
+
+## 属性
+| 属性名                       | 类型                                   | 说明                                                                                     |
+| :--------------------------- | :------------------------------------- | :---------------------------------------------------------------------------------------------------------------- |
+| `controller`                 | `TextEditingController?`               | 控制和监听输入框的文本。建议通过它来获取或设置文本。                                              |
+| `focusNode`                  | `FocusNode?`                           | 控制输入框的焦点行为。                                                       |
+| `decoration`                 | `BoxDecoration?`                       | 定义输入框的装饰，如边框、背景颜色、圆角等。`CupertinoTextField` 默认有一个圆角边框。        |
+| `padding`                    | `EdgeInsetsGeometry`                   | 输入框内部文本内容与边框之间的内边距。                                                |
+| `placeholder`                | `String?`                              | 当输入框为空时显示的提示文本。                                                 |
+| `placeholderStyle`           | `TextStyle`                            | `placeholder` 文本的样式。                                                    |
+| `prefix`                     | `Widget?`                              | 输入框左侧固定显示的小部件（如图标），不随文本滚动。                                    |
+| `suffix`                     | `Widget?`                              | 输入框右侧固定显示的小部件（如图标或清除按钮），不随文本滚动。                        |
+| `clearButtonMode`            | `OverlayVisibilityMode`                | 控制清除按钮 (`X` 图标) 何时显示。可选 `never` (从不), `editing` (编辑时), `always` (总是), `onEditingAndNotEmpty` (编辑且不为空时)。  |
+| `keyboardType`               | `TextInputType`                        | 定义弹出键盘的类型（如 `text`, `number`, `emailAddress`, `phone`）。                         |
+| `textInputAction`            | `TextInputAction?`                     | 定义键盘“完成”或“下一项”按钮的行为。                                                 |
+| `style`                      | `TextStyle?`                           | 输入文本的样式。                                                             |
+| `textAlign`                  | `TextAlign`                            | 输入文本的水平对齐方式。                                                         |
+| `readOnly`                   | `bool`                                 | 设置为 `true` 时，输入框变为只读，用户无法编辑。                                         |
+| `obscureText`                | `bool`                                 | 设置为 `true` 时，输入文本会被替换为 `obscuringCharacter` (默认是圆点)，常用于密码输入。   |
+| `obscuringCharacter`         | `String`                               | 替换 `obscureText` 为 `true` 时的字符。默认为 '•'。                                 |
+| `autocorrect`                | `bool`                                 | 是否启用自动纠正输入文本。                                                           |
+| `enableSuggestions`          | `bool`                                 | 是否启用文本建议功能。                                                                |
+| `maxLines`                   | `int?`                                 | 输入框可容纳的最大行数。默认值为 `1`，表示单行输入。设置为 `null` 表示多行，内容超出时可滚动。   |
+| `minLines`                   | `int?`                                 | 如果 `maxLines` 为 `null`，此属性定义输入框的最小行数。                              |
+| `maxLength`                  | `int?`                                 | 允许输入的字符最大长度。超过此长度后，`onChanged` 不会触发。                      |
+| `onChanged`                  | `ValueChanged<String>?`                | 输入文本发生变化时调用的回调函数。                                                |
+| `onEditingComplete`          | `VoidCallback?`                        | 当用户完成编辑（例如，通过键盘上的“完成”或“下一项”按钮）时调用的回调函数。             |
+| `onSubmitted`                | `ValueChanged<String>?`                | 用户提交输入时（例如，通过键盘上的“发送”或“回车”按钮）调用的回调函数。                   |
+| `inputFormatters`            | `List<TextInputFormatter>?`            | 定义对输入文本的格式化和过滤规则。例如，`FilteringTextInputFormatter.digitsOnly` 仅允许输入数字。   |
+| `enabled`                    | `bool?`                                | 控制输入框是否启用。设置为 `false` 时，输入框将不可交互，且外观可能变为灰色。          |
+| `cursorColor`                | `Color?`                               | 光标的颜色。                                                                      |
+| `cursorWidth`                | `double`                               | 光标的宽度。                                                                       |
+| `cursorRadius`               | `Radius`                               | 光标的圆角半径。                                                                     |
+| `keyboardAppearance`         | `Brightness?`                          | 控制系统键盘的主题（亮色或暗色）。                                               |
+| `enableInteractiveSelection` | `bool`                                 | 是否允许通过长按等手势进行文本选择、复制、粘贴。                                   |
+| `onTap`                      | `GestureTapCallback?`                  | 用户点击输入框时调用的回调函数。                                                |
+| `autofillHints`              | `Iterable<String>?`                    | 为自动填充服务提供提示，常用于辅助填写常用信息，如邮箱、用户名。                        |
+
+
