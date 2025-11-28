@@ -1,0 +1,223 @@
+---
+title: CupertinoTextSelectionToolbar
+description: Flutter中用于iOS风格文本选择(如复制、剪切、粘贴、全选)时弹出的工具栏组件
+---
+
+`CupertinoTextSelectionToolbar`是Flutter中用于iOS风格文本选择(如复制、剪切、粘贴、全选)时弹出的工具栏组件。它遵循Apple的Cupertino设计语言规范，提供了与iOS系统原生文本选择工具栏一致的外观和交互体验。
+
+![](https://docs.flutter.dev/assets/images/docs/widget-catalog/CupertinoTextSelectionToolbar.png)
+
+**主要用途**: 当用户在文本输入框(如`CupertinoTextField`)或可选择文本区域长按或拖动选择文本后，`CupertinoTextSelectionToolbar`将在选中的文本附近自动弹出，提供一系列可执行操作的按钮。
+
+**核心逻辑**: 它通常作为一个内部组件，由`CupertinoTextSelectionControls`自动管理和显示/隐藏。开发者一般不需要直接实例化它，而是通过配置`CupertinoTextField`或`SelectableText`等组件的`selectionControls`属性来间接影响它的行为或自定义其内容。
+
+
+### 使用场景
+- 文本编辑应用: 在需要对文本进行复制、剪切、粘贴等操作的文本编辑器或备忘录应用中。
+- 富文本显示: 当你希望用户能够选择并复制应用程序中显示的任何文本时。
+- 自定义文本选择功能: 尽管不常直接使用，但如果需要完全自定义文本选择工具栏的布局和功能，这会是起点。
+
+
+
+## 示例
+### 基本的文本选择
+```dart
+import 'package:flutter/cupertino.dart';
+
+class BasicCupertinoTextFieldExample extends StatefulWidget {
+  const BasicCupertinoTextFieldExample({super.key});
+
+  @override
+  State<BasicCupertinoTextFieldExample> createState() => _BasicCupertinoTextFieldExampleState();
+}
+
+class _BasicCupertinoTextFieldExampleState extends State<BasicCupertinoTextFieldExample> {
+  final TextEditingController _controller = TextEditingController(text: '长按或双击此文本来选择和使用工具栏。');
+
+  @override
+  Widget build(BuildContext context) {
+    return CupertinoPageScaffold(
+      navigationBar: const CupertinoNavigationBar(
+        middle: Text('Cupertino TextField'),
+      ),
+      child: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(20.0),
+          child: CupertinoTextField(
+            controller: _controller,
+            placeholder: '输入文本...',
+            maxLines: null, // 允许输入多行文本
+            // 当用户选择文本时，CupertinoTextSelectionToolbar 会自动出现
+          ),
+        ),
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+}
+```
+
+
+
+### 使用SelectableText提供文本选择
+```dart
+import 'package:flutter/cupertino.dart';
+
+class SelectableTextExample extends StatelessWidget {
+  const SelectableTextExample({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return CupertinoPageScaffold(
+      navigationBar: const CupertinoNavigationBar(
+        middle: Text('SelectableText Example'),
+      ),
+      child: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(20.0),
+          child: SelectableText(
+            '这是可以被选择的文本块。你可以尝试长按它来选择文本，并查看弹出的Cupertino样式工具栏。',
+            style: CupertinoTheme.of(context).textTheme.textStyle,
+            textAlign: TextAlign.center,
+          ),
+        ),
+      ),
+    );
+  }
+}
+```
+
+
+### 通过selectionControls定制操作
+```dart
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart'; // 需要MaterialDeselectionControls来作为基础
+
+// 这是一个简化的示例，旨在说明替换selectionControls的概念
+// 实际生产中自定义CupertinoTextSelectionControls会更复杂
+class CustomCupertinoTextSelectionControls extends CupertinoTextSelectionControls {
+  // 覆盖buildToolbar方法来提供你自己的工具栏
+  @override
+  Widget buildToolbar(
+    BuildContext context,
+    Rect globalEditableRegion,
+    double textLineHeight,
+    Offset selectionMidpoint,
+    List<TextSelectionPoint> endpoints,
+    TextSelectionDelegate delegate,
+    ClipboardStatusNotifier? clipboardStatus,
+  ) {
+    // 假设我们只是在现有Cupertino工具栏的基础上加一个自定义按钮
+    // 实际你可能需要完全重新构建一个Widget
+    return CupertinoTextSelectionToolbar(
+      anchor: selectionMidpoint,
+      toolbarBuilder: (BuildContext context, List<Widget> children) {
+        // 在原有按钮列表前或后添加你的自定义按钮
+        return Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            CupertinoButton(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              minSize: 36,
+              onPressed: () {
+                delegate.userUpdateTextEditingValue(
+                  TextEditingValue(
+                    text: '自定义操作 ' + delegate.textEditingValue.selection.text!,
+                    selection: delegate.textEditingValue.selection,
+                  ),
+                  SelectionChangedCause.toolbar,
+                );
+                delegate.hideToolbar();
+              },
+              child: const Text('自定义'),
+            ),
+            ...children, // 原有的复制、粘贴等按钮
+          ],
+        );
+      },
+      // children参数通常由buildButtons方法生成
+      children: <Widget>[
+        // 这里只是为了让children不为空，实际会由父类调用buildButton生成
+        if (delegate.clipboardStatus?.value == ClipboardStatus.pasteable)
+          CupertinoTextSelectionToolbarButton(
+            onPressed: () { /* Paste logic */ },
+            builder: (BuildContext context, BuildContext buttonContext,
+                bool isDisabled, bool is
+                isPressed) {
+                return Text('粘贴'); },
+          ),
+        // ... 其他按钮
+      ],
+    );
+  }
+}
+
+class CustomSelectableTextExample extends StatelessWidget {
+  const CustomSelectableTextExample({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return CupertinoPageScaffold(
+      navigationBar: const CupertinoNavigationBar(
+        middle: Text('自定义工具栏'),
+      ),
+      child: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(20.0),
+          child: SelectableText(
+            '这是一个带有自定义操作文本选择工具栏的文本。',
+            style: CupertinoTheme.of(context).textTheme.textStyle,
+            textAlign: TextAlign.center,
+            // 关键：将自定义的selectionControls赋值给selectionControls属性
+            selectionControls: CustomCupertinoTextSelectionControls(),
+          ),
+        ),
+      ),
+    );
+  }
+}
+```
+
+
+
+## 注意点
+- 自动管理: `CupertinoTextSelectionToolbar`大部分情况下是自动弹出和隐藏的，由`CupertinoTextField`、`SelectableText`或`EditableText`等组件内部管理。开发者通常不需要手动控制它的生命周期。
+- 平台一致性: 它的设计目标是与iOS平台的原生文本选择工具栏保持一致，因此在Android设备上运行时，即使使用`CupertinoTextSelectionToolbar`，其外观和行为仍然是iOS风格的。如果需要在Android上显示Material Design风格的工具栏，应使用`MaterialTextSelectionToolbar`。
+- 内容自定义: 直接对`CupertinoTextSelectionToolbar`的内部按钮进行增删或修改比较复杂。如果需要深度定制，你可能需要提供一个自定义的`TextSelectionControls`实现，覆盖`buildToolbar`方法来完全构建自己的工具栏`Widget`。这比简单修改属性要复杂得多。
+- 可用操作: 工具栏中显示的操作(如复制、剪切、粘贴、选择等)是根据当前的`TextSelectionDelegate`的状态和上下文自动启用的。例如，如果剪贴板为空，则“粘贴”按钮可能不会显示或处于禁用状态。
+- `toolbarBuilder`参数: 如果你想在默认`CupertinoTextSelectionToolbarButton`之外添加额外的按钮，或者更改工具栏的整体布局(例如添加一些间距)，可以使用`toolbarBuilder`参数。它允许你将默认生成的按钮作为子控件，然后将它们包裹在你自己的布局中。
+
+
+
+## 构造函数
+由于`CupertinoTextSelectionToolbar`主要由框架内部使用，其构造函数通常不直接暴露给开发者用于实例化，但了解其参数有助于理解其工作原理。
+```dart
+const CupertinoTextSelectionToolbar({
+  super.key,
+  required Offset anchor,
+  required List<Widget> children, // 包含复制、粘贴等操作按钮的列表
+  CupertinoToolbarBuilder? toolbarBuilder, // 可选的自定义工具栏构建器
+});
+```
+
+
+## 属性
+`CupertinoTextSelectionToolbar`的属性相对较少，因为其主要功能和样式由iOS设计规范和其内部实现决定。
+
+| 属性名          | 属性类型                               | 说明                |
+| :-------------- | :------------------------------------- | :----------------------------------------------------------------------------------------------------------------------- |
+| `anchor`        | `Offset`                               | **必需**。工具栏的显示位置基准点。这个点通常是选中文本区域的中央，工具栏将围绕此点定位。               |
+| `children`      | `List<Widget>`                         | **必需**。组成工具栏的实际操作按钮列表。通常由 `CupertinoTextSelectionControls` 生成，包含如“复制”、“剪切”、“粘贴”等 `CupertinoTextSelectionToolbarButton`。      |
+| `toolbarBuilder` | `CupertinoToolbarBuilder?` (`typedef Widget Function(BuildContext context, List<Widget> children)`) | **可选**。一个构建器函数，用于自定义整个工具栏的布局。它接收一个上下文和由 `children` 提供的按钮列表，你可以使用这些按钮来构建你自己的布局。例如，你可以添加额外的Widget，或用不同的方式排列这些按钮。如果未提供，默认的工具栏布局将直接使用 `children`。**这是一个非常重要的属性**，提供了在不完全重写 `CupertinoTextSelectionControls` 的情况下，对工具栏进行有限布局定制的能力。 |
+
+
+### 关键属性解释
+- `anchor`: 此属性决定了工具栏在屏幕上的位置。准确的`anchor`值是确保工具栏正确浮动在选中文本旁边的关键。框架内部通常会计算出这个值。
+- `children`: 这是工具栏的核心，定义了用户可进行的操作。这些`Widget`通常是`CupertinoTextSelectionToolbarButton`，它们封装了iOS风格的按钮样式和点击行为。
+- `toolbarBuilder`: 这是`CupertinoTextSelectionToolbar`提供的最重要的一个定制点。如果你想在默认工具栏的按钮周围添加一些自定义边框，或者在按钮之间添加一些间隔，或者甚至改变它们的排列方式(例如从水平排列改为垂直排列)，`toolbarBuilder`提供了一个钩子。它让你有机会在框架内部创建出默认按钮后，将它们包装在你自己的`Widget`之下。这比实现一个完整的自定义`TextSelectionControls`要简单得多，适合进行一些UI级别的微调。
+
