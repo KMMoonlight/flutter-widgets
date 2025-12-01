@@ -1,0 +1,278 @@
+---
+title: 变量
+description: 变量是存储数据的命名内存位置
+---
+## 基础概念
+### 什么是变量？
+在编程中，变量是存储数据的命名内存位置。你可以把它想象成一个可以贴上标签的盒子，盒子里装着不同的数据。
+
+### 变量的声明与初始化
+在Dart中，声明(Declaring)一个变量意味着你告诉编译器这个变量的名字以及它可能存储的数据类型；初始化(Initializing)则意味着你首次给这个变量赋予一个值。
+
+### 类型推断(Type Inference)
+Dart是一种可选类型(optionally typed)的语言。这意味着你可以显式地声明变量的类型，也可以让Dart编译器通过你赋给变量的初始值自动推断出其类型。
+
+### 变量的默认值(Default Values)
+未初始化的变量会自动获得一个默认值。这个默认值是null。请注意，null在Dart中是一个有效的值，表示“没有对象”。
+
+### `final`和`const`关键字
+这两个关键字用于声明不可变的(`immutable`)变量，但它们之间存在重要的区别。
+
+
+## 示例
+```dart
+void main() {
+  // 1. 显式类型声明 (Explicit Type Declaration)
+  // 你明确告诉编译器这个变量是什么类型
+  String name = 'Alice'; // 声明一个String类型的变量name，并初始化为'Alice'
+  int age = 30;           // 声明一个int类型的变量age，并初始化为30
+  double height = 1.75;   // 声明一个double类型的变量height，并初始化为1.75
+  bool isActive = true;   // 声明一个bool类型的变量isActive，并初始化为true
+
+  print('显式类型声明:');
+  print('Name: $name (Type: ${name.runtimeType})');
+  print('Age: $age (Type: ${age.runtimeType})');
+  print('Height: $height (Type: ${height.runtimeType})');
+  print('Is Active: $isActive (Type: ${isActive.runtimeType})');
+  print('--------------------');
+
+  // 2. 类型推断 (Type Inference) - 使用 `var` 关键字
+  // Dart会根据赋给变量的初始值自动推断其类型
+  var city = 'New York'; // Dart推断 city 为 String 类型
+  var population = 8400000; // Dart推断 population 为 int 类型
+  var temperature = 25.5; // Dart推断 temperature 为 double 类型
+  var isRaining = false; // Dart推断 isRaining 为 bool 类型
+
+  print('类型推断 (var):');
+  print('City: $city (Type: ${city.runtimeType})');
+  print('Population: $population (Type: ${population.runtimeType})');
+  print('Temperature: $temperature (Type: ${temperature.runtimeType})');
+  print('Is Raining: $isRaining (Type: ${isRaining.runtimeType})');
+
+  // 注意：一旦 `var` 变量推断出类型，就不能再赋其他类型的值
+  // city = 123; // 这行代码会报错：A value of type 'int' can't be assigned to a variable of type 'String'.
+  print('--------------------');
+
+  // 3. 未初始化的变量 (Uninitialized Variables)
+  // Dart中未初始化的变量默认值为 `null`
+  int? count; // 使用 `?` 表示这个变量可以为 null (可空类型)
+  String? message; // 字符串也可以是可空的
+
+  print('未初始化的变量:');
+  print('Count: $count (Type: ${count.runtimeType})');
+  print('Message: $message (Type: ${message.runtimeType})');
+
+  // 注意：自 Dart 2.12 起，如果你不使用 `?` 声明可空类型，
+  // 那么未初始化的非 'late' 变量将无法通过编译：
+  // int price; // 这行会报错：The non-nullable local variable 'price' must be assigned before it can be used.
+  // 除非你声明为 `late` 或者给它一个初始值。
+  print('--------------------');
+
+  // 4. `final` 关键字
+  // `final` 变量只能被赋值一次。
+  // 它的值可以是运行时确定的，即在程序运行时计算。
+  final DateTime now = DateTime.now(); // `now` 在运行时被赋值，之后不能再改变
+  final String heroName = 'Superman'; // 也可以进行类型推断 `final heroName = 'Superman';`
+
+  print('final 变量:');
+  print('Current Time: $now');
+  print('Hero Name: $heroName');
+  // now = DateTime(2023); // 这行会报错：A final variable 'now' can only be set once.
+  print('--------------------');
+
+  // 5. `const` 关键字
+  // `const` 变量是编译时常量。
+  // 它的值必须在编译时就能确定，不能依赖于运行时才能确定的值。
+  const double PI = 3.14159; // PI 是一个编译时常量
+  const String appName = 'My Dart App'; // appName 也是一个编译时常量
+
+  print('const 变量:');
+  print('PI Value: $PI');
+  print('App Name: $appName');
+  // PI = 3.0; // 这行会报错：Constant variables can't be assigned a value.
+  // const DateTime compileTime = DateTime.now(); // 这行会报错：Const variables must be initialized with a constant value.
+  print('--------------------');
+
+  // 比较 `final` 和 `const`
+  // 编译时常量列表 (List of const values)
+  const List<int> constNumbers = [1, 2, 3];
+  // 运行时常量列表 (List of final values)
+  final List<int> finalNumbers = [4, 5, 6];
+
+  print('constNumbers: $constNumbers');
+  print('finalNumbers: $finalNumbers');
+
+  // 深入理解 const：
+  // 如果一个 `const` 对象的所有成员都是编译时常量，那么这个对象本身也是编译时常量。
+  // 且 `const` 对象是规范化的（canonicalized），意味着如果两个 `const` 对象具有相同的值，
+  // 它们实际上会指向内存中的同一个对象。
+  const List<int> list1 = [1, 2, 3];
+  const List<int> list2 = [1, 2, 3];
+  print('list1 == list2 (const): ${list1 == list2}'); // 输出 true，因为它们是同一个对象
+
+  final List<int> list3 = [1, 2, 3];
+  final List<int> list4 = [1, 2, 3];
+  print('list3 == list4 (final): ${list3 == list4}'); // 输出 false，因为它们是不同的对象实例
+}
+```
+
+
+## 注意事项(`Notes`)
+1. 强类型系统(`Strongly Typed`): 尽管Dart支持类型推断，但它本质上是一个强类型语言。一旦变量被声明(无论是显式还是隐式)，其类型就不能再改变。
+2. `var`的使用场景: 通常在局部变量声明时使用`var`来简化代码，如果类型非常明显。但在声明API返回类型或公共成员变量时，建议显式声明类型，以提高代码可读性。
+3. 空安全(`Null Safety`): 自Dart 2.12起，空安全被默认启用。这意味着，除非你`explicitly`声明变量可以为null(使用 ? 后缀，如 int?), 否则变量不能存储null值。这是为了避免运行时常见的“空指针异常”。
+4. `late`关键字: 对于非空但需要在声明后稍晚才初始化(例如，在构造函数体中或依赖于其他变量)的实例变量，可以使用`late`关键字。这将在首次访问时初始化变量，并在未初始化前访问时抛出运行时错误。我们将在后续的模块中详细讲解`late`。
+5. `final` vs `const`总结:
+  - `final`: 运行时常量，一旦赋值，不可更改。可以延迟到运行时才确定其值。
+  - `const`: 编译时常量，值必须在编译时确定。通常用于非常量值的性能优化（规范化）。
+  - 对于实例变量，`const`只能用于`static const`字段。
+  - 对于顶层变量或类变量，`const`和`final`都可以使用。
+  - 如果变量持有的对象本身是`immutable`的，`final`和`const`都能让该变量不可变。但`const`还有更深层的编译时优化和规范化作用。
+
+
+
+## 实践指导
+- 选择合适的关键字: 优先使用`const`来声明真正的编译时常量，以获得性能优势和规范化。如果值必须在运行时确定但之后保持不变，使用`final`。
+- 明确类型: 对于公共API、函数参数和返回类型，以及类成员变量，尽量显式声明类型，以增强代码的清晰度和可读性。
+- 拥抱空安全: 在编写Dart代码时，始终考虑变量是否可能为null，并利用空安全特性来防止潜在的运行时错误。
+
+
+
+
+## late关键字
+### 为什么需要 late 关键字？
+在Dart引入空安全之后，非空变量必须在声明时或构造函数体结束前被初始化。这意味着你不能声明一个非空的实例变量，然后在一个后续的方法或者程序流程(比如异步操作的结果)中初始化它，除非你将其声明为可空类型(`Type?`)。
+
+然而，有些变量我知道它最终肯定会被初始化，并且在它被使用之前一定会被初始化，即使它不能在声明时就立即初始化。在这种情况下，将它声明为可空类型会引入不必要的null检查，甚至可能导致逻辑错误(因为我们知道它不会为null)。
+
+`late`关键字正是为解决这类问题而生。它让你能够声明一个非空变量，但它的初始化可以被延迟到第一次使用它的时候。
+
+
+### late的核心作用
+1. **延迟初始化(Lazy Initialization)**: `late`变量的初始化逻辑只会在第一次访问这个变量时执行。这对于那些初始化成本较高(例如，复杂的计算、文件I/O、网络请求)的变量来说非常有用，可以避免不必要的资源消耗。
+2. **声明非空变量，但无需立即初始化**: 允许你在声明时未能提供初始值的场景下，声明一个非空的(non-nullable)变量。这通常发生在：
+  - 实例变量: 需要在构造函数体内部，或在构造函数执行完成后的某个方法中初始化。
+  - 顶层变量(Top-level variables)或静态变量(Static variables): 它们的初始化可能需要访问其他在声明时可能尚未准备好的变量或资源。
+
+### late的注意事项
+- **运行时错误**: 如果一个`late`变量在你第一次尝试访问它之前没有被初始化，或者初始化过程中抛出了异常，那么在运行时会抛出LateInitializationError错误。这就是`late`的“契约”：你承诺它在使用前会被初始化。
+- **非空性保证**: `late`变量一旦被成功初始化，其类型系统会保证它是非空的。你不需要进行null检查。
+- **性能考量**: 虽然`late`提供了延迟初始化，但它也引入了一点点运行时开销来检查是否已初始化（通常可以忽略不计）。
+
+
+### 使用示例
+```dart
+// 模拟一个需要一些时间初始化的复杂对象
+class HeavyResource {
+  String _data;
+
+  HeavyResource() {
+    print('HeavyResource: 正在执行耗时操作...');
+    // 模拟耗时操作，比如读取文件或网络请求
+    Future.sync(() => _data = "数据已加载").then((_) {
+      print('HeavyResource: 数据加载完成。');
+    });
+    // 在构造函数执行结束时，_data 可能还没有被完全初始化
+  }
+
+  String get data => _data; // Getter 确保在访问时数据是可用的
+
+  void connect() {
+    print('HeavyResource: 连接到 $_data');
+  }
+}
+
+class MyController {
+  // 示例 1: 延迟初始化实例变量 (Lazy Initialization of Instance Variable)
+  // 这个 heavyResource 只有在第一次被访问时才会创建 HeavyResource 实例
+  late final HeavyResource heavyResource = HeavyResource();
+
+  // 示例 2: 在构造函数体内初始化非空变量 (Initializing Non-nullable Variable in Constructor Body)
+  // 这里展示了如何在构造函数体内部初始化一个 `late` 变量，
+  // 即使它没有在初始化列表中或声明时初始化。
+  late String configSetting;
+  MyController(bool isProduction) {
+    if (isProduction) {
+      configSetting = '生产环境配置'; // 在构造函数体内部初始化
+    } else {
+      configSetting = '开发环境配置';
+    }
+  }
+
+  // 示例 3: 顶层 `late` 变量 (Top-level late variable)
+  // 只有在第一次访问 mainConfig 时，它才会被初始化
+  // late final String mainConfig = _loadConfigFromFile(); // 假设这是一个耗时操作
+  // String _loadConfigFromFile() {
+  //   print('正在从文件中加载配置...');
+  //   return '文件配置数据';
+  // }
+}
+
+
+// 示例 4: 无需立即初始化的非空变量 (Non-nullable variable without immediate initialization)
+// late var price; // 声明 'late' 可以不立即初始化
+late double price; // 推荐显式声明类型
+
+void initPrice() {
+  price = 99.99; // 在某个函数或方法中赋值
+  print('价格已初始化为 $price');
+}
+
+void main() {
+  print('--- main 函数开始 ---');
+
+  // 示例 1 的使用
+  print('\n-- 示例 1: 延迟初始化实例变量 --');
+  final controller = MyController(false); // 此时 HeavyResource 还没有被创建
+  print('controller 对象已创建，但 heavyResource 尚未初始化。');
+
+  // 第一次访问 heavyResource，它才会被初始化
+  controller.heavyResource.connect();
+  controller.heavyResource.connect(); // 第二次访问时不会再重新初始化
+
+  // 示例 2 的使用
+  print('\n-- 示例 2: 构造函数体内初始化 --');
+  final devController = MyController(false);
+  print('开发环境配置: ${devController.configSetting}');
+
+  final prodController = MyController(true);
+  print('生产环境配置: ${prodController.configSetting}');
+
+  // 示例 4 的使用
+  print('\n-- 示例 4: 无需立即初始化的非空变量 --');
+  // print(price); // 这行代码会抛出 LateInitializationError，因为 price 尚未初始化
+  initPrice();
+  print('当前价格: $price');
+
+  // 演示 `LateInitializationError`
+  print('\n-- 演示 `LateInitializationError` --');
+  late String uninitializedVar;
+  try {
+    // print(uninitializedVar); // 尝试访问未初始化的 late 变量会抛出错误
+    uninitializedVar = '已初始化'; // 实际使用前赋值
+    print(uninitializedVar);
+  } catch (e) {
+    print('捕获到错误: $e');
+  }
+
+  print('\n--- main 函数结束 ---');
+}
+```
+
+
+### late注意事项
+1. 契约而非强制: 使用`late`关键字是对编译器的一个“承诺”，即你保证这个变量在它被第一次读取之前一定会被初始化。如果你的承诺没有兑现，Dart运行时会抛出LateInitializationError。所以，请确保你的逻辑能够保证这一点。
+2. `final`与`late`结合:
+  - late final: 意味着该变量是延迟初始化的，并且一旦初始化，其值就不能再改变。这是最常见的用法，尤其适用于延迟加载的实例。
+  - late var(或 late Type): 意味着该变量是延迟初始化的，并且初始化后其值依然可以改变。
+3. 顶层变量和静态变量: `late`关键字在处理顶层变量（在任何类或函数之外声明的变量）和类的静态变量时特别有用，因为这些变量无法在构造函数中初始化，但可能需要访问运行时才能确定的值。
+4. 与可空类型`Type?`的区别:
+  - 可空类型(`Type?`): 明确表示变量可能为null，并且你需要在使用前进行null检查或使用 ! 操作符。
+  - `late`变量: 明确表示变量最终会是非空的，但在首次访问前其值是未知的。它避免了不必要的null检查，但在未初始化时访问会抛出运行时错误。
+5. 不适用于局部变量: 局部变量(local variables)通常不需要`late`。如果一个局部变量不是在声明时立即初始化，Dart的流分析器(flow analyzer)通常可以追踪到它是否在使用前被赋值。只有当流分析器无法确定其初始化情况时(例如复杂的条件逻辑)，才可能需要。但即使如此，通常还是通过`Type?`和null检查来处理。
+
+
+### late实践指导:
+- 延迟加载: 当一个对象的初始化成本很高，且不是每次都需要时，使用`late final`进行延迟加载是最佳选择。
+- 解耦初始化: 当变量的初始化依赖于构造函数参数或其他复杂逻辑，且无法通过初始化列表完成时，`late`允许你在构造函数体内灵活地初始化非空变量。
+- 小心使用: 避免滥用`late`。如果变量可以在声明时或初始化列表中直接赋值，就尽量这样做。只有当你确实无法立即赋值，但又需要一个非空变量时，才考虑使用`late`。记得，它是一个运行时安全的“漏洞”，用不好会带来LateInitializationError。
