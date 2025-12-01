@@ -7,6 +7,11 @@ export const Navigations = [
     external: false
   },
   {
+    title: "Dart教程",
+    href: `/docs/dart`,
+    external: false
+  },
+  {
     title: "基础组件",
     href: `/docs/basic-widgets`,
     external: false
