@@ -2,6 +2,68 @@ import { Paths } from "@/lib/pageroutes"
 
 export const Documents: Paths[] = [
   {
+    title: "Dart教程",
+    href: '/dart',
+    items: [
+      {
+        title: "变量",
+        href: '/variable'
+      },
+      {
+        title: "内置类型",
+        href: '/build-in-types'
+      },
+      {
+        title: "函数",
+        href: '/function'
+      },
+      {
+        title: "运算符",
+        href: '/operator'
+      },
+      {
+        title: "控制流语句",
+        href: '/control-flow'
+      },
+      {
+        title: "异常",
+        href: '/exception'
+      },
+      {
+        title: "类",
+        href: '/class'
+      },
+      {
+        title: "泛型",
+        href: '/generics'
+      },
+      {
+        title: "库可见性",
+        href: '/lib-visibility'
+      },
+      {
+        title: "异步支持",
+        href: '/async'
+      },
+      {
+        title: "生成器",
+        href: '/generator'
+      },
+      {
+        title: "Isolates",
+        href: '/isolates'
+      },
+      {
+        title: "类型别名",
+        href: '/typedefs'
+      },
+      {
+        title: "元数据",
+        href: '/meta-data'
+      }
+    ]
+  },
+  {
     title: "基础组件",
     href: "/basic-widgets",
     items: [
