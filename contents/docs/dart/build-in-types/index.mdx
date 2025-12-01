@@ -1,0 +1,152 @@
+---
+title: 内置类型
+description: Dart有7种内置类型
+---
+
+## 总览
+| 类型 | 英文名 | 是否可空（默认） | 典型用途 |
+|------|--------|------------------|--------|
+| `int` | Integer | 非空（`int`），可空需写 `int?` | 整数计算、索引、计数 |
+| `double` | Double | 非存（`double`），可空需写 `double?` | 浮点运算、坐标、动画值 |
+| `bool` | Boolean | 非空（`bool`），可空需写 `bool?` | 条件判断、开关状态 |
+| `String` | String | 非空（`String`），可空需写 `String?` | 文本显示、用户输入、日志 |
+| `List<E>` | List | 非空（`List<E>`），元素可空需 `List<E?>` | 有序数据集合（如列表项） |
+| `Set<E>` | Set | 非空（`Set<E>`） | 去重集合（如标签、权限） |
+| `Map<K, V>` | Map | 非空（`Map<K, V>`） | 键值映射（如 JSON、配置） |
+
+
+## 1. int(整型)
+- 理论: **64**位有符号整数(在Web平台受`JavaScript`限制为**53**位)。
+- 示例:
+```dart
+void main() {
+  int age = 25;
+  int hex = 0xFF; // 十六进制
+  int binary = 0b1010; // 二进制
+  print(age + hex); // 输出: 280
+}
+```
+- 注意:
+  - 不支持`++i`或`i++`作为表达式返回值(仅作语句使用)
+  - 在Flutter Web中，大整数(`> 2⁵³`)会丢失精度，需用BigInt(非内置类型，需导入)。
+
+
+## double(浮点型)
+- 理论: 遵循IEEE 754标准的64位浮点数。
+- 示例:
+```dart
+void main() {
+  double pi = 3.14159;
+  double scientific = 1.23e5; // 123000.0
+  print(pi * 2); // 输出: 6.28318
+}
+```
+- 注意:
+  - 浮点运算存在精度误差(如`0.1 + 0.2 != 0.3`)，金融计算建议用`decimal`包。
+  - `int`和`double`是不同类型，不能直接赋值: `double x = 1;` ❌(需1.0或`1.toDouble()`)。
+ 
+## bool(布尔值)
+- 仅有两个字面量: true和false。没有“真值”概念(如1、"hello"不是true)。
+- 示例:
+```dart
+void main() {
+  bool isActive = true;
+  bool isEmpty = [1, 2].isEmpty; // false
+  if (isActive) {
+    print('Active!');
+  }
+}
+```
+- 注意:
+  - Dart不进行隐式类型转换! 以下代码编译报错:
+```dart
+if (1) { ... } // ❌ Error: Conditions must have type 'bool'
+```
+
+
+## String(字符串)
+- 理论: UTF-16编码的不可变序列，支持插值、多行、原始字符串。
+- 范例:
+```dart
+void main() {
+  String name = 'Dart';
+  String version = '3.0';
+  String info = '$name $version'; // 插值
+  String raw = r'C:\path\to\file'; // 原始字符串（忽略转义）
+  print(info); // 输出: Dart 3.0
+}
+```
+- 注意:
+  - 字符串拼接大量内容时，用`StringBuffer`提升性能。
+  - `==`比较内容而非引用（已重写`operator ==`）。
+
+
+## `List<E>`(列表)
+- 理论: 从0开始索引的可变长度有序集合(底层为数组)。
+- 范例:
+```dart
+void main() {
+  List<String> fruits = ['apple', 'banana'];
+  fruits.add('orange');
+  print(fruits[1]); // 输出: banana
+  // 创建不可变列表
+  final immutable = const ['a', 'b']; // 编译时常量
+}
+```
+- 注意:
+  - 默认构造`[]`创建的是growable list(可动态扩容)。
+  - 访问越界抛出RangeError，务必用`list.length`检查边界。
+
+
+## `Set<E>`(集合)
+- 理论: 无序、元素唯一的数据结构(基于哈希表实现)。
+- 示例:
+```dart
+void main() {
+  Set<int> uniqueIds = {1, 2, 3};
+  uniqueIds.add(2); // 无效，仍为 {1, 2, 3}
+  print(uniqueIds.contains(1)); // true
+}
+```
+- 注意:
+  - 元素必须可哈希(通常需重写hashCode和`==`)。
+  - 字面量`{}`默认创建`Set`，但空`{}`会被推断为`Map`，需显式声明类型:
+```dart
+Set<int> emptySet = {}; // ✅ 正确
+var wrong = {}; // ❌ 推断为 Map<dynamic, dynamic>
+```
+
+
+## `Map<K, V>`(映射)
+- 理论: 键值对集合，键唯一，值可重复。
+- 范例:
+```dart
+void main() {
+  Map<String, int> scores = {'Alice': 95, 'Bob': 87};
+  scores['Charlie'] = 92; // 添加
+  print(scores['Alice']); // 输出: 95
+  // 安全访问（避免 null）
+  int? score = scores['Unknown'] ?? 0;
+}
+```
+- 注意:
+  - 键的相等性由`==`和`hashCode`决定。
+  - 访问不存在的键返回`null`(在`null safety`下为`V?`类型)。
+
+
+
+## 注意点
+1. `Null Safety`是默认规则
+  - 所有内置类型默认不可空。若需表示“可能为空”，必须显式加`?`(如`String?`)。
+2. 字面量类型推断
+```dart
+var list = []; // 推断为 List<dynamic> —— 危险！
+// ✅ 正确做法：
+var list = <String>[]; // 显式泛型
+```
+3. `const`与`final`的区别
+  - `const`: 编译时常量(值在编译期确定)
+  - `final`: 运行时常量(初始化后不可变)
+4. 不要混淆`identical()`与`==`
+  - `==`比较逻辑相等(如字符串内容)
+  - `identical(a, b)`比较引用是否相同
