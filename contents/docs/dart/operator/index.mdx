@@ -1,0 +1,328 @@
+---
+title: 运算符
+description: operator
+---
+
+## 基础运算符
+基础运算符是程序中最常用的符号，它们对一个或多个操作数(值、变量或表达式)进行操作，并返回一个结果。Dart的运算符与C、Java、JavaScript等语言的运算符非常相似，因此如果您有其他语言的背景，上手会很快。
+
+- 我们将基础运算符分为以下几类
+  - **算术运算符(Arithmetic Operators)**: 用于执行基本的数学运算，如加、减、乘、除等。
+  - **相等与关系运算符(Equality and Relational Operators)**: 用于比较两个操作数的值。
+  - **类型测试运算符(Type Test Operators)**: 用于在运行时检查变量的类型。
+  - **赋值运算符(Assignment Operators)**: 用于给变量赋值。
+  - **逻辑运算符(Logical Operators)**: 用于组合或反转布尔表达式。
+
+### 示例
+```dart
+void main() {
+  // --- 2.1. 算术运算符 (Arithmetic Operators) ---
+  // Dart支持常见的算术运算符：+ (加), - (减), * (乘), / (除), % (取模), ~/ (整除)
+
+  int a = 10;
+  int b = 3;
+  double c = 10.0;
+  double d = 3.0;
+
+  print('--- 算术运算符 ---');
+  print('a + b = ${a + b}'); // 输出: 13 (加法)
+  print('a - b = ${a - b}'); // 输出: 7 (减法)
+  print('a * b = ${a * b}'); // 输出: 30 (乘法)
+  print('a / b = ${a / b}'); // 输出: 3.3333333333333335 (除法，结果为 double)
+  print('c / d = ${c / d}'); // 输出: 3.3333333333333335
+  print('a % b = ${a % b}'); // 输出: 1 (取模，返回除法的余数)
+  print('a ~/ b = ${a ~/ b}'); // 输出: 3 (整除，返回商的整数部分，注意：结果是 int)
+
+  // 递增/递减运算符 (Increment/Decrement Operators)
+  int x = 5;
+  print('x++ = ${x++}, x = $x'); // 输出: x++ = 5, x = 6 (先使用后递增)
+  int y = 5;
+  print('++y = ${++y}, y = $y'); // 输出: ++y = 6, y = 6 (先递增后使用)
+  int z = 10;
+  print('z-- = ${z--}, z = $z'); // 输出: z-- = 10, z = 9 (先使用后递减)
+  int w = 10;
+  print('--w = ${--w}, w = $w'); // 输出: --w = 9, w = 9 (先递减后使用)
+  print(''); // 打印空行，分隔输出
+
+  // --- 2.2. 相等与关系运算符 (Equality and Relational Operators) ---
+  // 用于比较两个值，结果是布尔类型 (bool)
+  // == (等于), != (不等于), > (大于), < (小于), >= (大于等于), <= (小于等于)
+
+  int num1 = 10;
+  int num2 = 20;
+  int num3 = 10;
+
+  print('--- 相等与关系运算符 ---');
+  print('num1 == num3: ${num1 == num3}'); // 输出: true
+  print('num1 != num2: ${num1 != num2}'); // 输出: true
+  print('num1 > num2: ${num1 > num2}');   // 输出: false
+  print('num1 < num2: ${num1 < num2}');   // 输出: true
+  print('num1 >= num3: ${num1 >= num3}'); // 输出: true
+  print('num2 <= num1: ${num2 <= num1}'); // 输出: false
+  print('');
+
+  // --- 2.3. 类型测试运算符 (Type Test Operators) ---
+  // 用于在运行时检查对象类型：
+  // is (如果对象是指定类型，返回 true)
+  // is! (如果对象不是指定类型，返回 true)
+  // as (类型转换运算符，将对象转换为指定类型，如果转换失败会抛出异常)
+
+  num someValue = 100; // num 是 int 和 double 的父类型
+  String text = 'Hello Dart';
+  var list = [1, 2, 3];
+
+  print('--- 类型测试运算符 ---');
+  print('someValue is int: ${someValue is int}'); // 输出: true
+  print('someValue is double: ${someValue is double}'); // 输出: false
+  print('text is! int: ${text is! int}');   // 输出: true
+  print('list is List: ${list is List}'); // 输出: true
+
+  // 'as' 运算符用于类型转换：
+  // 注意：使用as运算符转换时，如果类型不匹配，会抛出CastError。
+  // 通常，在进行转换前最好使用 `is` 运算符进行类型检查。
+  try {
+    int intValue = someValue as int; // 将 num 类型的 someValue 转换为 int
+    print('intValue: $intValue');
+    // String anotherString = someValue as String; // 这行代码会抛出 CastError
+  } catch (e) {
+    print('Error when casting: $e');
+  }
+
+  // 安全的类型转换示例
+  if (someValue is int) {
+    int safeIntValue = someValue; // Dart 在这种情况下会自动提升类型
+    print('Safe intValue (no as needed): $safeIntValue');
+  }
+  print('');
+
+  // --- 2.4. 赋值运算符 (Assignment Operators) ---
+  // 用于给变量赋值。最常见的是 `=`。
+  // 还有复合赋值运算符：+=, -=, *=, /=, %=, ~/=, &=, |=, ^=, <<=, >>=, >>>=
+
+  int valueA = 10;
+  int valueB = 5;
+
+  print('--- 赋值运算符 ---');
+  print('valueA = $valueA'); // 输出: 10
+  valueA += valueB; // 等同于 valueA = valueA + valueB;
+  print('valueA (after +=): $valueA'); // 输出: 15
+
+  valueA -= 2;      // 等同于 valueA = valueA - 2;
+  print('valueA (after -=): $valueA'); // 输出: 13
+
+  valueA *= 2;      // 等同于 valueA = valueA * 2;
+  print('valueA (after *=): $valueA'); // 输出: 26
+
+  double valueC = 20.0;
+  valueC /= 4;      // 等同于 valueC = valueC / 4;
+  print('valueC (after /=): $valueC'); // 输出: 5.0
+
+  int valueD = 10;
+  valueD %= 3;      // 等同于 valueD = valueD % 3;
+  print('valueD (after %=): $valueD'); // 输出: 1
+  print('');
+
+  // --- 2.5. 逻辑运算符 (Logical Operators) ---
+  // 用于组合或反转布尔表达式。
+  // && (逻辑与), || (逻辑或), ! (逻辑非)
+
+  bool isSunny = true;
+  bool isWarm = false;
+  bool hasMoney = true;
+
+  print('--- 逻辑运算符 ---');
+  // && (与): 两个操作数都为 true，结果才为 true
+  print('isSunny && isWarm: ${isSunny && isWarm}');     // 输出: false
+  print('isSunny && hasMoney: ${isSunny && hasMoney}'); // 输出: true
+
+  // || (或): 只要有一个操作数为 true，结果就为 true
+  print('isSunny || isWarm: ${isSunny || isWarm}');     // 输出: true
+  print('isWarm || hasMoney: ${isWarm || hasMoney}');   // 输出: true
+
+  // ! (非): 反转布尔值
+  print('!isSunny: ${!isSunny}'); // 输出: false
+  print('!isWarm: ${!isWarm}');   // 输出: true
+  print('');
+
+  // 逻辑运算符的短路求值 (Short-circuit Evaluation)
+  // `&&`：如果第一个操作数为 false，则不再评估第二个操作数。
+  // `||`：如果第一个操作数为 true，则不再评估第二个操作数。
+  // 这是一个重要的性能和逻辑特性。
+  bool result = false && (10 / 0 == 0); // 右侧表达式不会被执行，避免了除零错误
+  print('Short-circuit && result: $result'); // 输出: false
+
+  result = true || (10 / 0 == 0); // 右侧表达式不会被执行
+  print('Short-circuit || result: $result'); // 输出: true
+}
+```
+
+### 注意事项(Caveats)
+1. **数据类型影响结果:**
+  - 除法(/)运算符总是返回一个double类型的结果，即使两个操作数都是int且能整除。如果需要整数部分，请使用 整除运算符(~/)。
+  - 整数溢出：Dart的int类型可以存储任意大小的整数，所以通常不会有传统意义上的整数溢出问题。但在与底层平台(如C/C++)交互时需要注意平台本身的整数限制。
+2. **as运算符的风险:**
+  - 使用`as`进行类型转换时，如果运行时对象的实际类型与`as`指定的类型不兼容，会抛出`CastError`。这会导致程序崩溃。
+  - 推荐做法：始终在使用`as`之前通过`is`运算符进行类型检查，或者使用`try-catch`块来处理潜在的`CastError`。
+  - 安全替代品(`?.`和`as T`)：在处理可能为空的对象时，可以使用安全调用运算符`?.`。Dart 2.x也引入了更智能的类型推断，在`if (obj is Type)`块内，`obj`会被智能提升为`Type`。
+3. **优先级:**
+  - 不同运算符有不同的优先级。例如，乘除的优先级高于加减。如果不确定，始终使用括号`()`来明确运算顺序，这能提高代码的可读性。
+  - 例如: `10 + 2 * 5`的结果是20(先乘后加)，而不是60。
+4. **递增/递减运算符的前置与后置:**
+  - `++v`(前置递增)和`--v`(前置递减)会先改变变量的值，然后才使用改变后的值。
+  - `v++`(后置递增)和`v--`(后置递减) 会先使用变量的当前值，然后才改变变量的值。理解这一点对于避免细微的bug非常重要。
+
+
+
+## 进阶运算符
+进阶运算符通常处理更复杂的逻辑、便捷地处理空值，或者提供特殊的语法糖(syntactic sugar)来使代码更简洁。它们包括: 
+- **条件运算符(Conditional Operators):** 也称为三元运算符，提供了一种简洁的`if-else`表达式。
+- **空安全运算符(Null-aware Operators):** 这是Dart 2.12(空安全版本)引入的核心特性，用于安全地处理可能为空的值。
+- **级联运算符(Cascade Operator):** 允许对同一个对象进行一系列操作，而无需重复引用对象。
+- **位运算符(Bitwise Operators):** 用于直接操作整数的二进制位。
+- **其他运算符:** 如`?.`(空安全调用)、`[]`(下标运算符) 等，但我们主要关注上述四个在日常开发中更常使用的。
+
+
+### 示例
+```dart
+// 假设有一个简单的用户类用于演示
+class User {
+  String? name; // name 可能是 null
+  int age;
+  String city;
+
+  User(this.age, this.city, {this.name});
+
+  void sayHello() {
+    print('Hello, I am ${name ?? 'Guest'} from $city.'); // 使用空合并运算符
+  }
+
+  // 模拟一个返回User对象的方法，可能返回null
+  static User? getUserById(int id) {
+    if (id == 1) {
+      return User(30, 'New York', name: 'Alice');
+    } else if (id == 2) {
+      return User(25, 'London'); // name 为 null
+    }
+    return null; // id 不匹配时返回 null
+  }
+}
+
+void main() {
+  // --- 2.1. 条件运算符 (Conditional Operator) ---
+  // 语法: condition ? expr1 : expr2
+  // 如果 condition 为 true，返回 expr1 的值；否则，返回 expr2 的值。
+
+  int score = 75;
+  String status = score >= 60 ? '及格' : '不及格';
+  print('--- 条件运算符 ---');
+  print('成绩状态: $status'); // 输出: 成绩状态: 及格
+
+  int temperature = -5;
+  String weatherMessage = temperature < 0 ? '非常寒冷' : (temperature < 10 ? '有点冷' : '温暖');
+  print('天气信息: $weatherMessage'); // 输出: 天气信息: 非常寒冷
+  print('');
+
+  // --- 2.2. 空安全运算符 (Null-aware Operators) ---
+  // 这些运算符在Dart的空安全特性下变得尤为重要。
+
+  // 2.2.1. 空合并运算符 (Null Coalescing Operator `??`)
+  // 语法: expr1 ?? expr2
+  // 如果 expr1 不为 null，返回 expr1 的值；否则，返回 expr2 的值。
+
+  String? userName;
+  String displayName = userName ?? '匿名用户';
+  print('--- 空安全运算符 ---');
+  print('显示名称 (userName为null): $displayName'); // 输出: 匿名用户
+
+  String? actualName = 'Bob';
+  String finalName = actualName ?? '默认用户';
+  print('显示名称 (actualName有值): $finalName'); // 输出: Bob
+
+  // 2.2.2. 空合并赋值运算符 (Null Coalescing Assignment Operator `??=`)
+  // 语法: variable ??= value
+  // 如果 variable 当前为 null，则将其赋值为 value；否则保持不变。
+  print('\n--- 空合并赋值运算符 ---');
+  String? email;
+  email ??= 'default@example.com';
+  print('Email (email为null时赋值): $email'); // 输出: default@example.com
+
+  email = 'user@example.com';
+  email ??= 'another@example.com'; // email 已有值，不会被覆盖
+  print('Email (email已有值): $email'); // 输出: user@example.com
+
+  // 2.2.3. 空安全成员访问运算符 (Null-safe Member Access Operator `?.`)
+  // 语法: object?.member
+  // 如果 object 不为 null，则访问其成员 member；否则，整个表达式返回 null。
+  print('\n--- 空安全成员访问运算符 ---');
+  User? user1 = User.getUserById(1);
+  print('User1 name length: ${user1?.name?.length}'); // user1不为null, name不为null，输出长度
+
+  User? user2 = User.getUserById(2); // user2的name为null
+  print('User2 name length: ${user2?.name?.length}'); // user2不为null, 但name为null，所以整个表达式返回 null。
+  // 注意：?. 可以链式调用，只要链中任何一个环节为 null，整个表达式就返回 null。
+
+  User? user3 = User.getUserById(3); // user3 为 null
+  print('User3 name: ${user3?.name}'); // user3 为 null，所以?.name 返回 null
+  print('');
+
+  // --- 2.3. 级联运算符 (Cascade Operator `..`) ---
+  // 允许对同一个对象执行一系列操作，而无需在每次操作时都引用该对象。
+  // 它适用于构建器和设置多个属性，或在一个表达式中调用多个方法。
+
+  print('--- 级联运算符 ---');
+  var p1 = User(28, 'Shanghai')
+    ..name = 'Charlie'        // 设置 name 属性
+    ..sayHello();             // 调用 sayHello 方法
+
+  // 等同于:
+  // var p1 = User(28, 'Shanghai');
+  // p1.name = 'Charlie';
+  // p1.sayHello();
+
+  // 级联运算符的返回值是它所操作的对象本身。
+  var p2 = User(35, 'Beijing');
+  p2
+    ..name = 'David'
+    ..sayHello();
+  print('');
+
+  // --- 2.4. 位运算符 (Bitwise Operators) ---
+  // 用于操作整数的二进制位。在底层编程、权限管理或特定算法中很有用。
+  // & (按位与), | (按位或), ^ (按位异或), ~ (按位取反), << (左移), >> (有符号右移), >>> (无符号右移)
+
+  int value1 = 0b1010; // 二进制 10 (十进制)
+  int value2 = 0b0110; // 二进制 6 (十进制)
+
+  print('--- 位运算符 ---');
+  print('value1 = $value1 (binary: ${value1.toRadixString(2)})');
+  print('value2 = $value2 (binary: ${value2.toRadixString(2)})');
+
+  print('value1 & value2 = ${value1 & value2} (binary: ${(value1 & value2).toRadixString(2)})'); // 0b0010 (2)
+  print('value1 | value2 = ${value1 | value2} (binary: ${(value1 | value2).toRadixString(2)})'); // 0b1110 (14)
+  print('value1 ^ value2 = ${value1 ^ value2} (binary: ${(value1 ^ value2).toRadixString(2)})'); // 0b1100 (12)
+  print('~value1 = ${ (~value1) & 0xF } (限于低四位，Dart整数是补码表示)'); // ~10 是 -11。在四位模式下，显示其后四位。
+                                                                    // 通常 ~ 操作会涉及所有位，导致结果很大或负数，
+                                                                    // 除非特定位数掩码，否则结果可能不直观。
+  print('value1 << 1 = ${value1 << 1} (binary: ${(value1 << 1).toRadixString(2)})'); // 0b10100 (20)
+  print('value1 >> 1 = ${value1 >> 1} (binary: ${(value1 >> 1).toRadixString(2)})'); // 0b0101 (5)
+
+  int negativeValue = -10;
+  print('negativeValue >> 1 = ${negativeValue >> 1}'); // 有符号右移，保持符号位不变
+  print('negativeValue >>> 1 (逻辑右移): ${negativeValue >>> 1}'); // 无符号右移，不保留符号位，对于负数会生成非常大的正数
+  print('');
+}
+```
+
+
+### 注意事项(Caveats)
+1. **条件运算符的嵌套:**
+  - 条件运算符可以嵌套使用，如示例中的`weatherMessage`。但是过度嵌套会降低代码可读性，此时应考虑使用`if-else`语句。
+2. **空安全运算符的启用:**
+  - 空安全运算符(`?.`,`??`,`??=`)是Dart 2.12版本引入的空安全特性的一部分。要使用这些运算符，您的项目必须启用空安全。通常在`pubspec.yaml`中指定SDK版本为2.12.0或更高，并在`analysis_options.yaml`中配置`enable-experiment: [non-nullable]`。对于现代Dart项目，空安全是默认开启的。
+3. **级联运算符的返回值:**
+  - 级联运算符(`..`)的最终表达式的值是它操作的对象本身，而不是链中最后一个操作的返回值。这意味着你不可以直接将级联操作的结果赋值给一个变量，并期望该变量是最后一个方法调用的返回值。
+  - 例如: `var result = object..method1()..method2();`这里的`result`是`object`本身，而不是`method2()`的返回值。
+4. **位运算符的适用场景:**
+  - 位运算符通常用于低级编程、高效的数据存储(如用一个整数的不同位表示多个布尔状态)、加密算法、图像处理等场景。
+  - 对于大多数高级业务逻辑，位运算符不常用，过度使用可能会降低代码的可读性。
+  - 尤其是在处理负数时，位运算符(特别是`~`和`>>`)的行为可能需要对二进制补码有深入理解，否则容易产生意料之外的结果。`>>>`(无符号右移)在Dart中会将负数处理为一个非常大的正数，因为它将最左侧的符号位也移动并填充为0。
