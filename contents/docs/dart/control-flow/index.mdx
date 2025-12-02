@@ -1,0 +1,333 @@
+---
+title: 控制流
+description: control flow
+---
+
+1. 条件语句(`Conditional Statements`): if, else if, else, switch
+2. 循环语句(`Loop Statements`): for, while, do-while
+3. 跳转语句(`Jump Statements`): break, continue
+
+
+## 条件语句
+条件语句允许你根据表达式的真假来执行不同的代码块。
+
+### 1. if, else if, else
+这是最常见的条件判断结构，用于在给定条件为true(真)时执行某段代码。
+
+- `if`: 如果条件表达式为真，执行`if`后面的代码块。
+- `else if`: 在`if`条件为假时，检查随后的`else if`条件。可以有零个或多个`else if`块。
+- `else`: 在所有`if`和`else if`条件都为假时执行。只能有一个`else`块。
+
+### 示例
+```dart
+void main() {
+  int temperature = 25;
+
+  if (temperature > 30) {
+    print('天气很热，请注意防暑！'); // Hot weather warning
+  } else if (temperature >= 20 && temperature <= 30) {
+    print('天气舒适，适合户外活动。'); // Pleasant weather
+  } else {
+    print('天气有点凉，请注意保暖。'); // Cool weather
+  }
+
+  // 短路求值 (Short-circuit evaluation)
+  bool isLoggedIn = true;
+  String? username; // username 可能是 null
+
+  // 注意：在 Dart 中，非布尔类型的值不能直接作为 if 的条件。
+  // 必须是 bool 类型。
+
+  if (isLoggedIn && (username != null && username.isNotEmpty)) {
+    print('用户已登录且用户名有效。');
+  } else {
+    print('用户未登录或用户名无效。');
+  }
+}
+```
+
+### 注意事项
+- Dart中的条件表达式必须解析为bool类型。不能像JavaScript那样将数字或字符串直接作为条件。
+- `&&(逻辑与)`和`||(逻辑或)`运算符都支持短路求值(Short-circuit evaluation）。这意味着如果第一个操作数已经确定了结果，则不会评估第二个操作数。例如，`true || someFunction()`，`someFunction()`不会被执行。
+
+
+### 2. switch语句
+`switch`语句用于根据一个表达式的值，匹配多个预设的常量选项。
+
+- `switch`表达式的值会按顺序与`case`后面的值进行比较。
+- 如果找到匹配的`case`，则执行该`case`下的代码块，直到遇到`break`语句或`return`语句。
+- 如果没有`case`匹配，则执行可选的`default`代码块。
+- Dart 2.x强制要求每个非空的`case`分支必须以`break`, `continue`, `return`或`throw`结束，以避免"穿透"(fall-through)行为。
+
+
+### 示例
+```dart
+void main() {
+  String command = 'OPEN'; // Replace with 'CLOSED', 'PENDING'
+
+  switch (command) {
+    case 'OPEN':
+      print('文件已打开。');
+      break; // 注意：必须有 break
+    case 'CLOSED':
+      print('文件已关闭。');
+      break;
+    case 'PENDING':
+      print('文件等待处理。');
+      // 如果没有 break，下面的 default 会报错，因为默认不允许 fall-through
+      // fall-through 可以通过 `continue` 标签实现，但这里不展开。
+      break;
+    default:
+      print('无效的命令。');
+  }
+
+  // 匹配多个值 (Fall-through if case body is empty)
+  int dayOfWeek = 6; // 1-7
+  switch (dayOfWeek) {
+    case 6: // Saturday
+    case 7: // Sunday
+      print('周末愉快！');
+      break;
+    case 1:
+    case 2:
+    case 3:
+    case 4:
+    case 5:
+      print('工作日。');
+      break;
+    default:
+      print('无效的日期。');
+  }
+}
+```
+
+### 注意事项
+- `switch`表达式的类型可以是`int`, `String`或枚举类型(`enum`）。
+- 每个`case`后面的值必须是编译时常量。
+- Dart `switch`默认不允许“穿透”(fall-through），除非case体为空。如果你想让多个case共享代码，可以像上面case 6:和case 7:那样，让其中一个`case`的代码块为空直接穿透到下一个。
+- 如果要故意实现带逻辑的穿透，需要使用`continue`配合标签，这在Dart中比较少用，也略微复杂，属于进阶话题。
+
+
+
+
+
+
+## 循环语句
+循环语句允许你重复执行一段代码块，直到满足特定条件。
+
+### 1. for循环
+`for`循环是最常见的计数循环。
+
+- `for`循环通常由三部分组成：初始化表达式(`initialization`), 条件表达式(`condition`), 递增/递减表达式(`increment/decrement`)。
+- 初始化表达式在循环开始前执行一次。
+- 每次循环开始前，评估条件表达式。如果为true，则执行循环体；如果为false，循环终止。
+- 每次循环体执行完毕后，执行递增/递减表达式。
+
+### 示例
+```dart
+void main() {
+  // 基本的 for 循环
+  for (int i = 0; i < 5; i++) {
+    print('当前的数字是: $i');
+  }
+
+  print('---');
+
+  // 遍历列表 (Iterating over a list)
+  List<String> fruits = ['Apple', 'Banana', 'Cherry'];
+  for (int i = 0; i < fruits.length; i++) {
+    print('我喜欢吃: ${fruits[i]}');
+  }
+
+  print('---');
+
+  // `for-in` 循环 (更简洁地遍历可迭代对象)
+  // 这是 Dart 中推荐的遍历集合的方式
+  for (String fruit in fruits) {
+    print('for-in: 我喜欢吃: $fruit');
+  }
+
+  print('---');
+
+  // 计数递减
+  for (int i = 3; i > 0; i--) {
+    print('倒计时: $i');
+  }
+}
+```
+
+
+### 注意事项
+- `for-in`循环(也称为“增强型 for 循环”)是遍历实现`Iterable`接口的集合(如`List`, `Set`)的最佳方式。它更简洁且不易出错。
+- 避免无限循环: 确保你的条件表达式最终会变为false。
+
+
+### 2. while 循环
+`while`循环在执行循环体之前检查条件。
+
+- 每次循环迭代前，评估条件表达式。
+- 如果条件为true，则执行循环体。
+- 如果条件为false，循环终止。
+- 可能一次都不执行循环体(如果初始条件就为false)。
+
+### 示例
+```dart
+void main() {
+  int count = 0;
+  while (count < 3) {
+    print('While 循环计数: $count');
+    count++; // 注意：必须有递增/递减操作，否则会是无限循环
+  }
+
+  print('---');
+
+  // 循环条件一开始就为假
+  int num = 10;
+  while (num < 5) {
+    print('While 循环永远不会执行。');
+  }
+}
+```
+
+### 注意事项
+确保循环体内有改变条件表达式的语句，以避免无限循环。
+
+
+### 3. do-while 循环
+`do-while`循环至少会执行一次循环体，然后才检查条件。
+
+- 首先执行循环体。
+- 然后评估条件表达式。
+- 如果条件为true，则继续下一次循环；如果为false，循环终止。
+
+### 示例
+```dart
+void main() {
+  int count = 0; // Notice: starts at 0
+
+  do {
+    print('Do-while 循环计数: $count');
+    count++; // This line makes sure the condition eventually becomes false
+  } while (count < 3); // Condition checked after first iteration
+
+  print('---');
+
+  // 即使条件一开始为假，do-while 也会执行一次
+  int num = 10;
+  do {
+    print('Do-while 即使条件为假也执行一次: num = $num');
+    num++; // Change num, though it won't affect loop iterations beyond the first.
+  } while (num < 5); // This condition is false, so loop stops after first run.
+}
+```
+
+### 注意事项
+`do-while`保证循环体至少执行一次，这与`while`循环不同。
+
+
+
+## 跳转语句
+跳转语句用于改变程序执行的正常流程。
+
+### 1. break语句
+`break`语句用于立即终止循环(`for`, `while`, `do-while`)或`switch`语句，程序控制权转移到紧跟在循环或`switch`之后的语句。
+
+### 示例
+```dart
+void main() {
+  // 在 for 循环中使用 break
+  for (int i = 0; i < 10; i++) {
+    if (i == 5) {
+      print('遇到 5，跳出循环。');
+      break; // 终止整个 for 循环
+    }
+    print('当前数字: $i');
+  }
+
+  print('for 循环结束后的代码。');
+  print('---');
+
+  // 在 while 循环中使用 break
+  int count = 0;
+  while (true) { // 这是一个故意设置的无限循环，但我们用 break 结束它
+    print('While 循环计数: $count');
+    count++;
+    if (count > 3) {
+      print('计数超过 3，跳出 while 循环。');
+      break;
+    }
+  }
+
+  print('while 循环结束后的代码。');
+  print('---');
+
+  // 在 switch 语句中使用 break (前面已见)
+  int choice = 2;
+  switch (choice) {
+    case 1:
+      print('选择了 1');
+      break;
+    case 2:
+      print('选择了 2，然后跳出 switch。');
+      break;
+    case 3:
+      print('选择了 3'); // 这不会被执行
+      break;
+    default:
+      print('无效选择');
+  }
+}
+```
+
+
+### 注意事项
+`break`只会终止其直接所在的循环或`switch`语句。如果是嵌套循环，它只会跳出最内层的循环。
+
+
+### 2. continue语句
+`continue`语句用于跳过当前循环的剩余部分，并开始下一次循环迭代。
+
+### 示例
+```dart
+void main() {
+  // 在 for 循环中使用 continue
+  for (int i = 0; i < 5; i++) {
+    if (i == 2) {
+      print('遇到 2，跳过本次循环的剩余部分。');
+      continue; // 跳过 print('当前数字: $i')，直接进入下一次迭代 (i=3)
+    }
+    print('当前数字: $i');
+  }
+
+  print('for 循环结束后的代码。');
+  print('---');
+
+  // 在 while 循环中使用 continue
+  int count = -1;
+  while (count < 3) {
+    count++;
+    if (count == 1) {
+      print('遇到 1，跳过本次循环剩余部分。');
+      continue; // 跳过下面的 print，直接进入下一次迭代 (count=2)
+    }
+    print('While 循环计数: $count');
+  }
+  print('while 循环结束后的代码。');
+}
+```
+
+
+### 注意事项
+在`while`和`do-while`循环中使用`continue`时，要特别注意确保条件表达式最终会变为false。如果递增/递减逻辑在`continue`之后，那可能会导致无限循环。在上面的`while`示例中，`count++`放在`continue`之前，以确保每次迭代`count`都能递增。
+
+
+## 总结与实践
+- 条件语句让你程序能够“思考”并做出不同决策。
+- 循环语句让你程序能够“重复”执行任务，减少代码冗余。
+- 跳转语句提供了更灵活的循环控制。
+
+## 生产环境最佳实践
+- 尽量使用`for-in`循环遍历集合，因为它更具可读性和简洁性。
+- `if-else if-else`结构应避免过多的嵌套，过深的嵌套会使代码难以阅读和维护。考虑重构或使用`switch`或其他设计模式。
+- `switch`语句在有多个离散值需要判断时比多个`else if`更清晰。
+- 在处理循环时，始终思考如何避免无限循环，并确保循环条件最终能被满足。
